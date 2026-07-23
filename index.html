@@ -33,7 +33,8 @@
   --sun:clamp(150px,25vmin,250px);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
+html{height:100%}
+body{min-height:100%;min-height:100dvh}
 body{
   background:var(--ink);
   color:var(--bone);
@@ -91,7 +92,7 @@ input,textarea{font-family:inherit;font-size:16px}
 .setup code{color:var(--gold);font-size:.8em}
 
 /* ---------- hoofdscherm ---------- */
-#app{display:none;position:relative;z-index:1;min-height:100%;
+#app{display:none;position:relative;z-index:1;min-height:100dvh;
   padding:clamp(16px,3vw,32px);display:none;flex-direction:column}
 #app.on{display:flex}
 
@@ -104,7 +105,7 @@ input,textarea{font-family:inherit;font-size:16px}
 .plaza{
   flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;
   position:relative;align-content:stretch;
-  min-height:min(74vh,640px);
+  min-height:min(74dvh,640px);
 }
 .quad{
   position:relative;overflow:hidden;
@@ -305,6 +306,21 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 .soon ul{margin:14px 0 0 18px}
 .soon li{margin-bottom:7px}
 
+.th-tabs{display:flex !important;margin-bottom:22px}
+.th-tabs span{color:var(--gold-dim);margin-left:4px}
+.blader-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding-bottom:12px;border-bottom:1px solid var(--earth-3);
+}
+#inspRandom{
+  font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim);
+  border:1px solid var(--earth-3);padding:8px 13px;border-radius:9px;
+  transition:color .2s,border-color .2s;
+}
+#inspRandom:hover{color:var(--gold);border-color:var(--gold-dim)}
+.item.flash{border-color:var(--gold);box-shadow:0 0 26px rgba(212,162,76,.28)}
+#thBlader .list{margin-top:18px}
+
 /* ---------- zilverweide ---------- */
 .zw-body{max-width:960px}
 .zw-tabs{display:none;gap:8px;margin-bottom:18px}
@@ -429,16 +445,62 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 }
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
-/* ---------- telefoon ---------- */
+/* ---------- telefoon, staand ---------- */
 @media (max-width:720px){
-  :root{--sun:clamp(140px,42vw,200px)}
-  .plaza{min-height:0;gap:10px;padding-top:calc(var(--sun) + 54px)}
-  .sunwrap{top:calc(var(--sun) / 2);transform:translateX(-50%)}
-  .hint{top:calc(var(--sun) + 14px)}
-  .quad{min-height:118px;justify-content:flex-end;border-radius:var(--r) !important}
+  :root{--sun:clamp(132px,40vw,196px)}
+  .plaza{min-height:0;gap:10px;padding-top:calc(var(--sun) + 52px);padding-bottom:8px}
+  .sunwrap{top:0;transform:translateX(-50%)}
+  .hint{top:calc(var(--sun) + 16px)}
+  .quad{min-height:112px;justify-content:flex-end;border-radius:var(--r) !important}
   .quad p{display:none}
   .choice{grid-template-columns:1fr}
+  .panel-head{margin-bottom:18px}
 }
+
+/* ---------- kleine telefoons ---------- */
+@media (max-width:360px){
+  :root{--sun:120px}
+  .quad{min-height:96px;padding:12px}
+  .quad h2{font-size:1rem}
+  .quad .tag{font-size:.58rem}
+}
+
+/* ---------- telefoon, liggend ---------- */
+@media (max-height:520px) and (orientation:landscape){
+  :root{--sun:clamp(96px,30vh,140px)}
+  .plaza{grid-template-columns:1fr 1fr;padding-top:0;min-height:0;gap:10px}
+  .sunwrap{top:50%;transform:translate(-50%,-50%)}
+  .hint{top:calc(50% + var(--sun) * .62);transform:translateX(-50%)}
+  .quad{min-height:74px;border-radius:var(--r)}
+  .quad:nth-child(1){border-bottom-right-radius:38%}
+  .quad:nth-child(2){border-bottom-left-radius:38%}
+  .quad:nth-child(3){border-top-right-radius:38%}
+  .quad:nth-child(4){border-top-left-radius:38%}
+  .quad p{display:none}
+  .topbar{margin-bottom:8px}
+  .legend-title{font-size:1.4rem;margin:6px 0 14px}
+  .legend-text{font-size:.92rem;line-height:1.7}
+}
+
+/* ---------- ruimte vrijhouden voor de randen van je toestel ---------- */
+@supports (padding:env(safe-area-inset-bottom)){
+  #app{
+    padding-left:max(clamp(16px,3vw,32px),env(safe-area-inset-left));
+    padding-right:max(clamp(16px,3vw,32px),env(safe-area-inset-right));
+    padding-top:max(clamp(16px,3vw,32px),env(safe-area-inset-top));
+    padding-bottom:max(clamp(16px,3vw,32px),env(safe-area-inset-bottom));
+  }
+  .panel{
+    padding-left:max(clamp(18px,3.4vw,40px),env(safe-area-inset-left));
+    padding-right:max(clamp(18px,3.4vw,40px),env(safe-area-inset-right));
+    padding-top:max(clamp(18px,3.4vw,40px),env(safe-area-inset-top));
+    padding-bottom:max(40px,calc(env(safe-area-inset-bottom) + 30px));
+  }
+  .sheet-inner{padding-bottom:max(32px,calc(env(safe-area-inset-bottom) + 22px))}
+  .zw-rail{bottom:max(20px,calc(env(safe-area-inset-bottom) + 12px))}
+  .toast{bottom:max(28px,calc(env(safe-area-inset-bottom) + 24px))}
+}
+
 @media (prefers-reduced-motion:reduce){
   *{animation:none !important;transition-duration:.01ms !important}
 }
@@ -528,20 +590,34 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 <div class="panel" id="thoth">
   <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>Thoth</h2></div>
   <div class="panel-body">
-    <div class="choice">
-      <button class="insp" data-kind="inspiratie">
-        <strong>Inspiratie</strong>
-        <span>Een idee, een vondst, iets om later mee verder te gaan.</span>
-      </button>
-      <button class="geh" data-kind="geheugen">
-        <strong>Geheugen</strong>
-        <span>Iets wat je niet mag vergeten. Komt terug bij Fix shit.</span>
-      </button>
+
+    <div class="zw-tabs th-tabs">
+      <button data-view="schrijf" class="on">Opschrijven</button>
+      <button data-view="blader">Bewaard <span id="inspN">0</span></button>
     </div>
-    <textarea class="entry" id="thothText" placeholder="Schrijf het op..."></textarea>
-    <button class="btn-gold" id="thothSave" style="width:100%;margin-top:12px">Bewaren</button>
-    <div class="eyebrow" style="margin-top:40px">Bewaarde inspiratie</div>
-    <div class="list" id="inspList"></div>
+
+    <div id="thSchrijf">
+      <div class="choice">
+        <button class="insp" data-kind="inspiratie">
+          <strong>Inspiratie</strong>
+          <span>Een idee, een vondst, iets om later mee verder te gaan.</span>
+        </button>
+        <button class="geh" data-kind="geheugen">
+          <strong>Geheugen</strong>
+          <span>Iets wat je niet mag vergeten. Komt terug bij Fix shit.</span>
+        </button>
+      </div>
+      <textarea class="entry" id="thothText" placeholder="Schrijf het op..."></textarea>
+      <button class="btn-gold" id="thothSave" style="width:100%;margin-top:12px">Bewaren</button>
+    </div>
+
+    <div id="thBlader" hidden>
+      <div class="blader-bar">
+        <span class="eyebrow">Bewaarde inspiratie</span>
+        <button id="inspRandom">Verras me</button>
+      </div>
+      <div class="list" id="inspList"></div>
+    </div>
   </div>
 </div>
 
@@ -961,9 +1037,28 @@ $("#thothSave").addEventListener("click", async () => {
   }catch(e){ toast("Opslaan lukt niet: "+e.code); }
 });
 
+/* --- wisselen tussen opschrijven en bladeren --- */
+$$(".th-tabs button").forEach(b => b.addEventListener("click", () => {
+  $$(".th-tabs button").forEach(x => x.classList.toggle("on", x === b));
+  const blader = b.dataset.view === "blader";
+  $("#thSchrijf").hidden = blader;
+  $("#thBlader").hidden  = !blader;
+}));
+
+/* --- een willekeurig idee opzoeken --- */
+$("#inspRandom").addEventListener("click", () => {
+  const kaarten = $$("#inspList .item");
+  if(!kaarten.length){ toast("Er is nog niets bewaard"); return; }
+  const k = kaarten[Math.floor(Math.random()*kaarten.length)];
+  $$("#inspList .item").forEach(x => x.classList.remove("flash"));
+  k.classList.add("flash");
+  k.scrollIntoView({behavior:"smooth", block:"center"});
+});
+
 function renderInspiration(){
   const box = $("#inspList");
   const list = items.filter(i=>i.kind==="inspiratie").slice().reverse();
+  $("#inspN").textContent = list.length;
   if(!list.length){
     box.innerHTML = `<div class="empty"><span class="big">Nog leeg</span>
       Het eerste idee dat langskomt hoort hier.</div>`;
