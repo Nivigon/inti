@@ -2063,31 +2063,70 @@ async function kopieGelukt(){
 /* --- de twee manieren om er een kopie uit te krijgen --- */
 async function kopieBestand(){
   toast("Bezig met inpakken...");
+
+  // 1. de gegevens verzamelen
+  let d;
   try{
-    const d = await alles();
-    const naam = `inti-${today()}.json`;
-    const blob = new Blob([JSON.stringify(d,null,2)], {type:"application/json"});
+    d = await alles();
+  }catch(e){
+    console.error("Inti, inpakken mislukt:", e);
+    toast("Inpakken lukt niet: " + (e.code || e.name || "onbekende fout"));
+    return;
+  }
+
+  const naam = `inti-${today()}.json`;
+  const blob = new Blob([JSON.stringify(d,null,2)], {type:"application/json"});
+
+  // 2. proberen te delen. Lukt dat niet, dan gewoon downloaden.
+  //    Delen weigert soms omdat er te veel tijd zit tussen jouw tik en het
+  //    moment dat het deelvenster opengaat. Dat mag geen reden zijn om
+  //    zonder reservekopie te eindigen.
+  try{
     const file = new File([blob], naam, {type:"application/json"});
-    if(navigator.canShare && navigator.canShare({files:[file]})){
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({ files:[file], title:"Inti reservekopie" });
-    }else{
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob); a.download = naam; a.click();
-      setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
-      toast("Bestand opgeslagen");
+      await kopieGelukt();
+      return;
     }
+  }catch(e){
+    if(e.name === "AbortError"){ toast("Afgebroken, er is niets bewaard"); return; }
+    console.warn("Inti, delen lukte niet, ik download hem:", e);
+  }
+
+  // 3. downloaden
+  try{
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = naam;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+    toast("Bestand opgeslagen");
     await kopieGelukt();
   }catch(e){
-    if(e.name === "AbortError") toast("Afgebroken, er is niets bewaard");
-    else toast("Inpakken lukt niet");
+    console.error("Inti, downloaden mislukt:", e);
+    toast("Opslaan lukt niet: " + (e.name || "onbekende fout"));
   }
 }
+
 async function kopieTekst(){
+  let tekst;
   try{
-    await navigator.clipboard.writeText(alsTekst(await alles()));
+    tekst = alsTekst(await alles());
+  }catch(e){
+    console.error("Inti, tekst maken mislukt:", e);
+    toast("Inpakken lukt niet: " + (e.code || e.name || "onbekende fout"));
+    return;
+  }
+  try{
+    await navigator.clipboard.writeText(tekst);
     toast("Op je klembord gezet, plak hem ergens veilig");
     await kopieGelukt();
-  }catch(e){ toast("Kopieren lukt niet in deze browser"); }
+  }catch(e){
+    console.error("Inti, klembord mislukt:", e);
+    toast("Kopieren lukt niet in deze browser");
+  }
 }
 
 function toonCijfers(){
