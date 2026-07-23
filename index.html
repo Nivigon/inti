@@ -22,6 +22,7 @@
   --gold-bright:#f6e0a6;
   --gold-dim:#7d6134;
   --cochineal:#a8392c;
+  --red-bright:#ec7a68;
   --turquoise:#3d8f88;
   --bone:#e9ddc6;
   --bone-dim:#9c8f78;
@@ -33,6 +34,7 @@
   --sun:clamp(150px,25vmin,250px);
 }
 *{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none !important}
 html{height:100%}
 body{min-height:100%;min-height:100dvh}
 body{
@@ -321,6 +323,60 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 .item.flash{border-color:var(--gold);box-shadow:0 0 26px rgba(212,162,76,.28)}
 #thBlader .list{margin-top:18px}
 
+
+/* ---------- hoge prioriteit ---------- */
+.prio-row{
+  display:flex;align-items:center;gap:11px;margin-top:14px;cursor:pointer;
+  font-size:.85rem;color:var(--bone-dim);line-height:1.4;
+}
+.prio-row input{width:19px;height:19px;accent-color:var(--cochineal);flex-shrink:0;cursor:pointer}
+.prio-row.on{color:var(--red-bright)}
+.task.prio{
+  border-left-width:4px;border-left-color:var(--cochineal);
+  background:linear-gradient(90deg,rgba(168,57,44,.14),var(--earth) 55%);
+}
+.task.prio .txt{color:var(--red-bright);font-weight:500}
+.prio-tag{
+  display:block;color:var(--red-bright);font-weight:600;
+  font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:9px;
+}
+
+/* ---------- project ai ---------- */
+.ai-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.ai-dots{display:flex;gap:7px}
+.ai-dots button{
+  width:10px;height:10px;border-radius:50%;padding:0;
+  border:1px solid var(--gold-dim);background:none;transition:.2s;
+}
+.ai-dots button.done{background:var(--gold);border-color:var(--gold)}
+.ai-dots button.now{border-color:var(--gold-bright);box-shadow:0 0 0 3px rgba(212,162,76,.22)}
+.ai-title{
+  font-family:var(--display);font-weight:300;line-height:1.15;
+  font-size:clamp(1.5rem,5vw,2.3rem);color:var(--gold-bright);margin-bottom:18px;
+}
+.ai-text{font-size:1rem;line-height:1.85;max-width:60ch}
+.ai-text p{margin-bottom:.9em}
+.ai-task{
+  margin-top:26px;background:var(--earth);border:1px solid var(--earth-3);
+  border-left:2px solid var(--turquoise);border-radius:var(--r);padding:19px 21px;
+}
+.ai-task .eyebrow{color:var(--turquoise);display:block;margin-bottom:11px}
+.ai-task p{line-height:1.8;font-size:.94rem;margin-bottom:.7em}
+.ai-task p:last-child{margin-bottom:0}
+.ai-nav{display:flex;gap:10px;margin-top:28px;align-items:stretch}
+.ai-nav .step{
+  padding:13px 17px;border-radius:10px;border:1px solid var(--earth-3);
+  font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--bone-dim);
+  transition:border-color .2s,color .2s;
+}
+.ai-nav .step:hover:not(:disabled){border-color:var(--gold-dim);color:var(--gold)}
+.ai-nav .step:disabled{opacity:.25;cursor:default}
+.ai-nav .btn-gold{flex:1;margin:0}
+.ai-nav .btn-plain{
+  flex:1;border:1px solid var(--gold-dim);border-radius:var(--r);color:var(--gold);
+  font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:500;
+}
+
 /* ---------- zilverweide ---------- */
 .zw-body{max-width:960px}
 .zw-tabs{display:none;gap:8px;margin-bottom:18px}
@@ -370,6 +426,14 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 
 .zw-rail{display:flex;flex-direction:column;align-items:center;gap:14px;position:sticky;top:4px}
 .zw-rail::before{content:"";width:1px;height:30px;background:linear-gradient(var(--earth-3),transparent)}
+.zw-rail-m{
+  display:none;position:fixed;left:50%;transform:translateX(-50%);
+  bottom:20px;bottom:max(20px,calc(env(safe-area-inset-bottom) + 12px));
+  z-index:55;align-items:center;gap:14px;padding:9px 12px;
+  background:var(--earth-2);border:1px solid var(--earth-3);border-radius:40px;
+  box-shadow:0 10px 34px rgba(0,0,0,.55);
+}
+body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--cochineal);background:rgba(168,57,44,.15)}
 .zw-plus{
   width:48px;height:48px;border-radius:50%;flex-shrink:0;
   background:linear-gradient(180deg,var(--gold),#b8873a);color:#20170c;
@@ -428,13 +492,8 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
   .zw-col[data-term=lang] .zw-item .txt,
   .zw-col[data-term=lang] .zw-none{text-align:left}
   .zw-col[data-term=lang] .zw-item{border-right:none;border-left:2px solid var(--turquoise)}
-  .zw-rail{
-    position:fixed;left:50%;bottom:20px;transform:translateX(-50%);
-    flex-direction:row;gap:14px;padding:9px 12px;z-index:55;
-    background:var(--earth-2);border:1px solid var(--earth-3);border-radius:40px;
-    box-shadow:0 10px 34px rgba(0,0,0,.55);
-  }
-  .zw-rail::before{display:none}
+  .zw-rail{display:none}
+  body.zw-open .zw-rail-m{display:flex}
 }
 
 .toast{
@@ -497,7 +556,6 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
     padding-bottom:max(40px,calc(env(safe-area-inset-bottom) + 30px));
   }
   .sheet-inner{padding-bottom:max(32px,calc(env(safe-area-inset-bottom) + 22px))}
-  .zw-rail{bottom:max(20px,calc(env(safe-area-inset-bottom) + 12px))}
   .toast{bottom:max(28px,calc(env(safe-area-inset-bottom) + 24px))}
 }
 
@@ -608,6 +666,10 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
         </button>
       </div>
       <textarea class="entry" id="thothText" placeholder="Schrijf het op..."></textarea>
+      <label class="prio-row" id="prioRow" hidden>
+        <input type="checkbox" id="prioBox">
+        <span>Hoge prioriteit, komt bij Fix shit altijd bovenaan</span>
+      </label>
       <button class="btn-gold" id="thothSave" style="width:100%;margin-top:12px">Bewaren</button>
     </div>
 
@@ -660,7 +722,30 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
     </div>
   </div>
 
-  <!-- toevoegen -->
+</div>
+
+<div class="panel" id="ai">
+  <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>Project AI</h2></div>
+  <div class="panel-body">
+    <div class="ai-top">
+      <span class="eyebrow" id="aiNr">Les 1 van 10</span>
+      <div class="ai-dots" id="aiDots"></div>
+    </div>
+    <h3 class="ai-title" id="aiTitle"></h3>
+    <div class="ai-text" id="aiText"></div>
+    <div class="ai-task">
+      <span class="eyebrow">Probeer dit, vijf tot tien minuten</span>
+      <div id="aiTask"></div>
+    </div>
+    <div class="ai-nav">
+      <button class="step" id="aiPrev" aria-label="Vorige les">&larr;</button>
+      <button id="aiDone"></button>
+      <button class="step" id="aiNext" aria-label="Volgende les">&rarr;</button>
+    </div>
+  </div>
+</div>
+
+<!-- toevoegen -->
   <div class="sheet" id="zwSheet">
     <div class="sheet-inner">
       <div class="sheet-head">
@@ -698,18 +783,10 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
       </div>
     </div>
   </div>
-</div>
 
-<div class="panel" id="ai">
-  <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>Project AI</h2></div>
-  <div class="panel-body">
-    <div class="soon">
-      <h3>Komt in versie 3</h3>
-      Tien lessen over werken met Claude. Elke dag een korte uitleg in gewone taal,
-      plus een probeeropdracht van maximaal drie minuten. Met een teller die bijhoudt
-      hoe ver je bent.
-    </div>
-  </div>
+<div class="zw-rail-m" id="zwRailM">
+  <button class="zw-plus" id="zwPlusM" aria-label="Iets toevoegen">+</button>
+  <button class="zw-minus" id="zwMinusM" aria-label="Verwijderen aan of uit">&minus;</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -829,6 +906,117 @@ Ze vertellen het door omdat het doorvertellen zelf het aangroeien is.`}
 ];
 
 /* ============================================================
+   2b. AI-LESSEN  ·  tien korte lessen over werken met Claude.
+       Voeg er gerust bij, de teller past zich vanzelf aan.
+   ============================================================ */
+const LESSONS = [
+{ title:"Vertel wie je bent",
+  text:`Claude begint elk gesprek zonder enige kennis over jou.
+Hij weet niet wat je werk is, voor wie je schrijft, of wat er daarna met het antwoord gebeurt.
+Hoe minder hij weet, hoe algemener het antwoord wordt.
+De grootste sprong in kwaliteit haal je niet uit slimme trucs, maar uit vertellen wat de situatie is.
+Drie dingen helpen bijna altijd: wie je bent, voor wie het bedoeld is, en wat je ermee wilt bereiken.
+Dat mag in gewone zinnen. Je hoeft geen commando's te typen.`,
+  task:`Stel een vraag over je werk, kort en kaal. Bijvoorbeeld: hoe schrijf ik een offerte?
+Lees het antwoord vluchtig.
+Stel dezelfde vraag nog een keer, maar vertel er nu bij wat je doet, wat voor klant het is en wat je met die offerte wilt bereiken.
+Leg de twee antwoorden naast elkaar. Het verschil is de hele les.`},
+
+{ title:"Vraag om een vorm",
+  text:`Claude kiest zelf een vorm als jij er geen noemt, en dat wordt meestal een net lapje tekst met kopjes.
+Vaak wil je iets anders: vijf bullets, een tabel, een mail van tachtig woorden, een lijstje vragen.
+Je mag dat gewoon vragen, en ook heel precies.
+Lengte, toon, taal, of het formeel of losjes moet, of er wel of geen kopjes in mogen.
+Bevalt de vorm niet, dan zeg je dat en krijg je hem opnieuw.
+Dit is de goedkoopste verbetering die er is, want het kost je één zin.`,
+  task:`Kies iets wat je moet uitleggen aan iemand anders.
+Vraag het drie keer achter elkaar in hetzelfde gesprek: eerst als vijf bullets, dan als een tabel met twee kolommen, dan als een appje van maximaal veertig woorden.
+Kijk welke vorm je eigenlijk nodig had. Meestal is dat niet de vorm die je zelf zou hebben gekozen.`},
+
+{ title:"Geef een voorbeeld mee",
+  text:`Uitleggen wat je wilt is moeilijk. Laten zien is makkelijk.
+Geef je twee of drie voorbeelden mee van hoe het eruit moet zien, dan pikt Claude de toon, de lengte en de opbouw er zelf uit.
+Dat werkt beter dan tien regels beschrijven wat je bedoelt.
+Het mogen ook slechte voorbeelden zijn: zo wil ik het juist niet.
+Zeker bij schrijven in je eigen stijl is dit het verschil tussen bruikbaar en nietszeggend.`,
+  task:`Zoek twee stukjes tekst die jij eerder zelf hebt geschreven, bijvoorbeeld twee mails aan een klant.
+Plak ze allebei in het gesprek en zeg: dit is hoe ik schrijf, schrijf nu in dezelfde stijl een mail over dit onderwerp.
+Kijk of je jezelf terugleest. Klopt het niet, wijs dan aan welk stukje er naast zit.`},
+
+{ title:"Laat hem eerst denken",
+  text:`Bij een lastige vraag komt het beste antwoord zelden meteen.
+Vraag je Claude om eerst hardop te redeneren voordat hij een conclusie geeft, dan worden de antwoorden merkbaar beter.
+Dat geldt vooral bij rekenen, plannen, vergelijken en alles waar meerdere stappen in zitten.
+Je kunt ook vragen om drie mogelijke aanpakken naast elkaar, met de voor- en nadelen erbij.
+Bijkomend voordeel: je ziet zijn redenering, dus je merkt het als hij ergens de mist in gaat.`,
+  task:`Neem een keuze waar je zelf mee zit. Een investering, een prijs, een volgorde van werk.
+Vraag eerst gewoon om advies.
+Vraag daarna: geef me drie manieren om dit aan te pakken, denk per manier hardop na over de gevolgen, en kies pas daarna.
+Kijk of het tweede antwoord je iets laat zien wat je nog niet had bedacht.`},
+
+{ title:"Het eerste antwoord is een concept",
+  text:`De meeste mensen stellen één vraag, vinden het antwoord half goed, en gaan weg.
+Dat is zonde, want het gesprek is precies waar de winst zit.
+Zeg wat er niet klopt en je krijgt een nieuwe versie. Dat kan zo vaak als je wilt.
+Concreet werkt het beste: te lang, te formeel, de derde alinea kan weg, begin met het probleem.
+Drie rondes bijsturen leveren bijna altijd meer op dan één perfect geformuleerde vraag.`,
+  task:`Laat iets schrijven wat je echt kunt gebruiken, bijvoorbeeld een korte tekst voor je website.
+Geef daarna drie keer achter elkaar feedback, en wees elke keer specifiek over wat er weg moet of anders.
+Bewaar het eerste en het laatste antwoord. Het verschil is groter dan je verwacht.`},
+
+{ title:"Laat hem jou vragen stellen",
+  text:`Je kunt het gesprek ook omdraaien.
+In plaats van alles vooraf uitleggen, vraag je Claude om jou eerst te ondervragen.
+Dat is handig als je zelf nog niet scherp hebt wat je wilt, want de vragen dwingen je tot nadenken.
+Het werkt goed bij plannen maken, keuzes uitpluizen en iets uitwerken wat nog vaag is.
+Zeg er bij: stel me telkens één vraag tegelijk. Dan wordt het een gesprek in plaats van een formulier.`,
+  task:`Kies iets waar je vaag over bent. Een idee, een plan, een probleem waar je niet uitkomt.
+Typ: ik wil dit uitwerken, maar stel me eerst vijf vragen, één voor één, voordat je iets voorstelt.
+Beantwoord ze eerlijk. Kijk daarna wat eruit komt.`},
+
+{ title:"Geef hem je bestanden",
+  text:`Je kunt bestanden meesturen in het gesprek en Claude leest ze mee.
+Dat werkt met documenten, spreadsheets, pdf's en gewone afbeeldingen.
+Een foto van een handgeschreven briefje, een schermafbeelding van een foutmelding, een contract van twintig pagina's: allemaal prima.
+Dat scheelt je veel overtypen, en hij kan verwijzen naar wat er echt staat in plaats van naar wat jij ervan navertelt.
+Zeg er wel bij wat je ermee wilt, anders krijg je alleen een samenvatting.`,
+  task:`Zoek een document of een foto die met je werk te maken heeft.
+Stuur hem mee en vraag iets waar je echt iets aan hebt. Bijvoorbeeld: waar zitten de risico's in dit contract, of: maak van deze foto met aantekeningen een nette lijst.
+Probeer daarna een schermafbeelding van iets op je computer waar je niet uitkomt.`},
+
+{ title:"Projecten en geheugen",
+  text:`Werk je vaker aan hetzelfde, dan hoef je de achtergrond niet elke keer opnieuw te typen.
+Met een Project zet je documenten en vaste instructies op één plek, en elk gesprek daarbinnen weet dat al.
+Denk aan: dit ben ik, dit is mijn onderneming, zo wil ik dat je antwoordt.
+Claude kan daarnaast dingen onthouden uit eerdere gesprekken, zodat je niet steeds bij nul begint.
+Voor iets als Zilverweide scheelt dat elke keer een halve pagina uitleg.`,
+  task:`Maak een Project aan voor iets waar je vaker mee bezig bent.
+Zet in de instructies drie dingen: wie je bent, waar het project over gaat, en hoe je wilt dat er tegen je gepraat wordt.
+Stel daarna een vraag binnen dat project en kijk of het antwoord meteen beter aansluit.`},
+
+{ title:"Laat hem de tegenpartij spelen",
+  text:`Claude is van nature meegaand, en dat is niet altijd wat je nodig hebt.
+Vraag je om kritiek, dan krijg je die ook, en dat is vaak nuttiger dan applaus.
+Vraag om de vijf zwakste plekken in je plan, of wat een sceptische klant zou zeggen, of waarom dit zou kunnen mislukken.
+Je kunt hem ook een rol geven: doe alsof je mijn accountant bent, of mijn moeilijkste klant.
+Zo test je je eigen idee voordat iemand anders het doet.`,
+  task:`Plak een plan of een tekst waar je best trots op bent.
+Vraag: noem de vijf zwakste punten hierin, en wees streng.
+Vraag daarna: doe nu alsof je een klant bent die dit te duur vindt, en reageer.
+Kijk welke opmerking blijft hangen.`},
+
+{ title:"Laat hem iets bouwen",
+  text:`Claude kan meer dan tekst maken. Hij kan werkende dingen bouwen die je meteen kunt gebruiken.
+Kleine rekenhulpjes, een overzicht, een schema, een pagina zoals de app waar je dit nu in leest.
+Je hoeft niet te kunnen programmeren, je hoeft alleen te beschrijven wat het moet doen.
+Werkt het niet zoals je wilt, dan zeg je dat en krijg je een nieuwe versie.
+Dit is waar het van gereedschap naar meebouwen gaat, en waar het ook echt leuk wordt.`,
+  task:`Bedenk een klein hulpje dat je zelf zou gebruiken. Een rekenhulp voor je uurtarief, een checklist voor als je een klus oplevert, een simpele planner.
+Beschrijf in gewone woorden wat het moet doen en vraag hem het te maken.
+Probeer het uit en vraag daarna om één ding aan te passen. Zo leer je meteen dat je nooit in één keer klaar hoeft te zijn.`}
+];
+
+/* ============================================================
    3. VANAF HIER HOEF JE NIETS MEER AAN TE PASSEN
    ============================================================ */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
@@ -944,6 +1132,8 @@ async function start(){
     const data = snap.exists() ? snap.data() : {};
     if(data.lastSun === today()) lightUp(data.legendIndex ?? 0, false);
   }catch(e){ /* offline, dan begint de dag gewoon opnieuw */ }
+
+  loadAI();
 }
 function stop(){
   if(unsub) unsub();
@@ -991,8 +1181,15 @@ function lightUp(i, showPanel){
 /* ============================================================
    PANELEN
    ============================================================ */
-function openPanel(id){ $("#"+id).classList.add("open"); }
-function closePanels(){ $$(".panel").forEach(p=>p.classList.remove("open")); }
+function openPanel(id){
+  $("#"+id).classList.add("open");
+  document.body.classList.toggle("zw-open", id === "zilverweide");
+}
+function closePanels(){
+  $$(".panel").forEach(p=>p.classList.remove("open"));
+  closeSheet();
+  document.body.classList.remove("zw-open");
+}
 $$("[data-close]").forEach(b=>b.addEventListener("click", closePanels));
 document.addEventListener("keydown", e=>{
   if(e.key!=="Escape") return;
@@ -1020,20 +1217,27 @@ $$("#thoth .choice button").forEach(b => b.addEventListener("click", () => {
   $$("#thoth .choice button").forEach(x=>x.classList.remove("sel"));
   b.classList.add("sel");
   kind = b.dataset.kind;
+  $("#prioRow").hidden = kind !== "geheugen";
+  if(kind !== "geheugen"){ $("#prioBox").checked = false; $("#prioRow").classList.remove("on"); }
 }));
 $$("#thoth .choice button")[0].classList.add("sel");
+$("#prioBox").addEventListener("change", e => {
+  $("#prioRow").classList.toggle("on", e.target.checked);
+});
 
 $("#thothSave").addEventListener("click", async () => {
   const text = $("#thothText").value.trim();
   if(!text){ toast("Er staat nog niets in"); return; }
   try{
+    const prio = kind==="geheugen" && $("#prioBox").checked;
     await addDoc(collection(db,"users",uid,"thoth"),{
-      text, kind,
+      text, kind, prio,
       createdAt: Date.now(),
       snoozeUntil: null
     });
     $("#thothText").value="";
-    toast(kind==="geheugen" ? "Op de lijst gezet" : "Bewaard");
+    $("#prioBox").checked=false; $("#prioRow").classList.remove("on");
+    toast(prio ? "Bovenaan gezet" : kind==="geheugen" ? "Op de lijst gezet" : "Bewaard");
   }catch(e){ toast("Opslaan lukt niet: "+e.code); }
 });
 
@@ -1083,7 +1287,9 @@ function renderInspiration(){
    ============================================================ */
 function openTasks(){
   const t = today();
-  return items.filter(i => i.kind==="geheugen" && (!i.snoozeUntil || i.snoozeUntil <= t));
+  return items
+    .filter(i => i.kind==="geheugen" && (!i.snoozeUntil || i.snoozeUntil <= t))
+    .sort((a,b) => (b.prio?1:0) - (a.prio?1:0) || a.createdAt - b.createdAt);
 }
 function renderCounts(){
   const n = openTasks().length;
@@ -1107,7 +1313,8 @@ function renderFix(){
     return;
   }
   box.innerHTML = list.map(i=>`
-    <div class="task" data-id="${i.id}">
+    <div class="task${i.prio ? " prio" : ""}" data-id="${i.id}">
+      ${i.prio ? `<span class="prio-tag">Hoge prioriteit</span>` : ""}
       <div class="txt">${escapeHtml(i.text)}</div>
       <div class="when eyebrow" style="margin-bottom:12px">${human(i.createdAt)} opgeschreven</div>
       <div class="acts">
@@ -1231,13 +1438,17 @@ function zwBind(){
   }));
 }
 
-/* --- de twee knopjes in het midden --- */
-$("#zwPlus").addEventListener("click", () => openSheet("pick"));
-$("#zwMinus").addEventListener("click", () => {
+/* --- de twee knopjes in het midden, en hun tweelingen op de telefoon --- */
+function zwToggleTrim(){
   zwTrim = !zwTrim;
   $("#zilverweide").classList.toggle("trim", zwTrim);
+  document.body.classList.toggle("trimming", zwTrim);
   toast(zwTrim ? "Tik op een kruisje om iets te verwijderen" : "Verwijderen staat uit");
-});
+}
+$("#zwPlus").addEventListener("click", () => openSheet("pick"));
+$("#zwPlusM").addEventListener("click", () => openSheet("pick"));
+$("#zwMinus").addEventListener("click", zwToggleTrim);
+$("#zwMinusM").addEventListener("click", zwToggleTrim);
 
 /* --- het blad om iets toe te voegen --- */
 function openSheet(view){
@@ -1295,6 +1506,65 @@ $$(".zw-tabs button").forEach(b => b.addEventListener("click", () => {
   $$(".zw-tabs button").forEach(x => x.classList.toggle("on", x === b));
   $$("#zilverweide .zw-col").forEach(c => c.classList.toggle("show", c.dataset.term === b.dataset.term));
 }));
+
+/* ============================================================
+   PROJECT AI
+   ============================================================ */
+let aiAt = 0;
+let aiDone = [];
+
+async function loadAI(){
+  try{
+    const snap = await getDoc(doc(db,"users",uid,"meta","ai"));
+    const d = snap.exists() ? snap.data() : {};
+    aiDone = Array.isArray(d.done) ? d.done : [];
+    aiAt = Number.isInteger(d.at) ? Math.min(d.at, LESSONS.length-1) : 0;
+  }catch(e){ aiDone=[]; aiAt=0; }
+  renderAI();
+}
+async function saveAI(){
+  try{
+    await setDoc(doc(db,"users",uid,"meta","ai"), { at: aiAt, done: aiDone }, {merge:true});
+  }catch(e){ /* offline, komt later goed */ }
+}
+
+function renderAI(){
+  const L = LESSONS[aiAt];
+  if(!L) return;
+  const klaar = aiDone.includes(aiAt);
+
+  $("#aiNr").textContent = `Les ${aiAt+1} van ${LESSONS.length} · ${aiDone.length} gedaan`;
+  $("#aiTitle").textContent = L.title;
+  $("#aiText").innerHTML = alinea(L.text);
+  $("#aiTask").innerHTML = alinea(L.task);
+
+  $("#aiDots").innerHTML = LESSONS.map((_,i) =>
+    `<button data-go="${i}" class="${aiDone.includes(i)?"done ":""}${i===aiAt?"now":""}"
+      aria-label="Les ${i+1}"></button>`).join("");
+  $$("#aiDots button").forEach(b => b.addEventListener("click", () => {
+    aiAt = +b.dataset.go; saveAI(); renderAI();
+  }));
+
+  $("#aiPrev").disabled = aiAt === 0;
+  $("#aiNext").disabled = aiAt === LESSONS.length-1;
+
+  const knop = $("#aiDone");
+  knop.textContent = klaar
+    ? (aiAt === LESSONS.length-1 ? "Alles gehad" : "Volgende les")
+    : "Gedaan, volgende";
+  knop.className = klaar ? "btn-plain" : "btn-gold";
+}
+const alinea = t => t.trim().split("\n").map(r=>`<p>${escapeHtml(r.trim())}</p>`).join("");
+
+$("#aiPrev").addEventListener("click", ()=>{ if(aiAt>0){ aiAt--; saveAI(); renderAI(); } });
+$("#aiNext").addEventListener("click", ()=>{ if(aiAt<LESSONS.length-1){ aiAt++; saveAI(); renderAI(); } });
+$("#aiDone").addEventListener("click", ()=>{
+  const was = aiDone.includes(aiAt);
+  if(!was){ aiDone.push(aiAt); toast(`Les ${aiAt+1} afgevinkt`); }
+  if(aiAt < LESSONS.length-1) aiAt++;
+  else if(!was) toast("Alle lessen gehad. Mooi.");
+  saveAI(); renderAI();
+});
 
 function escapeHtml(s){
   return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
