@@ -357,6 +357,28 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
   font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:9px;
 }
 
+/* ---------- slot: verplichte reservekopie ---------- */
+#slot{
+  position:fixed;inset:0;z-index:90;display:none;
+  background:var(--ink);overflow-y:auto;
+  padding:max(24px,env(safe-area-inset-top)) 24px max(30px,calc(env(safe-area-inset-bottom) + 20px));
+  align-items:center;justify-content:center;
+}
+#slot.open{display:flex}
+.slot-inner{width:min(460px,100%)}
+.slot-titel{
+  font-family:var(--display);font-weight:300;line-height:1.15;
+  font-size:clamp(1.7rem,6vw,2.4rem);color:var(--gold-bright);margin:10px 0 16px;
+}
+.slot-tekst{line-height:1.8;color:var(--bone-dim);font-size:.95rem;margin-bottom:8px}
+#slot .btn-gold{width:100%;margin-top:8px}
+.slot-later{
+  display:block;width:100%;margin-top:22px;padding:10px;
+  font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dim);
+}
+.slot-later:hover{color:var(--bone-dim)}
+.kluis-laatst{font-size:.8rem;color:var(--bone-dim);margin-top:16px;line-height:1.6}
+
 /* ---------- kluis ---------- */
 .kluis-intro{line-height:1.75;color:var(--bone-dim);font-size:.94rem;margin-bottom:24px;max-width:52ch}
 .kluis-cijfers{
@@ -404,6 +426,23 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 .ai-nav .step:hover:not(:disabled){border-color:var(--gold-dim);color:var(--gold)}
 .ai-nav .step:disabled{opacity:.25;cursor:default}
 .ai-nav .btn-gold{flex:1;margin:0}
+.ai-herhaal{
+  display:block;background:rgba(61,143,136,.14);border:1px solid var(--turquoise);
+  border-radius:10px;padding:11px 14px;margin-bottom:18px;
+  font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--turquoise);
+}
+.ai-extra{display:flex;gap:10px;margin-top:12px}
+.ai-extra button{
+  flex:1;padding:12px;border-radius:10px;border:1px solid var(--earth-3);
+  font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--bone-dim);
+  transition:border-color .2s,color .2s;
+}
+#aiKeep:hover{border-color:var(--turquoise);color:var(--turquoise)}
+#aiKeep.on{border-color:var(--turquoise);color:var(--turquoise);background:rgba(61,143,136,.12)}
+#aiDrop:hover{border-color:var(--cochineal);color:var(--cochineal)}
+.badge-goud{background:var(--gold) !important;color:#20170c !important}
+.ai-dots button.weg{display:none}
+.ai-dots button.keep{border-color:var(--turquoise)}
 .ai-nav .btn-plain{
   flex:1;border:1px solid var(--gold-dim);border-radius:var(--r);color:var(--gold);
   font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:500;
@@ -684,6 +723,7 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
     <div class="colside">
       <button class="quad" data-panel="ai">
         <span class="eyebrow tag">Dagelijkse les</span>
+        <span class="badge badge-goud" id="aiBadge">1</span>
         <h2>AI</h2>
         <p>Elke dag iets leren, in tien minuten.</p>
       </button>
@@ -768,21 +808,42 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
 <div class="panel" id="ai">
   <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>Project AI</h2></div>
   <div class="panel-body">
-    <div class="ai-top">
-      <span class="eyebrow" id="aiNr">Les 1 van 10</span>
-      <div class="ai-dots" id="aiDots"></div>
+
+    <div id="aiLes">
+      <div class="ai-top">
+        <span class="eyebrow" id="aiNr"></span>
+        <div class="ai-dots" id="aiDots"></div>
+      </div>
+      <div class="ai-herhaal" id="aiHerhaal" hidden>Herhaling van een les die je wilde bewaren</div>
+      <h3 class="ai-title" id="aiTitle"></h3>
+      <div class="ai-text" id="aiText"></div>
+      <div class="ai-task">
+        <span class="eyebrow">Probeer dit, vijf tot tien minuten</span>
+        <div id="aiTask"></div>
+      </div>
+      <div class="ai-nav">
+        <button class="step" id="aiPrev" aria-label="Vorige les">&larr;</button>
+        <button id="aiDone"></button>
+        <button class="step" id="aiNext" aria-label="Volgende les">&rarr;</button>
+      </div>
+      <div class="ai-extra">
+        <button id="aiKeep"></button>
+        <button id="aiDrop">Verwerpen</button>
+      </div>
     </div>
-    <h3 class="ai-title" id="aiTitle"></h3>
-    <div class="ai-text" id="aiText"></div>
-    <div class="ai-task">
-      <span class="eyebrow">Probeer dit, vijf tot tien minuten</span>
-      <div id="aiTask"></div>
+
+    <div id="aiKlaar" hidden>
+      <span class="eyebrow">Einde van de rij</span>
+      <h3 class="ai-title">Je bent er doorheen</h3>
+      <div class="ai-text" id="aiKlaarTekst"></div>
+      <div class="ai-task">
+        <span class="eyebrow">Vraag Claude om tien nieuwe</span>
+        <div id="aiVraag"></div>
+      </div>
+      <button class="btn-gold" id="aiKopieer" style="width:100%;margin-top:22px">Kopieer de vraag voor Claude</button>
+      <button class="btn-plain kluis-knop" id="aiTerug">Toch nog eens teruglezen</button>
     </div>
-    <div class="ai-nav">
-      <button class="step" id="aiPrev" aria-label="Vorige les">&larr;</button>
-      <button id="aiDone"></button>
-      <button class="step" id="aiNext" aria-label="Volgende les">&rarr;</button>
-    </div>
+
   </div>
 </div>
 
@@ -793,6 +854,7 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
     <div class="kluis-cijfers" id="kluisCijfers"></div>
     <button class="btn-gold" id="kluisSave">Bewaren of versturen</button>
     <button class="btn-plain kluis-knop" id="kluisCopy">Kopieer als leesbare tekst</button>
+    <div class="kluis-laatst" id="kluisLaatst"></div>
     <div class="kluis-scheiding"></div>
     <span class="eyebrow">Terugzetten</span>
     <p class="kluis-uitleg">Kies een eerder bewaard bestand. Wat er al staat blijft staan, wat ontbreekt komt terug. Dubbel importeren levert geen dubbele regels op.</p>
@@ -839,6 +901,18 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
       </div>
     </div>
   </div>
+
+<div id="slot">
+  <div class="slot-inner">
+    <span class="eyebrow">Elke tien dagen</span>
+    <h2 class="slot-titel">Tijd voor een reservekopie</h2>
+    <p class="slot-tekst" id="slotTekst"></p>
+    <div class="kluis-cijfers" id="slotCijfers"></div>
+    <button class="btn-gold" id="slotSave">Bewaren of versturen</button>
+    <button class="btn-plain kluis-knop" id="slotCopy">Kopieer als leesbare tekst</button>
+    <button class="slot-later" id="slotLater">Uitstellen tot morgen</button>
+  </div>
+</div>
 
 <div class="sheet" id="snapSheet">
   <div class="sheet-inner">
@@ -1187,6 +1261,7 @@ async function start(){
     items = snap.docs.map(d=>({id:d.id, ...d.data()}));
     renderCounts();
     renderInspiration();
+    toonCijfers();
   }, err => toast("Verbinding hapert: "+err.code));
 
   // luister live mee met elk bord
@@ -1207,12 +1282,14 @@ async function start(){
   }catch(e){ /* offline, dan begint de dag gewoon opnieuw */ }
 
   loadAI();
+  laadKluis();
 }
 function stop(){
   if(unsub) unsub();
   BOARDS.forEach(b => { if(bs[b.id].unsub) bs[b.id].unsub(); bs[b.id].data = []; });
   items=[]; fixShown=[];
   document.body.classList.remove("lit");
+  $("#slot").classList.remove("open");
   $("#app").classList.remove("on");
   $("#gate").style.display="grid";
   closePanels();
@@ -1283,6 +1360,7 @@ $$(".quad").forEach(q => q.addEventListener("click", () => {
   const id = q.dataset.panel;
   if(id === "leeg"){ toast("Deze plek is nog vrij"); return; }
   if(id === "fix") pickFix();
+  if(id === "ai"){ openAI(); return; }
   openPanel(id);
 }));
 
@@ -1613,61 +1691,188 @@ $("#zwCatSave").addEventListener("click", async () => {
 
 /* ============================================================
    PROJECT AI
+   Een les kan drie dingen zijn: gedaan, bewaard of verworpen.
+   Verworpen lessen verdwijnen uit beeld maar blijven bewaard,
+   zodat ze in de reservekopie meegaan.
    ============================================================ */
+const HERHAAL_DAGEN = 5;
+
 let aiAt = 0;
-let aiDone = [];
+let aiDone = [];        // afgevinkt
+let aiWeg = [];         // verworpen, zie je niet meer
+let aiBewaard = [];     // wil je nog eens terugzien
+let aiHerhaalDatum = null;
+let aiWijzer = 0;       // welke bewaarde les is aan de beurt
+let aiHerhaling = null; // staat er nu een herhaling op het scherm
+let aiBladeren = false; // teruglezen terwijl je eigenlijk klaar bent
+
+const actieveLessen = () => LESSONS.map((_,i)=>i).filter(i => !aiWeg.includes(i));
+const herhalingKlaar = () =>
+  aiBewaard.length > 0 && (!aiHerhaalDatum || dagenSinds(aiHerhaalDatum) >= HERHAAL_DAGEN);
 
 async function loadAI(){
   try{
-    const snap = await getDoc(doc(db,"users",uid,"meta","ai"));
-    const d = snap.exists() ? snap.data() : {};
-    aiDone = Array.isArray(d.done) ? d.done : [];
-    aiAt = Number.isInteger(d.at) ? Math.min(d.at, LESSONS.length-1) : 0;
-  }catch(e){ aiDone=[]; aiAt=0; }
-  renderAI();
+    const s = await getDoc(doc(db,"users",uid,"meta","ai"));
+    const d = s.exists() ? s.data() : {};
+    aiDone    = Array.isArray(d.done)     ? d.done     : [];
+    aiWeg     = Array.isArray(d.weg)      ? d.weg      : [];
+    aiBewaard = Array.isArray(d.bewaard)  ? d.bewaard  : [];
+    aiHerhaalDatum = d.herhaald || null;
+    aiWijzer  = Number.isInteger(d.wijzer) ? d.wijzer : 0;
+    aiAt      = Number.isInteger(d.at) ? Math.min(d.at, LESSONS.length-1) : 0;
+  }catch(e){ aiDone=[]; aiWeg=[]; aiBewaard=[]; aiAt=0; }
+  renderAI(); aiBadge();
 }
 async function saveAI(){
   try{
-    await setDoc(doc(db,"users",uid,"meta","ai"), { at: aiAt, done: aiDone }, {merge:true});
+    await setDoc(doc(db,"users",uid,"meta","ai"),
+      { at: aiAt, done: aiDone, weg: aiWeg, bewaard: aiBewaard,
+        herhaald: aiHerhaalDatum, wijzer: aiWijzer }, {merge:true});
   }catch(e){ /* offline, komt later goed */ }
 }
 
-function renderAI(){
-  const L = LESSONS[aiAt];
-  if(!L) return;
-  const klaar = aiDone.includes(aiAt);
+function aiBadge(){
+  const b = $("#aiBadge");
+  b.classList.toggle("on", herhalingKlaar());
+}
 
-  $("#aiNr").textContent = `Les ${aiAt+1} van ${LESSONS.length} · ${aiDone.length} gedaan`;
+/* --- het paneel openen: eerst kijken of er een herhaling klaarstaat --- */
+function openAI(){
+  if(herhalingKlaar()) aiHerhaling = aiBewaard[aiWijzer % aiBewaard.length];
+  aiBladeren = false;
+  renderAI();
+  openPanel("ai");
+}
+
+function renderAI(){
+  const act = actieveLessen();
+  if(aiHerhaling !== null && LESSONS[aiHerhaling]) return toonLes(aiHerhaling, true);
+  if(!act.length) return toonKlaar("Je hebt alle lessen verworpen. Tijd voor nieuwe.");
+  if(!aiBladeren && act.every(i => aiDone.includes(i)))
+    return toonKlaar(`Je hebt alle ${act.length} lessen afgerond. Tijd voor nieuwe.`);
+  if(!act.includes(aiAt)) aiAt = act.find(i => !aiDone.includes(i)) ?? act[0];
+  toonLes(aiAt, false);
+}
+
+function toonLes(i, isHerhaling){
+  const L = LESSONS[i];
+  $("#aiLes").hidden = false;
+  $("#aiKlaar").hidden = true;
+  $("#aiHerhaal").hidden = !isHerhaling;
+
+  const act = actieveLessen();
+  $("#aiNr").textContent = isHerhaling
+    ? `Bewaarde les ${i+1}`
+    : `Les ${act.indexOf(i)+1} van ${act.length} · ${aiDone.filter(x=>act.includes(x)).length} gedaan`;
   $("#aiTitle").textContent = L.title;
   $("#aiText").innerHTML = alinea(L.text);
   $("#aiTask").innerHTML = alinea(L.task);
 
-  $("#aiDots").innerHTML = LESSONS.map((_,i) =>
-    `<button data-go="${i}" class="${aiDone.includes(i)?"done ":""}${i===aiAt?"now":""}"
-      aria-label="Les ${i+1}"></button>`).join("");
+  $("#aiDots").innerHTML = LESSONS.map((_,n) =>
+    `<button data-go="${n}" class="${aiWeg.includes(n)?"weg":""} ${aiDone.includes(n)?"done":""} ${aiBewaard.includes(n)?"keep":""} ${n===i?"now":""}"
+      aria-label="Les ${n+1}"></button>`).join("");
   $$("#aiDots button").forEach(b => b.addEventListener("click", () => {
-    aiAt = +b.dataset.go; saveAI(); renderAI();
+    aiHerhaling = null; aiBladeren = true; aiAt = +b.dataset.go; saveAI(); renderAI();
   }));
 
-  $("#aiPrev").disabled = aiAt === 0;
-  $("#aiNext").disabled = aiAt === LESSONS.length-1;
+  $("#aiPrev").disabled = isHerhaling || act.indexOf(i) <= 0;
+  $("#aiNext").disabled = isHerhaling || act.indexOf(i) >= act.length-1;
 
   const knop = $("#aiDone");
-  knop.textContent = klaar
-    ? (aiAt === LESSONS.length-1 ? "Alles gehad" : "Volgende les")
-    : "Gedaan, volgende";
-  knop.className = klaar ? "btn-plain" : "btn-gold";
+  if(isHerhaling){
+    knop.textContent = "Gezien, terug naar de lessen";
+    knop.className = "btn-gold";
+  }else{
+    const klaar = aiDone.includes(i);
+    knop.textContent = klaar
+      ? (act.indexOf(i) === act.length-1 ? "Naar het overzicht" : "Volgende les")
+      : "Gedaan, volgende";
+    knop.className = klaar ? "btn-plain" : "btn-gold";
+  }
+
+  const keep = $("#aiKeep");
+  keep.textContent = aiBewaard.includes(i) ? "Bewaard" : "Bewaar voor later";
+  keep.classList.toggle("on", aiBewaard.includes(i));
+  $("#aiDrop").hidden = isHerhaling;
+  aiBadge();
 }
+
+function toonKlaar(regel){
+  $("#aiLes").hidden = true;
+  $("#aiKlaar").hidden = false;
+  $("#aiKlaarTekst").innerHTML = alinea(
+    `${regel || "Je bent door de lessen heen."}
+Van de ${LESSONS.length} lessen heb je er ${aiDone.length} afgevinkt, ${aiBewaard.length} bewaard en ${aiWeg.length} verworpen.
+Maak een nieuwe reeks met Claude. Neem er je reservekopie uit de kluis bij, want daarin staat wat je goed vond en wat niet.`);
+  $("#aiVraag").innerHTML = alinea(NIEUWE_LESSEN_VRAAG);
+}
+
+const NIEUWE_LESSEN_VRAAG =
+`Ik gebruik een zelfgebouwde app die Inti heet, met daarin korte lessen over werken met Claude.
+Ik ben door mijn lessen heen en wil tien nieuwe.
+Vorm per les: een titel, vijf tot acht regels uitleg in gewoon Nederlands zonder jargon, en een opdracht die ik in vijf tot tien minuten kan doen.
+Ik voeg mijn reservekopie uit Inti toe. Daarin zie je per les of ik hem heb afgerond, bewaard of verworpen.
+Kijk daar eerst naar, vertel me wat je eruit opmaakt, en lever de tien nieuwe lessen aan in hetzelfde formaat als de LESSONS-lijst in mijn bestand.`;
+
 const alinea = t => t.trim().split("\n").map(r=>`<p>${escapeHtml(r.trim())}</p>`).join("");
 
-$("#aiPrev").addEventListener("click", ()=>{ if(aiAt>0){ aiAt--; saveAI(); renderAI(); } });
-$("#aiNext").addEventListener("click", ()=>{ if(aiAt<LESSONS.length-1){ aiAt++; saveAI(); renderAI(); } });
+/* --- knoppen --- */
+$("#aiPrev").addEventListener("click", ()=>{
+  const act = actieveLessen(), n = act.indexOf(aiAt);
+  if(n > 0){ aiAt = act[n-1]; aiBladeren = true; saveAI(); renderAI(); }
+});
+$("#aiNext").addEventListener("click", ()=>{
+  const act = actieveLessen(), n = act.indexOf(aiAt);
+  if(n < act.length-1){ aiAt = act[n+1]; aiBladeren = true; saveAI(); renderAI(); }
+});
+
 $("#aiDone").addEventListener("click", ()=>{
-  const was = aiDone.includes(aiAt);
-  if(!was){ aiDone.push(aiAt); toast(`Les ${aiAt+1} afgevinkt`); }
-  if(aiAt < LESSONS.length-1) aiAt++;
-  else if(!was) toast("Alle lessen gehad. Mooi.");
+  if(aiHerhaling !== null){
+    aiHerhaalDatum = today();
+    aiWijzer = (aiWijzer + 1) % Math.max(1, aiBewaard.length);
+    aiHerhaling = null;
+    saveAI(); renderAI();
+    toast("Tot over vijf dagen");
+    return;
+  }
+  const act = actieveLessen(), n = act.indexOf(aiAt);
+  if(!aiDone.includes(aiAt)){ aiDone.push(aiAt); toast(`Les ${aiAt+1} afgevinkt`); }
+  if(n < act.length-1){ aiAt = act[n+1]; aiBladeren = true; }
+  else aiBladeren = false;
   saveAI(); renderAI();
+});
+
+$("#aiKeep").addEventListener("click", ()=>{
+  const i = aiHerhaling !== null ? aiHerhaling : aiAt;
+  if(aiBewaard.includes(i)){
+    aiBewaard = aiBewaard.filter(x => x !== i);
+    toast("Niet meer bewaard");
+  }else{
+    aiBewaard.push(i);
+    toast(`Bewaard, komt over ${HERHAAL_DAGEN} dagen terug`);
+  }
+  saveAI(); renderAI();
+});
+
+$("#aiDrop").addEventListener("click", ()=>{
+  if(aiHerhaling !== null) return;
+  const i = aiAt;
+  if(!aiWeg.includes(i)) aiWeg.push(i);
+  aiBewaard = aiBewaard.filter(x => x !== i);
+  aiDone    = aiDone.filter(x => x !== i);
+  const act = actieveLessen();
+  aiAt = act.find(x => !aiDone.includes(x)) ?? act[0] ?? 0;
+  aiBladeren = false;
+  saveAI(); renderAI();
+  toast("Verworpen. Hij blijft wel in je reservekopie staan.");
+});
+
+$("#aiTerug").addEventListener("click", ()=>{ aiBladeren = true; renderAI(); });
+$("#aiKopieer").addEventListener("click", async ()=>{
+  try{
+    await navigator.clipboard.writeText(NIEUWE_LESSEN_VRAAG);
+    toast("Gekopieerd, plak hem bij Claude");
+  }catch(e){ toast("Kopieren lukt niet in deze browser"); }
 });
 
 /* ============================================================
@@ -1680,6 +1885,14 @@ async function alles(){
   const snapT = await getDocs(query(collection(db,"users",uid,"thoth"), orderBy("createdAt","asc")));
   uit.thoth = snapT.docs.map(d => ({id:d.id, ...d.data()}));
   for(const b of BOARDS) uit[b.col] = bs[b.id].data;
+  uit.lessen = LESSONS.map((l,i) => ({
+    nr: i+1,
+    titel: l.title,
+    status: aiWeg.includes(i) ? "verworpen" : aiDone.includes(i) ? "gedaan" : "open",
+    bewaard: aiBewaard.includes(i),
+    tekst: l.text,
+    opdracht: l.task
+  }));
   for(const m of METAS){
     const s = await getDoc(doc(db,"users",uid,"meta",m));
     if(s.exists()) uit.meta[m] = s.data();
@@ -1709,27 +1922,61 @@ function alsTekst(d){
     });
     r.push("");
   }
-  if(d.meta.ai) r.push(`AI-lessen gedaan: ${(d.meta.ai.done||[]).length} van ${LESSONS.length}`);
+  if(d.lessen && d.lessen.length){
+    r.push("AI-LESSEN");
+    d.lessen.forEach(l => r.push(`- ${l.nr}. ${l.titel} (${l.status}${l.bewaard ? ", bewaard" : ""})`));
+    r.push("");
+  }
   return r.join("\n");
 }
 
-function toonKluis(){
-  const geh = items.filter(i=>i.kind==="geheugen").length;
-  const ins = items.filter(i=>i.kind==="inspiratie").length;
-  const bord = BOARDS.map(b => todosVan(b.id).length).reduce((a,c)=>a+c,0);
-  $("#kluisCijfers").innerHTML = `
-    <div><b>${geh}</b><span>niet vergeten</span></div>
-    <div><b>${ins}</b><span>inspiratie</span></div>
-    <div><b>${bord}</b><span>to do's</span></div>
-    <div><b>${aiDone.length}</b><span>lessen gedaan</span></div>`;
+/* --- hoe vaak je een kopie moet maken --- */
+const BACKUP_DAGEN = 10;
+let laatsteKopie = null;   // 'JJJJ-MM-DD'
+let kopieUitstel = null;
+
+const dagenSinds = d => Math.round((new Date(today()) - new Date(d)) / 86400000);
+
+async function laadKluis(){
+  try{
+    const s = await getDoc(doc(db,"users",uid,"meta","kluis"));
+    const d = s.exists() ? s.data() : {};
+    laatsteKopie = d.laatste || null;
+    kopieUitstel = d.uitstel || null;
+    if(!laatsteKopie){                      // eerste keer: de klok begint nu
+      laatsteKopie = today();
+      await setDoc(doc(db,"users",uid,"meta","kluis"), {laatste: laatsteKopie}, {merge:true});
+    }
+  }catch(e){ laatsteKopie = today(); }
+  checkSlot();
 }
 
-$("#kluisBtn").addEventListener("click", () => {
-  if(!document.body.classList.contains("lit")){ toast("Begin bij de zon"); return; }
-  toonKluis(); openPanel("kluis");
-});
+function kopieNodig(){
+  if(!laatsteKopie) return false;
+  if(kopieUitstel && kopieUitstel > today()) return false;
+  return dagenSinds(laatsteKopie) >= BACKUP_DAGEN;
+}
 
-$("#kluisSave").addEventListener("click", async () => {
+function checkSlot(){
+  const nodig = kopieNodig();
+  $("#slot").classList.toggle("open", nodig);
+  if(nodig){
+    const n = dagenSinds(laatsteKopie);
+    $("#slotTekst").textContent =
+      `Je laatste kopie is ${n} dagen oud. Bewaar hem even, dan kun je verder. Het duurt tien seconden.`;
+  }
+  toonCijfers();
+}
+
+async function kopieGelukt(){
+  laatsteKopie = today(); kopieUitstel = null;
+  try{ await setDoc(doc(db,"users",uid,"meta","kluis"), {laatste: laatsteKopie, uitstel: null}, {merge:true}); }
+  catch(e){}
+  checkSlot();
+}
+
+/* --- de twee manieren om er een kopie uit te krijgen --- */
+async function kopieBestand(){
   toast("Bezig met inpakken...");
   try{
     const d = await alles();
@@ -1744,14 +1991,54 @@ $("#kluisSave").addEventListener("click", async () => {
       setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
       toast("Bestand opgeslagen");
     }
-  }catch(e){ if(e.name !== "AbortError") toast("Inpakken lukt niet"); }
-});
-
-$("#kluisCopy").addEventListener("click", async () => {
+    await kopieGelukt();
+  }catch(e){
+    if(e.name === "AbortError") toast("Afgebroken, er is niets bewaard");
+    else toast("Inpakken lukt niet");
+  }
+}
+async function kopieTekst(){
   try{
     await navigator.clipboard.writeText(alsTekst(await alles()));
-    toast("Op je klembord gezet");
+    toast("Op je klembord gezet, plak hem ergens veilig");
+    await kopieGelukt();
   }catch(e){ toast("Kopieren lukt niet in deze browser"); }
+}
+
+function toonCijfers(){
+  const geh  = items.filter(i=>i.kind==="geheugen").length;
+  const ins  = items.filter(i=>i.kind==="inspiratie").length;
+  const bord = BOARDS.map(b => todosVan(b.id).length).reduce((a,c)=>a+c,0);
+  const html = `
+    <div><b>${geh}</b><span>niet vergeten</span></div>
+    <div><b>${ins}</b><span>inspiratie</span></div>
+    <div><b>${bord}</b><span>to do's</span></div>
+    <div><b>${aiDone.length}</b><span>lessen gedaan</span></div>
+    <div><b>${aiBewaard.length}</b><span>bewaard</span></div>
+    <div><b>${aiWeg.length}</b><span>verworpen</span></div>`;
+  $("#kluisCijfers").innerHTML = html;
+  $("#slotCijfers").innerHTML  = html;
+  if(laatsteKopie){
+    const n = dagenSinds(laatsteKopie);
+    $("#kluisLaatst").textContent = n === 0
+      ? "Je laatste kopie is van vandaag."
+      : `Je laatste kopie is ${n} ${n===1?"dag":"dagen"} oud. Over ${Math.max(0,BACKUP_DAGEN-n)} dagen vraagt Inti er weer om.`;
+  }
+}
+
+$("#kluisBtn").addEventListener("click", () => {
+  if(!document.body.classList.contains("lit")){ toast("Begin bij de zon"); return; }
+  toonCijfers(); openPanel("kluis");
+});
+$("#kluisSave").addEventListener("click", kopieBestand);
+$("#kluisCopy").addEventListener("click", kopieTekst);
+$("#slotSave").addEventListener("click", kopieBestand);
+$("#slotCopy").addEventListener("click", kopieTekst);
+$("#slotLater").addEventListener("click", async () => {
+  kopieUitstel = tomorrow();
+  try{ await setDoc(doc(db,"users",uid,"meta","kluis"), {uitstel: kopieUitstel}, {merge:true}); }catch(e){}
+  checkSlot();
+  toast("Goed, morgen vraag ik het opnieuw");
 });
 
 $("#kluisFile").addEventListener("change", async e => {
@@ -1776,7 +2063,7 @@ $("#kluisFile").addEventListener("change", async e => {
       if(d.meta && d.meta[m]) await setDoc(doc(db,"users",uid,"meta",m), d.meta[m], {merge:true});
     }
     toast(`${n} regels teruggezet`);
-    loadAI(); toonKluis();
+    loadAI(); toonCijfers();
   }catch(err){ toast("Dit bestand kan ik niet lezen"); }
   e.target.value = "";
 });
