@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14100b">
+<title>Inti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..800&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   INTI  ·  versie 1
+   Kleuren en letters staan hieronder. Pas gerust aan.
+   ============================================================ */
+:root{
+  --ink:#14100b;
+  --earth:#1d1610;
+  --earth-2:#291f16;
+  --earth-3:#372a1d;
+  --gold:#d4a24c;
+  --gold-bright:#f6e0a6;
+  --gold-dim:#7d6134;
+  --cochineal:#a8392c;
+  --turquoise:#3d8f88;
+  --bone:#e9ddc6;
+  --bone-dim:#9c8f78;
+
+  --display:"Fraunces",Georgia,serif;
+  --ui:"Space Grotesk",system-ui,-apple-system,sans-serif;
+
+  --r:14px;
+  --sun:clamp(150px,25vmin,250px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--ink);
+  color:var(--bone);
+  font-family:var(--ui);
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+/* zachte gloed achter alles, wordt sterker als de zon brandt */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(circle at 50% 45%,rgba(212,162,76,.13),transparent 62%);
+  opacity:.35;transition:opacity 2.2s ease;
+}
+body.lit::before{opacity:1}
+
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer;font-size:inherit}
+input,textarea{font-family:inherit;font-size:16px}
+:focus-visible{outline:2px solid var(--gold-bright);outline-offset:3px;border-radius:4px}
+
+.eyebrow{
+  font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--gold-dim);font-weight:500;
+}
+
+/* ---------- inlogscherm ---------- */
+#gate{
+  position:fixed;inset:0;z-index:100;display:grid;place-items:center;
+  background:var(--ink);padding:24px;text-align:center;
+}
+#gate .mark{
+  font-family:var(--display);font-size:clamp(3rem,14vw,5rem);
+  font-weight:300;letter-spacing:.3em;text-indent:.3em;
+  color:var(--gold);line-height:1;
+}
+#gate .sub{margin-top:14px;color:var(--bone-dim);font-size:.85rem;letter-spacing:.06em}
+#gate form{margin-top:38px;display:flex;flex-direction:column;gap:12px;width:min(300px,80vw)}
+#gate input{
+  background:var(--earth);border:1px solid var(--earth-3);color:var(--bone);
+  padding:14px 16px;border-radius:var(--r);text-align:center;letter-spacing:.14em;
+}
+#gate input:focus{border-color:var(--gold-dim);outline:none}
+.btn-gold{
+  background:linear-gradient(180deg,var(--gold),#b8873a);color:#20170c;
+  padding:14px;border-radius:var(--r);font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;font-size:.75rem;transition:filter .2s;
+}
+.btn-gold:hover{filter:brightness(1.12)}
+.note{margin-top:18px;font-size:.78rem;color:var(--cochineal);min-height:1.2em;line-height:1.5}
+.setup{
+  margin-top:28px;max-width:440px;font-size:.8rem;line-height:1.7;
+  color:var(--bone-dim);background:var(--earth);padding:18px 22px;
+  border-radius:var(--r);border:1px solid var(--earth-3);text-align:left;
+}
+.setup code{color:var(--gold);font-size:.8em}
+
+/* ---------- hoofdscherm ---------- */
+#app{display:none;position:relative;z-index:1;min-height:100%;
+  padding:clamp(16px,3vw,32px);display:none;flex-direction:column}
+#app.on{display:flex}
+
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:clamp(12px,2vh,24px)}
+.topbar .date{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-dim)}
+.topbar button{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim)}
+.topbar button:hover{color:var(--gold)}
+
+/* het plein: vier kwadranten met de zon in het midden */
+.plaza{
+  flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  position:relative;align-content:stretch;
+  min-height:min(74vh,640px);
+}
+.quad{
+  position:relative;overflow:hidden;
+  background:linear-gradient(155deg,var(--earth-2),var(--earth));
+  border:1px solid var(--earth-3);border-radius:var(--r);
+  padding:clamp(16px,2.4vw,28px);
+  display:flex;flex-direction:column;justify-content:flex-end;gap:6px;
+  text-align:left;transition:border-color .35s,transform .35s,opacity .8s,filter .8s;
+  opacity:.34;filter:saturate(.25);
+}
+body.lit .quad{opacity:1;filter:none}
+body.lit .quad:hover{border-color:var(--gold-dim);transform:translateY(-2px)}
+/* de hoek die naar de zon wijst wordt ruim afgerond */
+.quad:nth-child(1){border-bottom-right-radius:52%}
+.quad:nth-child(2){border-bottom-left-radius:52%}
+.quad:nth-child(3){border-top-right-radius:52%}
+.quad:nth-child(4){border-top-left-radius:52%}
+.quad h2{
+  font-family:var(--display);font-weight:400;
+  font-size:clamp(1.1rem,2.6vw,1.7rem);letter-spacing:.03em;color:var(--bone);
+}
+.quad p{font-size:.78rem;color:var(--bone-dim);line-height:1.5;max-width:24ch}
+.quad .tag{
+  position:absolute;top:clamp(14px,2vw,22px);left:clamp(16px,2.4vw,28px);
+}
+.quad .badge{
+  position:absolute;top:clamp(12px,2vw,20px);right:clamp(14px,2.2vw,24px);
+  min-width:26px;height:26px;padding:0 8px;border-radius:13px;
+  background:var(--cochineal);color:#fff;font-size:.72rem;font-weight:500;
+  display:none;place-items:center;
+}
+.quad .badge.on{display:grid}
+
+/* de zon */
+.sunwrap{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:var(--sun);height:var(--sun);z-index:5;
+}
+.sunwrap::before{ /* stralenkrans, draait heel traag */
+  content:"";position:absolute;inset:-42%;border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,
+    rgba(212,162,76,.30) 0deg 2deg, transparent 2deg 9deg);
+  -webkit-mask:radial-gradient(circle,transparent 44%,#000 50%,transparent 82%);
+  mask:radial-gradient(circle,transparent 44%,#000 50%,transparent 82%);
+  animation:spin 150s linear infinite;
+  opacity:0;transition:opacity 2s ease;
+}
+body.lit .sunwrap::before{opacity:1}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sunbtn{
+  position:absolute;inset:0;border-radius:50%;overflow:hidden;
+  border:2px solid var(--gold-dim);background:var(--earth);
+  box-shadow:0 0 0 8px var(--ink), 0 0 44px rgba(212,162,76,0);
+  transition:box-shadow 1.4s ease,border-color 1.4s ease,transform .4s ease;
+  cursor:pointer;display:grid;place-items:center;
+}
+body.lit .sunbtn{
+  border-color:var(--gold);
+  box-shadow:0 0 0 8px var(--ink), 0 0 60px rgba(212,162,76,.42);
+}
+.sunbtn:hover{transform:scale(1.035)}
+.sunbtn img{
+  width:100%;height:100%;object-fit:cover;object-position:center 42%;
+  filter:grayscale(.75) brightness(.5);transition:filter 1.8s ease;
+}
+body.lit .sunbtn img{filter:none}
+.sunbtn .fallback{
+  font-family:var(--display);color:var(--gold);font-size:1.4rem;letter-spacing:.24em;
+  text-indent:.24em;
+}
+/* zachte klop zolang de dag nog niet begonnen is */
+.sunbtn::after{
+  content:"";position:absolute;inset:-2px;border-radius:50%;
+  border:1px solid var(--gold);animation:pulse 3.4s ease-out infinite;
+}
+body.lit .sunbtn::after{animation:none;opacity:0}
+@keyframes pulse{
+  0%{transform:scale(1);opacity:.55}
+  70%{transform:scale(1.22);opacity:0}
+  100%{opacity:0}
+}
+.hint{
+  position:absolute;left:50%;top:calc(50% + var(--sun) * .62);
+  transform:translateX(-50%);z-index:5;white-space:nowrap;
+  font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);
+  transition:opacity .6s;
+}
+body.lit .hint{opacity:0;pointer-events:none}
+.hint.knock{animation:knock .5s ease}
+@keyframes knock{25%{transform:translateX(-50%) translateY(-4px)}75%{transform:translateX(-50%) translateY(3px)}}
+
+/* ---------- paneel dat over alles heen schuift ---------- */
+.panel{
+  position:fixed;inset:0;z-index:50;background:var(--ink);
+  display:flex;flex-direction:column;
+  padding:clamp(18px,3.4vw,40px);
+  transform:translateY(100%);transition:transform .42s cubic-bezier(.3,.8,.3,1);
+  overflow-y:auto;
+}
+.panel.open{transform:translateY(0)}
+.panel-head{display:flex;align-items:center;gap:16px;margin-bottom:22px;flex-shrink:0}
+.panel-head h2{
+  font-family:var(--display);font-weight:400;letter-spacing:.02em;
+  font-size:clamp(1.4rem,4.5vw,2.1rem);color:var(--gold-bright);
+}
+.back{font-size:1.5rem;line-height:1;color:var(--bone-dim);padding:4px 10px 8px}
+.back:hover{color:var(--gold)}
+.panel-body{max-width:720px;width:100%;margin:0 auto;flex:1}
+
+/* legende */
+#legend .panel-body{display:flex;flex-direction:column;justify-content:center;text-align:left}
+.legend-title{
+  font-family:var(--display);font-weight:300;font-size:clamp(1.7rem,6vw,2.8rem);
+  color:var(--gold-bright);line-height:1.15;margin:10px 0 22px;
+}
+.legend-text{font-size:1.02rem;line-height:1.95;color:var(--bone);max-width:56ch}
+.legend-text p{margin-bottom:1em}
+.rule{height:1px;background:linear-gradient(90deg,var(--gold-dim),transparent);margin:30px 0}
+
+/* thoth */
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:8px}
+.choice button{
+  border:1px solid var(--earth-3);border-radius:var(--r);padding:22px 18px;
+  text-align:left;transition:border-color .25s,background .25s;
+  background:var(--earth);
+}
+.choice button:hover{border-color:var(--gold-dim)}
+.choice button.sel{border-color:var(--gold);background:var(--earth-2)}
+.choice strong{display:block;font-family:var(--display);font-weight:400;font-size:1.15rem;margin-bottom:5px}
+.choice span{font-size:.76rem;color:var(--bone-dim);line-height:1.5}
+.choice .insp strong{color:var(--turquoise)}
+.choice .geh strong{color:var(--gold)}
+
+textarea.entry{
+  width:100%;min-height:130px;resize:vertical;margin-top:18px;
+  background:var(--earth);border:1px solid var(--earth-3);color:var(--bone);
+  border-radius:var(--r);padding:16px;line-height:1.6;
+}
+textarea.entry:focus{border-color:var(--gold-dim);outline:none}
+
+.list{margin-top:34px;display:flex;flex-direction:column;gap:9px}
+.item{
+  display:flex;gap:14px;align-items:flex-start;
+  background:var(--earth);border:1px solid var(--earth-3);
+  border-left:2px solid var(--turquoise);
+  border-radius:var(--r);padding:15px 16px;
+  transition:opacity .35s,transform .35s;
+}
+.item.gone{opacity:0;transform:translateX(24px)}
+.item .txt{flex:1;line-height:1.6;font-size:.92rem;white-space:pre-wrap;word-break:break-word}
+.item .when{font-size:.68rem;color:var(--bone-dim);letter-spacing:.08em;margin-top:6px}
+.item .kill{color:var(--bone-dim);font-size:1.1rem;padding:0 4px;line-height:1}
+.item .kill:hover{color:var(--cochineal)}
+
+/* fix shit */
+.task{
+  background:var(--earth);border:1px solid var(--earth-3);
+  border-left:2px solid var(--cochineal);
+  border-radius:var(--r);padding:18px 18px 14px;margin-bottom:12px;
+  transition:opacity .35s,transform .35s;
+}
+.task.gone{opacity:0;transform:translateX(24px)}
+.task .txt{line-height:1.6;margin-bottom:14px;white-space:pre-wrap;word-break:break-word}
+.task .acts{display:flex;gap:10px}
+.task .acts button{
+  flex:1;padding:11px;border-radius:10px;font-size:.72rem;
+  letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--earth-3);
+  transition:border-color .2s,color .2s;
+}
+.act-done{color:var(--gold)}
+.act-done:hover{border-color:var(--gold);}
+.act-later{color:var(--bone-dim)}
+.act-later:hover{border-color:var(--bone-dim)}
+
+.counter{
+  display:flex;align-items:baseline;gap:12px;margin-bottom:26px;
+  padding-bottom:20px;border-bottom:1px solid var(--earth-3);
+}
+.counter .n{font-family:var(--display);font-size:2.6rem;font-weight:300;color:var(--gold)}
+.counter .lbl{font-size:.78rem;color:var(--bone-dim);line-height:1.4}
+.counter .refresh{
+  margin-left:auto;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--bone-dim);border:1px solid var(--earth-3);padding:9px 14px;border-radius:9px;
+}
+.counter .refresh:hover{color:var(--gold);border-color:var(--gold-dim)}
+
+.empty{
+  text-align:center;padding:56px 20px;color:var(--bone-dim);
+  line-height:1.8;font-size:.92rem;
+}
+.empty .big{font-family:var(--display);font-size:1.3rem;color:var(--gold-dim);display:block;margin-bottom:10px}
+
+.soon{
+  border:1px dashed var(--earth-3);border-radius:var(--r);
+  padding:34px 26px;line-height:1.85;color:var(--bone-dim);font-size:.92rem;
+}
+.soon h3{font-family:var(--display);font-weight:400;color:var(--gold);font-size:1.2rem;margin-bottom:12px}
+.soon ul{margin:14px 0 0 18px}
+.soon li{margin-bottom:7px}
+
+.toast{
+  position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);
+  background:var(--earth-3);color:var(--bone);padding:12px 22px;border-radius:24px;
+  font-size:.82rem;z-index:200;opacity:0;transition:.3s;pointer-events:none;
+  border:1px solid var(--gold-dim);
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- telefoon ---------- */
+@media (max-width:720px){
+  :root{--sun:clamp(140px,42vw,200px)}
+  .plaza{min-height:0;gap:10px;padding-top:calc(var(--sun) + 54px)}
+  .sunwrap{top:calc(var(--sun) / 2);transform:translateX(-50%)}
+  .hint{top:calc(var(--sun) + 14px)}
+  .quad{min-height:118px;justify-content:flex-end;border-radius:var(--r) !important}
+  .quad p{display:none}
+  .choice{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     INLOGSCHERM
+     ============================================================ -->
+<div id="gate">
+  <div>
+    <div class="mark">INTI</div>
+    <div class="sub">De zon raakt nooit op</div>
+    <form id="loginForm">
+      <input id="pw" type="password" placeholder="wachtwoord" autocomplete="current-password" required>
+      <button class="btn-gold" type="submit">Open de dag</button>
+    </form>
+    <div class="note" id="gateNote"></div>
+    <div class="setup" id="gateSetup" style="display:none">
+      <strong style="color:var(--gold)">Nog even instellen</strong><br>
+      Open dit bestand en zoek bovenaan het blok <code>CONFIG</code>.
+      Vul daar je Firebase-gegevens en je e-mailadres in, sla op, en laad de pagina opnieuw.
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     HOOFDSCHERM
+     ============================================================ -->
+<div id="app">
+  <div class="topbar">
+    <div class="date" id="today"></div>
+    <button id="logout">Sluiten</button>
+  </div>
+
+  <div class="plaza">
+    <button class="quad" data-panel="zilverweide">
+      <span class="eyebrow tag">Onderneming</span>
+      <h2>Zilverweide</h2>
+      <p>Korte en lange termijn, per categorie.</p>
+    </button>
+
+    <button class="quad" data-panel="ai">
+      <span class="eyebrow tag">Dagelijkse les</span>
+      <h2>AI</h2>
+      <p>Elke dag iets leren, in drie minuten.</p>
+    </button>
+
+    <button class="quad" data-panel="thoth">
+      <span class="eyebrow tag">Opschrijven</span>
+      <h2>Thoth</h2>
+      <p>Inspiratie bewaren of iets niet vergeten.</p>
+    </button>
+
+    <button class="quad" data-panel="fix">
+      <span class="eyebrow tag">Afwerken</span>
+      <span class="badge" id="fixBadge">0</span>
+      <h2>Fix shit</h2>
+      <p>De drie oudste dingen die nog liggen.</p>
+    </button>
+
+    <div class="sunwrap">
+      <button class="sunbtn" id="sunBtn" aria-label="Begin de dag">
+        <img id="sunImg" alt="">
+        <span class="fallback" id="sunFallback" style="display:none">INTI</span>
+      </button>
+    </div>
+    <div class="hint" id="sunHint">Raak de zon aan</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PANELEN
+     ============================================================ -->
+<div class="panel" id="legend">
+  <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>De legende van vandaag</h2></div>
+  <div class="panel-body">
+    <div class="eyebrow" id="legendNr"></div>
+    <div class="legend-title" id="legendTitle"></div>
+    <div class="legend-text" id="legendText"></div>
+    <div class="rule"></div>
+    <div class="eyebrow">Inti · zon · Inca</div>
+  </div>
+</div>
+
+<div class="panel" id="thoth">
+  <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>Thoth</h2></div>
+  <div class="panel-body">
+    <div class="choice">
+      <button class="insp" data-kind="inspiratie">
+        <strong>Inspiratie</strong>
+        <span>Een idee, een vondst, iets om later mee verder te gaan.</span>
+      </button>
+      <button class="geh" data-kind="geheugen">
+        <strong>Geheugen</strong>
+        <span>Iets wat je niet mag vergeten. Komt terug bij Fix shit.</span>
+      </button>
+    </div>
+    <textarea class="entry" id="thothText" placeholder="Schrijf het op..."></textarea>
+    <button class="btn-gold" id="thothSave" style="width:100%;margin-top:12px">Bewaren</button>
+    <div class="eyebrow" style="margin-top:40px">Bewaarde inspiratie</div>
+    <div class="list" id="inspList"></div>
+  </div>
+</div>
+
+<div class="panel" id="fix">
+  <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>Fix shit</h2></div>
+  <div class="panel-body">
+    <div class="counter">
+      <span class="n" id="fixCount">0</span>
+      <span class="lbl">dingen staan er nog<br>op je lijst</span>
+      <button class="refresh" id="fixRefresh">Vul aan</button>
+    </div>
+    <div id="fixList"></div>
+  </div>
+</div>
+
+<div class="panel" id="zilverweide">
+  <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>Zilverweide</h2></div>
+  <div class="panel-body">
+    <div class="soon">
+      <h3>Komt in versie 2</h3>
+      Hier komt je onderneming te staan, in drie kolommen:
+      <ul>
+        <li>Links je korte termijn</li>
+        <li>Rechts je lange termijn</li>
+        <li>In het midden een plus om een categorie of to do toe te voegen, en een min om te verwijderen</li>
+      </ul>
+      Items schuif je heen en weer tussen kort en lang.
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="ai">
+  <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>Project AI</h2></div>
+  <div class="panel-body">
+    <div class="soon">
+      <h3>Komt in versie 3</h3>
+      Tien lessen over werken met Claude. Elke dag een korte uitleg in gewone taal,
+      plus een probeeropdracht van maximaal drie minuten. Met een teller die bijhoudt
+      hoe ver je bent.
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+/* ============================================================
+   1. CONFIG  ·  hier vul jij je gegevens in
+   ============================================================ */
+const CONFIG = {
+  // Plak hier het blok dat Firebase je gaf bij stap B4
+  firebase: {
+    apiKey: "AIzaSyA-JYxIGnXSRMj1USDMx1RlLuLJw5ZpG8Q",
+    authDomain: "inti-e1604.firebaseapp.com",
+    projectId: "inti-e1604",
+    storageBucket: "inti-e1604.firebasestorage.app",
+    messagingSenderId: "497744344697",
+    appId: "1:497744344697:web:7ad68d1300232a460746a8"
+  },
+  // >>> DIT IS HET ENIGE WAT JE NOG MOET INVULLEN <<<
+  // Het e-mailadres van de gebruiker die je in Firebase aanmaakt
+  // (Build > Authentication > Users > Add user)
+  email: "VUL_IN@example.com",
+  // Bestandsnaam van je zonneafbeelding, in dezelfde map als dit bestand
+  sunImage: "inti-sun.jpg"
+};
+
+/* ============================================================
+   2. LEGENDEN  ·  voeg er gerust bij of vervang ze door een
+      andere god. De app pakt elke dag de volgende uit de rij.
+   ============================================================ */
+const LEGENDS = [
+  { title:"De gouden staf",
+    text:`Uit het schuim van het Titicacameer stapten Manco Cápac en Mama Ocllo, kinderen van de zon.
+Inti gaf hun een staf van goud en één opdracht: loop, en sla de staf in de grond bij elke stap.
+Waar hij zonder weerstand in de aarde zou verdwijnen, daar moesten zij blijven.
+Ze liepen maanden. Steen, klei, dorre grond, de staf stuiterde overal terug.
+Tot de bodem hem opslokte alsof de aarde erop had gewacht.
+Daar bouwden zij Cusco, de navel van de wereld.
+De les is niet dat het doel ver weg lag, maar dat ze bleven lopen tot de grond zacht was.`},
+
+  { title:"Het feest van de kortste dag",
+    text:`Midden in de winter werd de zon zwak. Hij kwam later, ging eerder, en gaf minder warmte.
+Het volk geloofde dat hij vermoeid was en zou kunnen besluiten niet terug te komen.
+Dus staken zij op de kortste dag overal vuren aan, zodat Inti zijn eigen licht zou herkennen op aarde.
+Drie dagen aten zij, dansten zij en riepen zij hem terug.
+En elk jaar keerde hij om, en werden de dagen weer langer.
+Inti Raymi noemden zij het: niet een dank voor wat er was, maar een uitnodiging voor wat komen moest.`},
+
+  { title:"De tuin die niet groeide",
+    text:`In Coricancha, de zonnetempel van Cusco, lag een tuin van puur goud.
+Maiskolven met bladeren van gedreven metaal, lama's op ware grootte, vlinders, slakken, klompjes aarde.
+Alles wat op de velden groeide, stond daar nog een keer, onvergankelijk.
+De priesters onderhielden hem alsof hij water nodig had.
+Want een tuin die niet kan verdorren herinnert je eraan waarom je de echte tuin verzorgt.
+Het goud is later weggehaald en omgesmolten. De velden lagen er de volgende lente gewoon weer.`},
+
+  { title:"Mama Killa en de as",
+    text:`Inti had een zus, Mama Killa, de maan. Zij was ooit even fel als hij.
+Twee lichten aan één hemel, en niemand wist meer wanneer de dag begon.
+Uit jaloezie, zeggen sommigen, uit ordening, zeggen anderen, gooide Inti een handvol as in haar gezicht.
+Sindsdien schijnt zij zachter, met vlekken die je bij vollemaan nog kunt zien.
+Maar zij kreeg wat hij nooit had: zij mag veranderen.
+Zij groeit, krimpt, verdwijnt en komt terug, en niemand vindt dat vreemd.
+De zon moet elke dag hetzelfde presteren.`},
+
+  { title:"De steen die de zon vasthoudt",
+    text:`Op de hoogste rotsen hakten zij een steen uit, de Intihuatana, de plek waar de zon wordt vastgebonden.
+Twee keer per jaar stond de zon er recht boven en wierp de steen geen enkele schaduw.
+Op dat moment, geloofden zij, lag de zon even in hun handen.
+Het was geen bezit maar een afspraak: wij houden je vast, jij komt terug.
+De Spanjaarden sloegen de meeste van die stenen kapot om precies die reden.
+Die van Machu Picchu vonden zij nooit. Hij staat er nog, en werpt nog steeds twee keer per jaar geen schaduw.`},
+
+  { title:"Het gezicht in de bron",
+    text:`Een jonge prins boog zich over een bron om te drinken, in een tijd dat zijn rijk werd belegerd.
+In het water zag hij niet zichzelf, maar een gestalte met stralen om het hoofd.
+Die zei hem dat hij zou winnen, en dat hij daarna niet moest stoppen bij winnen.
+Hij versloeg de vijand en noemde zichzelf Pachacútec, hij die de wereld omkeert.
+Onder hem groeide een klein koninkrijk uit tot het grootste rijk van het continent.
+Wat hij zag was misschien zijn eigen spiegelbeeld met de zon erachter.
+Het maakte geen verschil voor wat hij daarna deed.`},
+
+  { title:"De jaguar bij de verduistering",
+    text:`Soms werd de zon midden op de dag opgegeten. Er kroop een schaduw over hem heen tot alles koud was.
+Een jaguar, zeiden zij, die uit de hemel was gekomen om Inti te verslinden.
+Dan renden de mensen naar buiten, sloegen op alles wat lawaai maakte en lieten de honden janken.
+Het kabaal joeg het beest weg en het licht kwam altijd terug.
+Ze wisten waarschijnlijk best dat het ook zonder hun geschreeuw goed zou komen.
+Maar er is iets te zeggen voor een volk dat bij het donker naar buiten gaat in plaats van naar binnen.`},
+
+  { title:"Wat Wiracocha vergat",
+    text:`Voor de zon er was, schiep Wiracocha een eerste mensheid in het donker.
+Zij konden niets zien, dus zij bouwden niets, en hij was er niet tevreden over.
+Hij liet hen verdwijnen, ging naar het Titicacameer en riep daar de zon, de maan en de sterren tevoorschijn.
+Pas toen maakte hij mensen opnieuw, deze keer bij licht.
+Er wordt gezegd dat het eerste wat de nieuwe mensen deden, kijken was.
+Wiracocha liep daarna naar het westen, over de oceaan, en beloofde ooit terug te komen.
+Hij liet zijn schepping achter met genoeg licht om het zelf uit te zoeken.`},
+
+  { title:"De weefsters",
+    text:`In de huizen van de zon werkten vrouwen die vanaf hun kindertijd waren gekozen om te weven.
+Zij maakten cumbi, stof zo fijn dat Europese bezoekers hem later voor zijde hielden.
+Sommige lappen hadden meer dan driehonderd draden per duim, met patronen die niemand mocht kopiëren.
+Een deel van hun werk werd ceremonieel verbrand, als gave aan Inti.
+Maandenlang werk, in één ochtend rook.
+Ze begonnen de volgende dag aan het volgende weefsel.
+Het maken was het punt, niet het bewaren.`},
+
+  { title:"Inkarrí onder de grond",
+    text:`Toen de laatste Inca werd onthoofd, werd zijn hoofd ver van zijn lichaam begraven.
+Dat was met opzet, zodat hij nooit meer heel zou worden.
+Maar in de dorpen wordt verteld dat het hoofd onder de aarde langzaam een lichaam aan het aangroeien is.
+Een vinger per generatie, zeggen ze. Niemand weet hoe ver hij is.
+Op de dag dat hij compleet is komt hij boven en keert de wereld zich om.
+Het verhaal is vijfhonderd jaar oud en niemand die het vertelt verwacht het nog mee te maken.
+Ze vertellen het door omdat het doorvertellen zelf het aangroeien is.`}
+];
+
+/* ============================================================
+   3. VANAF HIER HOEF JE NIETS MEER AAN TE PASSEN
+   ============================================================ */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+  setPersistence, browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import {
+  initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  collection, doc, addDoc, deleteDoc, updateDoc, setDoc, getDoc,
+  onSnapshot, query, orderBy
+} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+/* --- kleine hulpjes --- */
+const pad = n => String(n).padStart(2,"0");
+const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today = () => dayKey(new Date());
+const tomorrow = () => { const d=new Date(); d.setDate(d.getDate()+1); return dayKey(d); };
+function toast(msg){
+  const t=$("#toast"); t.textContent=msg; t.classList.add("on");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("on"),2200);
+}
+function human(ms){
+  if(!ms) return "";
+  const days = Math.floor((Date.now()-ms)/86400000);
+  if(days<=0) return "vandaag";
+  if(days===1) return "gisteren";
+  if(days<30) return `${days} dagen geleden`;
+  const m = Math.floor(days/30);
+  return m===1 ? "een maand geleden" : `${m} maanden geleden`;
+}
+
+/* --- datum bovenin --- */
+$("#today").textContent = new Date().toLocaleDateString("nl-NL",
+  {weekday:"long",day:"numeric",month:"long"});
+
+/* --- zonneafbeelding, met terugval als hij nog niet bestaat --- */
+const sunImg = $("#sunImg");
+sunImg.onerror = () => { sunImg.style.display="none"; $("#sunFallback").style.display="block"; };
+sunImg.src = CONFIG.sunImage;
+
+/* --- is de config ingevuld? --- */
+const ready = CONFIG.firebase.apiKey !== "VUL_IN" && !CONFIG.email.startsWith("VUL_IN");
+if(!ready){
+  $("#gateSetup").style.display="block";
+  $("#loginForm").style.display="none";
+}
+
+let db, auth, uid=null;
+let items = [];          // alles uit Thoth, oudste eerst
+let fixShown = [];       // de drie die nu bij Fix shit staan
+let unsub = null;
+
+if(ready){
+  const app = initializeApp(CONFIG.firebase);
+  auth = getAuth(app);
+  db = initializeFirestore(app,{
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+  });
+  setPersistence(auth, browserLocalPersistence);
+
+  onAuthStateChanged(auth, user => {
+    if(user){ uid = user.uid; start(); }
+    else { uid=null; stop(); }
+  });
+}
+
+/* --- inloggen --- */
+$("#loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const note=$("#gateNote"); note.textContent="Bezig...";
+  note.style.color="var(--bone-dim)";
+  try{
+    await signInWithEmailAndPassword(auth, CONFIG.email, $("#pw").value);
+  }catch(err){
+    note.style.color="var(--cochineal)";
+    note.textContent = err.code==="auth/invalid-credential" || err.code==="auth/wrong-password"
+      ? "Wachtwoord klopt niet."
+      : "Inloggen lukt niet: "+err.code;
+  }
+});
+$("#logout").addEventListener("click", ()=>signOut(auth));
+
+/* --- opstarten na login --- */
+async function start(){
+  $("#gate").style.display="none";
+  $("#app").classList.add("on");
+  $("#pw").value="";
+  $("#gateNote").textContent="";
+
+  // luister live mee met alles in Thoth
+  const q = query(collection(db,"users",uid,"thoth"), orderBy("createdAt","asc"));
+  unsub = onSnapshot(q, snap => {
+    items = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderCounts();
+    renderInspiration();
+  }, err => toast("Verbinding hapert: "+err.code));
+
+  // is de zon vandaag al aangeraakt?
+  try{
+    const ref = doc(db,"users",uid,"meta","dag");
+    const snap = await getDoc(ref);
+    const data = snap.exists() ? snap.data() : {};
+    if(data.lastSun === today()) lightUp(data.legendIndex ?? 0, false);
+  }catch(e){ /* offline, dan begint de dag gewoon opnieuw */ }
+}
+function stop(){
+  if(unsub) unsub();
+  items=[]; fixShown=[];
+  document.body.classList.remove("lit");
+  $("#app").classList.remove("on");
+  $("#gate").style.display="grid";
+  closePanels();
+}
+
+/* ============================================================
+   DE ZON
+   ============================================================ */
+let legendIndex = 0;
+$("#sunBtn").addEventListener("click", async () => {
+  if(document.body.classList.contains("lit")){
+    openPanel("legend");   // al aangeraakt vandaag, laat dezelfde legende zien
+    return;
+  }
+  const ref = doc(db,"users",uid,"meta","dag");
+  let next = 0;
+  try{
+    const snap = await getDoc(ref);
+    const prev = snap.exists() ? snap.data() : {};
+    next = ((prev.legendIndex ?? -1) + 1) % LEGENDS.length;
+    await setDoc(ref,{ lastSun: today(), legendIndex: next },{merge:true});
+  }catch(e){
+    next = Math.floor(Math.random()*LEGENDS.length);
+  }
+  lightUp(next, true);
+});
+
+function lightUp(i, showPanel){
+  legendIndex = i % LEGENDS.length;
+  const L = LEGENDS[legendIndex];
+  $("#legendNr").textContent = `Legende ${legendIndex+1} van ${LEGENDS.length}`;
+  $("#legendTitle").textContent = L.title;
+  $("#legendText").innerHTML = L.text.trim().split("\n")
+    .map(r=>`<p>${r.trim()}</p>`).join("");
+  document.body.classList.add("lit");
+  if(showPanel) setTimeout(()=>openPanel("legend"), 850);
+}
+
+/* ============================================================
+   PANELEN
+   ============================================================ */
+function openPanel(id){ $("#"+id).classList.add("open"); }
+function closePanels(){ $$(".panel").forEach(p=>p.classList.remove("open")); }
+$$("[data-close]").forEach(b=>b.addEventListener("click", closePanels));
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closePanels(); });
+
+$$(".quad").forEach(q => q.addEventListener("click", () => {
+  if(!document.body.classList.contains("lit")){
+    const h=$("#sunHint");
+    h.classList.remove("knock"); void h.offsetWidth; h.classList.add("knock");
+    toast("Begin bij de zon");
+    return;
+  }
+  const id = q.dataset.panel;
+  if(id==="fix") pickFix();
+  openPanel(id);
+}));
+
+/* ============================================================
+   THOTH
+   ============================================================ */
+let kind = "inspiratie";
+$$(".choice button").forEach(b => b.addEventListener("click", () => {
+  $$(".choice button").forEach(x=>x.classList.remove("sel"));
+  b.classList.add("sel");
+  kind = b.dataset.kind;
+}));
+$$(".choice button")[0].classList.add("sel");
+
+$("#thothSave").addEventListener("click", async () => {
+  const text = $("#thothText").value.trim();
+  if(!text){ toast("Er staat nog niets in"); return; }
+  try{
+    await addDoc(collection(db,"users",uid,"thoth"),{
+      text, kind,
+      createdAt: Date.now(),
+      snoozeUntil: null
+    });
+    $("#thothText").value="";
+    toast(kind==="geheugen" ? "Op de lijst gezet" : "Bewaard");
+  }catch(e){ toast("Opslaan lukt niet: "+e.code); }
+});
+
+function renderInspiration(){
+  const box = $("#inspList");
+  const list = items.filter(i=>i.kind==="inspiratie").slice().reverse();
+  if(!list.length){
+    box.innerHTML = `<div class="empty"><span class="big">Nog leeg</span>
+      Het eerste idee dat langskomt hoort hier.</div>`;
+    return;
+  }
+  box.innerHTML = list.map(i=>`
+    <div class="item" data-id="${i.id}">
+      <div class="txt">${escapeHtml(i.text)}<div class="when">${human(i.createdAt)}</div></div>
+      <button class="kill" data-del="${i.id}" aria-label="Verwijderen">&times;</button>
+    </div>`).join("");
+  box.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click", async ()=>{
+    const el = b.closest(".item"); el.classList.add("gone");
+    setTimeout(async ()=>{
+      try{ await deleteDoc(doc(db,"users",uid,"thoth",b.dataset.del)); }
+      catch(e){ toast("Verwijderen lukt niet"); }
+    },300);
+  }));
+}
+
+/* ============================================================
+   FIX SHIT
+   ============================================================ */
+function openTasks(){
+  const t = today();
+  return items.filter(i => i.kind==="geheugen" && (!i.snoozeUntil || i.snoozeUntil <= t));
+}
+function renderCounts(){
+  const n = openTasks().length;
+  $("#fixCount").textContent = n;
+  const badge = $("#fixBadge");
+  badge.textContent = n;
+  badge.classList.toggle("on", n>0);
+}
+function pickFix(){
+  fixShown = openTasks().slice(0,3).map(i=>i.id);
+  renderFix();
+}
+$("#fixRefresh").addEventListener("click", ()=>{ pickFix(); toast("Lijst aangevuld"); });
+
+function renderFix(){
+  const box = $("#fixList");
+  const list = fixShown.map(id => items.find(i=>i.id===id)).filter(Boolean);
+  if(!list.length){
+    box.innerHTML = `<div class="empty"><span class="big">Niets meer open</span>
+      Alles wat je bij Thoth onder geheugen zet, komt hier terug.</div>`;
+    return;
+  }
+  box.innerHTML = list.map(i=>`
+    <div class="task" data-id="${i.id}">
+      <div class="txt">${escapeHtml(i.text)}</div>
+      <div class="when eyebrow" style="margin-bottom:12px">${human(i.createdAt)} opgeschreven</div>
+      <div class="acts">
+        <button class="act-done" data-done="${i.id}">Gedaan</button>
+        <button class="act-later" data-later="${i.id}">Morgen weer</button>
+      </div>
+    </div>`).join("");
+
+  box.querySelectorAll("[data-done]").forEach(b=>b.addEventListener("click",()=>{
+    finish(b, async id => { await deleteDoc(doc(db,"users",uid,"thoth",id)); }, "Gedaan");
+  }));
+  box.querySelectorAll("[data-later]").forEach(b=>b.addEventListener("click",()=>{
+    finish(b, async id => {
+      await updateDoc(doc(db,"users",uid,"thoth",id),{ snoozeUntil: tomorrow() });
+    }, "Tot morgen");
+  }));
+}
+function finish(btn, action, msg){
+  const id = btn.dataset.done || btn.dataset.later;
+  const card = btn.closest(".task");
+  card.classList.add("gone");
+  fixShown = fixShown.filter(x=>x!==id);
+  setTimeout(async ()=>{
+    try{ await action(id); toast(msg); }
+    catch(e){ toast("Opslaan lukt niet"); }
+    renderFix();
+  },320);
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+</script>
+</body>
+</html>
