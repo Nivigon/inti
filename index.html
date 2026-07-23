@@ -305,6 +305,122 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 .soon ul{margin:14px 0 0 18px}
 .soon li{margin-bottom:7px}
 
+/* ---------- zilverweide ---------- */
+.zw-body{max-width:960px}
+.zw-tabs{display:none;gap:8px;margin-bottom:18px}
+.zw-tabs button{
+  flex:1;padding:12px;border:1px solid var(--earth-3);border-radius:var(--r);
+  font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim);
+}
+.zw-tabs button.on{border-color:var(--gold);color:var(--gold)}
+
+.zw-grid{display:grid;grid-template-columns:1fr 70px 1fr;align-items:start;gap:0}
+.zw-col{min-width:0}
+.zw-colhead{
+  display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  padding-bottom:12px;margin-bottom:18px;border-bottom:1px solid var(--earth-3);
+}
+.zw-col[data-term=lang] .zw-colhead{flex-direction:row-reverse}
+.zw-n{font-family:var(--display);font-size:1.35rem;color:var(--gold-dim);line-height:1}
+
+.zw-cat{margin-bottom:24px}
+.zw-cat-head{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.zw-col[data-term=lang] .zw-cat-head{flex-direction:row-reverse}
+.zw-cat-name{font-family:var(--display);font-weight:400;font-size:.98rem;color:var(--gold)}
+.zw-cat-kill{display:none;color:var(--bone-dim);font-size:1rem;line-height:1;padding:0 3px}
+.zw-cat-kill:hover{color:var(--cochineal)}
+
+.zw-item{
+  display:flex;align-items:flex-start;gap:10px;
+  background:var(--earth);border:1px solid var(--earth-3);border-radius:10px;
+  padding:11px 13px;margin-bottom:7px;
+  transition:opacity .3s,transform .3s,border-color .2s;
+}
+.zw-item:hover{border-color:var(--gold-dim)}
+.zw-item.gone{opacity:0;transform:scale(.95)}
+.zw-col[data-term=kort] .zw-item{border-left:2px solid var(--gold)}
+.zw-col[data-term=lang] .zw-item{border-right:2px solid var(--turquoise);flex-direction:row-reverse}
+.zw-item .txt{flex:1;font-size:.88rem;line-height:1.55;word-break:break-word;white-space:pre-wrap}
+.zw-col[data-term=lang] .zw-item .txt{text-align:right}
+.zw-move{color:var(--bone-dim);font-size:1rem;line-height:1.45;padding:0 2px;flex-shrink:0;transition:color .2s,transform .2s}
+.zw-move:hover{color:var(--gold);transform:translateX(2px)}
+.zw-col[data-term=lang] .zw-move:hover{transform:translateX(-2px)}
+.zw-kill{display:none;color:var(--bone-dim);font-size:1rem;line-height:1.35;flex-shrink:0;padding:0 2px}
+.zw-kill:hover{color:var(--cochineal)}
+#zilverweide.trim .zw-kill,#zilverweide.trim .zw-cat-kill{display:block}
+#zilverweide.trim .zw-move{opacity:.2;pointer-events:none}
+.zw-none{font-size:.74rem;color:var(--gold-dim);opacity:.55;padding:2px 0 8px;font-style:italic}
+.zw-col[data-term=lang] .zw-none{text-align:right}
+
+.zw-rail{display:flex;flex-direction:column;align-items:center;gap:14px;position:sticky;top:4px}
+.zw-rail::before{content:"";width:1px;height:30px;background:linear-gradient(var(--earth-3),transparent)}
+.zw-plus{
+  width:48px;height:48px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(180deg,var(--gold),#b8873a);color:#20170c;
+  font-size:1.6rem;line-height:1;display:grid;place-items:center;
+  box-shadow:0 0 24px rgba(212,162,76,.22);transition:transform .2s,box-shadow .3s;
+}
+.zw-plus:hover{transform:scale(1.09);box-shadow:0 0 34px rgba(212,162,76,.45)}
+.zw-minus{
+  width:26px;height:26px;border-radius:50%;flex-shrink:0;
+  border:1px solid var(--earth-3);color:var(--bone-dim);
+  font-size:.95rem;line-height:1;display:grid;place-items:center;
+  transition:border-color .2s,color .2s,background .2s;
+}
+.zw-minus:hover{border-color:var(--cochineal);color:var(--cochineal)}
+#zilverweide.trim .zw-minus{border-color:var(--cochineal);color:var(--cochineal);background:rgba(168,57,44,.15)}
+
+/* blad dat omhoog komt om iets toe te voegen */
+.sheet{
+  position:fixed;inset:0;z-index:60;display:none;
+  background:rgba(9,6,3,.74);align-items:flex-end;justify-content:center;
+}
+.sheet.open{display:flex}
+.sheet-inner{
+  width:min(520px,100%);background:var(--earth-2);
+  border:1px solid var(--earth-3);border-bottom:none;
+  border-radius:20px 20px 0 0;padding:22px 22px 32px;
+  animation:rise .32s cubic-bezier(.3,.8,.3,1);max-height:92vh;overflow-y:auto;
+}
+@keyframes rise{from{transform:translateY(34px);opacity:0}}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.sheet-x{font-size:1.4rem;color:var(--bone-dim);line-height:1;padding:0 6px}
+.sheet-x:hover{color:var(--gold)}
+.sheet label{display:block;margin:18px 0 8px}
+.sheet textarea,.sheet input,.sheet select{
+  width:100%;background:var(--earth);border:1px solid var(--earth-3);color:var(--bone);
+  border-radius:10px;padding:13px 14px;line-height:1.5;
+}
+.sheet textarea{min-height:92px;resize:vertical}
+.sheet textarea:focus,.sheet input:focus,.sheet select:focus{border-color:var(--gold-dim);outline:none}
+.seg{display:flex;gap:8px}
+.seg button{
+  flex:1;padding:12px;border:1px solid var(--earth-3);border-radius:10px;
+  font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--bone-dim);
+}
+.seg button.on{border-color:var(--gold);color:var(--gold);background:var(--earth)}
+.sheet .btn-gold{width:100%;margin-top:22px}
+
+@media (max-width:720px){
+  .zw-tabs{display:flex}
+  .zw-grid{grid-template-columns:1fr;padding-bottom:96px}
+  .zw-col{display:none}
+  .zw-col.show{display:block}
+  .zw-col[data-term=lang] .zw-colhead,
+  .zw-col[data-term=lang] .zw-cat-head,
+  .zw-col[data-term=lang] .zw-item{flex-direction:row}
+  .zw-col[data-term=lang] .zw-item .txt,
+  .zw-col[data-term=lang] .zw-none{text-align:left}
+  .zw-col[data-term=lang] .zw-item{border-right:none;border-left:2px solid var(--turquoise)}
+  .zw-rail{
+    position:fixed;left:50%;bottom:20px;transform:translateX(-50%);
+    flex-direction:row;gap:14px;padding:9px 12px;z-index:55;
+    background:var(--earth-2);border:1px solid var(--earth-3);border-radius:40px;
+    box-shadow:0 10px 34px rgba(0,0,0,.55);
+  }
+  .zw-rail::before{display:none}
+}
+
 .toast{
   position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);
   background:var(--earth-3);color:var(--bone);padding:12px 22px;border-radius:24px;
@@ -443,16 +559,67 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 
 <div class="panel" id="zilverweide">
   <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>Zilverweide</h2></div>
-  <div class="panel-body">
-    <div class="soon">
-      <h3>Komt in versie 2</h3>
-      Hier komt je onderneming te staan, in drie kolommen:
-      <ul>
-        <li>Links je korte termijn</li>
-        <li>Rechts je lange termijn</li>
-        <li>In het midden een plus om een categorie of to do toe te voegen, en een min om te verwijderen</li>
-      </ul>
-      Items schuif je heen en weer tussen kort en lang.
+  <div class="panel-body zw-body">
+
+    <div class="zw-tabs">
+      <button data-term="kort" class="on">Korte termijn</button>
+      <button data-term="lang">Lange termijn</button>
+    </div>
+
+    <div class="zw-grid">
+      <div class="zw-col show" data-term="kort">
+        <div class="zw-colhead"><span class="eyebrow">Korte termijn</span><span class="zw-n" id="zwNkort">0</span></div>
+        <div id="zwKort"></div>
+      </div>
+
+      <div class="zw-rail">
+        <button class="zw-plus" id="zwPlus" aria-label="Iets toevoegen">+</button>
+        <button class="zw-minus" id="zwMinus" aria-label="Verwijderen aan of uit">&minus;</button>
+      </div>
+
+      <div class="zw-col" data-term="lang">
+        <div class="zw-colhead"><span class="eyebrow">Lange termijn</span><span class="zw-n" id="zwNlang">0</span></div>
+        <div id="zwLang"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- toevoegen -->
+  <div class="sheet" id="zwSheet">
+    <div class="sheet-inner">
+      <div class="sheet-head">
+        <span class="eyebrow" id="sheetTitle">Toevoegen</span>
+        <button class="sheet-x" id="zwSheetX" aria-label="Sluiten">&times;</button>
+      </div>
+
+      <div class="choice" id="zwPick">
+        <button data-add="todo">
+          <strong style="color:var(--gold)">Nieuwe to do</strong>
+          <span>Iets wat gedaan moet worden, kort of lang.</span>
+        </button>
+        <button data-add="cat">
+          <strong style="color:var(--turquoise)">Nieuwe categorie</strong>
+          <span>Een kopje om je to do's onder te sorteren.</span>
+        </button>
+      </div>
+
+      <div id="zwFormTodo" hidden>
+        <textarea id="zwTodoText" placeholder="Wat moet er gebeuren?"></textarea>
+        <label class="eyebrow">Categorie</label>
+        <select id="zwTodoCat"></select>
+        <label class="eyebrow">Termijn</label>
+        <div class="seg" id="zwTermSeg">
+          <button data-t="kort" class="on">Korte termijn</button>
+          <button data-t="lang">Lange termijn</button>
+        </div>
+        <button class="btn-gold" id="zwTodoSave">Toevoegen</button>
+      </div>
+
+      <div id="zwFormCat" hidden>
+        <label class="eyebrow">Naam</label>
+        <input id="zwCatName" placeholder="Bijvoorbeeld: Website, Financien, Game">
+        <button class="btn-gold" id="zwCatSave">Categorie maken</button>
+      </div>
     </div>
   </div>
 </div>
@@ -640,7 +807,7 @@ if(!ready){
 let db, auth, uid=null;
 let items = [];          // alles uit Thoth, oudste eerst
 let fixShown = [];       // de drie die nu bij Fix shit staan
-let unsub = null;
+let unsub = null, unsubZW = null;
 
 if(ready){
   const app = initializeApp(CONFIG.firebase);
@@ -687,6 +854,13 @@ async function start(){
     renderInspiration();
   }, err => toast("Verbinding hapert: "+err.code));
 
+  // luister live mee met Zilverweide
+  const qz = query(collection(db,"users",uid,"zilverweide"), orderBy("createdAt","asc"));
+  unsubZW = onSnapshot(qz, snap => {
+    zw = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderZW();
+  }, err => toast("Verbinding hapert: "+err.code));
+
   // is de zon vandaag al aangeraakt?
   try{
     const ref = doc(db,"users",uid,"meta","dag");
@@ -697,7 +871,8 @@ async function start(){
 }
 function stop(){
   if(unsub) unsub();
-  items=[]; fixShown=[];
+  if(unsubZW) unsubZW();
+  items=[]; fixShown=[]; zw=[];
   document.body.classList.remove("lit");
   $("#app").classList.remove("on");
   $("#gate").style.display="grid";
@@ -743,7 +918,11 @@ function lightUp(i, showPanel){
 function openPanel(id){ $("#"+id).classList.add("open"); }
 function closePanels(){ $$(".panel").forEach(p=>p.classList.remove("open")); }
 $$("[data-close]").forEach(b=>b.addEventListener("click", closePanels));
-document.addEventListener("keydown", e=>{ if(e.key==="Escape") closePanels(); });
+document.addEventListener("keydown", e=>{
+  if(e.key!=="Escape") return;
+  if($("#zwSheet").classList.contains("open")) closeSheet();
+  else closePanels();
+});
 
 $$(".quad").forEach(q => q.addEventListener("click", () => {
   if(!document.body.classList.contains("lit")){
@@ -761,12 +940,12 @@ $$(".quad").forEach(q => q.addEventListener("click", () => {
    THOTH
    ============================================================ */
 let kind = "inspiratie";
-$$(".choice button").forEach(b => b.addEventListener("click", () => {
-  $$(".choice button").forEach(x=>x.classList.remove("sel"));
+$$("#thoth .choice button").forEach(b => b.addEventListener("click", () => {
+  $$("#thoth .choice button").forEach(x=>x.classList.remove("sel"));
   b.classList.add("sel");
   kind = b.dataset.kind;
 }));
-$$(".choice button")[0].classList.add("sel");
+$$("#thoth .choice button")[0].classList.add("sel");
 
 $("#thothSave").addEventListener("click", async () => {
   const text = $("#thothText").value.trim();
@@ -862,6 +1041,165 @@ function finish(btn, action, msg){
     renderFix();
   },320);
 }
+
+/* ============================================================
+   ZILVERWEIDE
+   Twee soorten kaartjes in dezelfde map:
+     kind:"cat"   -> een categorie, met een naam
+     kind:"todo"  -> een to do, met een termijn (kort of lang) en een categorie
+   ============================================================ */
+let zw = [];            // alles uit Zilverweide
+let zwTrim = false;     // staat het minnetje aan?
+let zwAddTerm = "kort"; // welke termijn staat er in het toevoegblad
+
+const zwCats  = () => zw.filter(d => d.kind === "cat");
+const zwTodos = () => zw.filter(d => d.kind === "todo");
+
+function renderZW(){
+  const cats = zwCats();
+
+  ["kort","lang"].forEach(term => {
+    const list = zwTodos().filter(t => t.term === term);
+    $(term==="kort" ? "#zwNkort" : "#zwNlang").textContent = list.length;
+
+    let html = "";
+    const los = list.filter(t => !t.catId || !cats.some(c => c.id === t.catId));
+    if(los.length) html += zwGroup("Algemeen", null, los, term);
+    cats.forEach(c => { html += zwGroup(c.name, c.id, list.filter(t => t.catId === c.id), term); });
+
+    if(!html) html = `<div class="empty"><span class="big">Nog niets</span>
+      Gebruik de plus in het midden voor je eerste categorie of to do.</div>`;
+
+    $(term==="kort" ? "#zwKort" : "#zwLang").innerHTML = html;
+  });
+
+  // keuzelijst met categorieen bijwerken
+  const sel = $("#zwTodoCat"), keep = sel.value;
+  sel.innerHTML = `<option value="">Algemeen</option>` +
+    cats.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
+  if([...sel.options].some(o => o.value === keep)) sel.value = keep;
+
+  zwBind();
+}
+
+function zwGroup(naam, catId, list, term){
+  const pijl = term === "kort" ? "&rarr;" : "&larr;";
+  const items = list.map(t => `
+    <div class="zw-item" data-id="${t.id}">
+      <div class="txt">${escapeHtml(t.text)}</div>
+      <button class="zw-move" data-move="${t.id}" title="Naar de andere kolom">${pijl}</button>
+      <button class="zw-kill" data-tdel="${t.id}" aria-label="Verwijderen">&times;</button>
+    </div>`).join("");
+
+  return `<div class="zw-cat">
+      <div class="zw-cat-head">
+        <span class="zw-cat-name">${escapeHtml(naam)}</span>
+        ${catId ? `<button class="zw-cat-kill" data-cdel="${catId}" aria-label="Categorie verwijderen">&times;</button>` : ""}
+      </div>
+      ${items || `<div class="zw-none">leeg</div>`}
+    </div>`;
+}
+
+function zwBind(){
+  // van kort naar lang en terug
+  $$("#zilverweide [data-move]").forEach(b => b.addEventListener("click", async () => {
+    const id = b.dataset.move;
+    const t = zw.find(x => x.id === id);
+    if(!t) return;
+    b.closest(".zw-item").classList.add("gone");
+    try{
+      await updateDoc(doc(db,"users",uid,"zilverweide",id),
+        { term: t.term === "kort" ? "lang" : "kort" });
+    }catch(e){ toast("Verplaatsen lukt niet"); renderZW(); }
+  }));
+
+  // een to do weggooien
+  $$("#zilverweide [data-tdel]").forEach(b => b.addEventListener("click", async () => {
+    b.closest(".zw-item").classList.add("gone");
+    try{ await deleteDoc(doc(db,"users",uid,"zilverweide",b.dataset.tdel)); }
+    catch(e){ toast("Verwijderen lukt niet"); renderZW(); }
+  }));
+
+  // een categorie weggooien, de to do's blijven bestaan
+  $$("#zilverweide [data-cdel]").forEach(b => b.addEventListener("click", async () => {
+    const id = b.dataset.cdel;
+    const erfgenamen = zwTodos().filter(t => t.catId === id);
+    try{
+      for(const t of erfgenamen){
+        await updateDoc(doc(db,"users",uid,"zilverweide",t.id), { catId: null });
+      }
+      await deleteDoc(doc(db,"users",uid,"zilverweide",id));
+      toast(erfgenamen.length
+        ? `Categorie weg, ${erfgenamen.length} verhuisd naar Algemeen`
+        : "Categorie weg");
+    }catch(e){ toast("Verwijderen lukt niet"); }
+  }));
+}
+
+/* --- de twee knopjes in het midden --- */
+$("#zwPlus").addEventListener("click", () => openSheet("pick"));
+$("#zwMinus").addEventListener("click", () => {
+  zwTrim = !zwTrim;
+  $("#zilverweide").classList.toggle("trim", zwTrim);
+  toast(zwTrim ? "Tik op een kruisje om iets te verwijderen" : "Verwijderen staat uit");
+});
+
+/* --- het blad om iets toe te voegen --- */
+function openSheet(view){
+  $("#zwPick").hidden     = view !== "pick";
+  $("#zwFormTodo").hidden = view !== "todo";
+  $("#zwFormCat").hidden  = view !== "cat";
+  $("#sheetTitle").textContent =
+    view === "todo" ? "Nieuwe to do" : view === "cat" ? "Nieuwe categorie" : "Toevoegen";
+  $("#zwSheet").classList.add("open");
+  if(view === "todo") setTimeout(() => $("#zwTodoText").focus(), 90);
+  if(view === "cat")  setTimeout(() => $("#zwCatName").focus(), 90);
+}
+function closeSheet(){ $("#zwSheet").classList.remove("open"); }
+
+$("#zwSheetX").addEventListener("click", closeSheet);
+$("#zwSheet").addEventListener("click", e => { if(e.target.id === "zwSheet") closeSheet(); });
+$$("#zwPick button").forEach(b => b.addEventListener("click", () => openSheet(b.dataset.add)));
+
+$$("#zwTermSeg button").forEach(b => b.addEventListener("click", () => {
+  zwAddTerm = b.dataset.t;
+  $$("#zwTermSeg button").forEach(x => x.classList.toggle("on", x === b));
+}));
+
+$("#zwTodoSave").addEventListener("click", async () => {
+  const text = $("#zwTodoText").value.trim();
+  if(!text){ toast("Er staat nog niets in"); return; }
+  try{
+    await addDoc(collection(db,"users",uid,"zilverweide"),{
+      kind:"todo", text,
+      term: zwAddTerm,
+      catId: $("#zwTodoCat").value || null,
+      createdAt: Date.now()
+    });
+    $("#zwTodoText").value = "";
+    closeSheet();
+    toast("Toegevoegd");
+  }catch(e){ toast("Opslaan lukt niet"); }
+});
+
+$("#zwCatSave").addEventListener("click", async () => {
+  const naam = $("#zwCatName").value.trim();
+  if(!naam){ toast("Geef de categorie een naam"); return; }
+  try{
+    await addDoc(collection(db,"users",uid,"zilverweide"),{
+      kind:"cat", name: naam, createdAt: Date.now()
+    });
+    $("#zwCatName").value = "";
+    closeSheet();
+    toast("Categorie gemaakt");
+  }catch(e){ toast("Opslaan lukt niet"); }
+});
+
+/* --- op de telefoon wissel je met tabbladen tussen kort en lang --- */
+$$(".zw-tabs button").forEach(b => b.addEventListener("click", () => {
+  $$(".zw-tabs button").forEach(x => x.classList.toggle("on", x === b));
+  $$("#zilverweide .zw-col").forEach(c => c.classList.toggle("show", c.dataset.term === b.dataset.term));
+}));
 
 function escapeHtml(s){
   return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
