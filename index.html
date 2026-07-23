@@ -103,38 +103,58 @@ input,textarea{font-family:inherit;font-size:16px}
 .topbar button{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim)}
 .topbar button:hover{color:var(--gold)}
 
-/* het plein: vier kwadranten met de zon in het midden */
+/* het plein: zes tegels in drie kolommen, de zon in het midden */
 .plaza{
-  flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;
-  position:relative;align-content:stretch;
-  min-height:min(74dvh,640px);
+  flex:1;display:grid;grid-template-columns:1fr auto 1fr;gap:12px;
+  align-items:stretch;min-height:min(74dvh,640px);
+}
+.colside{display:grid;grid-template-rows:1fr 1fr;gap:12px;min-width:0}
+.colmid{
+  display:flex;flex-direction:column;gap:12px;align-items:center;
+  width:clamp(200px,25vw,300px);min-width:0;
+}
+.colmid .quad{width:100%;flex:1}
+.sunslot{
+  position:relative;flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;gap:14px;padding:6px 0;
+}
+.sunslot::before{
+  content:"";position:absolute;top:-12px;bottom:-12px;left:50%;width:1px;
+  background:linear-gradient(transparent,var(--gold-dim),transparent);opacity:.5;
 }
 .quad{
   position:relative;overflow:hidden;
   background:linear-gradient(155deg,var(--earth-2),var(--earth));
   border:1px solid var(--earth-3);border-radius:var(--r);
-  padding:clamp(16px,2.4vw,28px);
+  padding:clamp(16px,2.2vw,26px);
   display:flex;flex-direction:column;justify-content:flex-end;gap:6px;
   text-align:left;transition:border-color .35s,transform .35s,opacity .8s,filter .8s;
-  opacity:.34;filter:saturate(.25);
+  opacity:.34;filter:saturate(.25);min-width:0;
 }
 body.lit .quad{opacity:1;filter:none}
 body.lit .quad:hover{border-color:var(--gold-dim);transform:translateY(-2px)}
-/* de hoek die naar de zon wijst wordt ruim afgerond */
-.quad:nth-child(1){border-bottom-right-radius:52%}
-.quad:nth-child(2){border-bottom-left-radius:52%}
-.quad:nth-child(3){border-top-right-radius:52%}
-.quad:nth-child(4){border-top-left-radius:52%}
+.tile-wrap{position:relative;display:flex;min-width:0;min-height:0}
+.tile-wrap .quad{flex:1}
+.snap{
+  position:absolute;top:11px;right:11px;z-index:6;
+  width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(180deg,var(--gold),#b8873a);color:#20170c;
+  box-shadow:0 0 18px rgba(212,162,76,.3);
+  transition:transform .2s,box-shadow .3s;
+}
+.snap:hover{transform:scale(1.1);box-shadow:0 0 30px rgba(212,162,76,.55)}
+.snap:active{transform:scale(.94)}
+.snap svg{width:17px;height:17px;display:block}
+.quad-leeg{background:none;border-style:dashed}
+.quad-leeg h2{color:var(--bone-dim)}
 .quad h2{
   font-family:var(--display);font-weight:400;
-  font-size:clamp(1.1rem,2.6vw,1.7rem);letter-spacing:.03em;color:var(--bone);
+  font-size:clamp(1.05rem,2.2vw,1.6rem);letter-spacing:.03em;color:var(--bone);
 }
-.quad p{font-size:.78rem;color:var(--bone-dim);line-height:1.5;max-width:24ch}
-.quad .tag{
-  position:absolute;top:clamp(14px,2vw,22px);left:clamp(16px,2.4vw,28px);
-}
+.quad p{font-size:.76rem;color:var(--bone-dim);line-height:1.5;max-width:26ch}
+.quad .tag{position:absolute;top:clamp(14px,2vw,20px);left:clamp(16px,2.2vw,26px)}
 .quad .badge{
-  position:absolute;top:clamp(12px,2vw,20px);right:clamp(14px,2.2vw,24px);
+  position:absolute;top:clamp(12px,2vw,18px);right:clamp(14px,2vw,22px);
   min-width:26px;height:26px;padding:0 8px;border-radius:13px;
   background:var(--cochineal);color:#fff;font-size:.72rem;font-weight:500;
   display:none;place-items:center;
@@ -142,10 +162,7 @@ body.lit .quad:hover{border-color:var(--gold-dim);transform:translateY(-2px)}
 .quad .badge.on{display:grid}
 
 /* de zon */
-.sunwrap{
-  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  width:var(--sun);height:var(--sun);z-index:5;
-}
+.sunwrap{position:relative;width:var(--sun);height:var(--sun);z-index:5;flex-shrink:0}
 .sunwrap::before{ /* stralenkrans, draait heel traag */
   content:"";position:absolute;inset:-42%;border-radius:50%;
   background:repeating-conic-gradient(from 0deg,
@@ -190,14 +207,13 @@ body.lit .sunbtn::after{animation:none;opacity:0}
   100%{opacity:0}
 }
 .hint{
-  position:absolute;left:50%;top:calc(50% + var(--sun) * .62);
-  transform:translateX(-50%);z-index:5;white-space:nowrap;
+  z-index:5;white-space:nowrap;
   font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);
   transition:opacity .6s;
 }
 body.lit .hint{opacity:0;pointer-events:none}
 .hint.knock{animation:knock .5s ease}
-@keyframes knock{25%{transform:translateX(-50%) translateY(-4px)}75%{transform:translateX(-50%) translateY(3px)}}
+@keyframes knock{25%{transform:translateY(-5px)}75%{transform:translateY(4px)}}
 
 /* ---------- paneel dat over alles heen schuift ---------- */
 .panel{
@@ -340,6 +356,22 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
   display:block;color:var(--red-bright);font-weight:600;
   font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:9px;
 }
+
+/* ---------- kluis ---------- */
+.kluis-intro{line-height:1.75;color:var(--bone-dim);font-size:.94rem;margin-bottom:24px;max-width:52ch}
+.kluis-cijfers{
+  display:flex;flex-wrap:wrap;gap:26px;padding:18px 0 24px;
+  border-top:1px solid var(--earth-3);border-bottom:1px solid var(--earth-3);margin-bottom:26px;
+}
+.kluis-cijfers div{display:flex;flex-direction:column;gap:4px}
+.kluis-cijfers b{font-family:var(--display);font-weight:300;font-size:1.7rem;color:var(--gold)}
+.kluis-cijfers span{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim)}
+#kluis .btn-gold{width:100%}
+.kluis-knop{width:100%;padding:14px;margin-top:10px}
+.kluis-scheiding{height:1px;background:var(--earth-3);margin:34px 0 22px}
+.kluis-uitleg{font-size:.85rem;line-height:1.7;color:var(--bone-dim);margin:10px 0 16px;max-width:52ch}
+#kluisBtn{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim)}
+#kluisBtn:hover{color:var(--gold)}
 
 /* ---------- project ai ---------- */
 .ai-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
@@ -504,13 +536,19 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
 }
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
+/* ---------- smal scherm: zon boven, tegels eronder ---------- */
+@media (max-width:900px){
+  .plaza{grid-template-columns:1fr 1fr;gap:10px;min-height:0}
+  .colside,.colmid{display:contents}
+  .sunslot{grid-column:1 / -1;order:-1;padding:2px 0 22px}
+  .sunslot::before{display:none}
+  .quad{min-height:118px}
+}
+
 /* ---------- telefoon, staand ---------- */
 @media (max-width:720px){
   :root{--sun:clamp(132px,40vw,196px)}
-  .plaza{min-height:0;gap:10px;padding-top:calc(var(--sun) + 52px);padding-bottom:8px}
-  .sunwrap{top:0;transform:translateX(-50%)}
-  .hint{top:calc(var(--sun) + 16px)}
-  .quad{min-height:112px;justify-content:flex-end;border-radius:var(--r) !important}
+  .quad{min-height:106px}
   .quad p{display:none}
   .choice{grid-template-columns:1fr}
   .panel-head{margin-bottom:18px}
@@ -519,24 +557,26 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
 /* ---------- kleine telefoons ---------- */
 @media (max-width:360px){
   :root{--sun:120px}
-  .quad{min-height:96px;padding:12px}
+  .quad{min-height:92px;padding:12px}
+  .snap{width:34px;height:34px;top:8px;right:8px}
+  .snap svg{width:15px;height:15px}
   .quad h2{font-size:1rem}
   .quad .tag{font-size:.58rem}
 }
 
 /* ---------- telefoon, liggend ---------- */
 @media (max-height:520px) and (orientation:landscape){
-  :root{--sun:clamp(96px,30vh,140px)}
-  .plaza{grid-template-columns:1fr 1fr;padding-top:0;min-height:0;gap:10px}
-  .sunwrap{top:50%;transform:translate(-50%,-50%)}
-  .hint{top:calc(50% + var(--sun) * .62);transform:translateX(-50%)}
-  .quad{min-height:74px;border-radius:var(--r)}
-  .quad:nth-child(1){border-bottom-right-radius:38%}
-  .quad:nth-child(2){border-bottom-left-radius:38%}
-  .quad:nth-child(3){border-top-right-radius:38%}
-  .quad:nth-child(4){border-top-left-radius:38%}
+  :root{--sun:clamp(92px,26vh,130px)}
+  .plaza{grid-template-columns:1fr 1fr 1fr;min-height:0;gap:9px}
+  .colside{display:grid;grid-template-rows:1fr 1fr;gap:9px}
+  .colmid{display:flex;width:auto}
+  .sunslot{grid-column:auto;order:0;padding:2px 0}
+  .sunslot::before{display:none}
+  .quad{min-height:60px;padding:11px}
+  .quad h2{font-size:.95rem}
   .quad p{display:none}
   .topbar{margin-bottom:8px}
+  .hint{font-size:.58rem}
   .legend-title{font-size:1.4rem;margin:6px 0 14px}
   .legend-text{font-size:.92rem;line-height:1.7}
 }
@@ -592,42 +632,69 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
 <div id="app">
   <div class="topbar">
     <div class="date" id="today"></div>
-    <button id="logout">Sluiten</button>
+    <div style="display:flex;gap:18px"><button id="kluisBtn">Kluis</button><button id="logout">Sluiten</button></div>
   </div>
 
   <div class="plaza">
-    <button class="quad" data-panel="zilverweide">
-      <span class="eyebrow tag">Onderneming</span>
-      <h2>Zilverweide</h2>
-      <p>Korte en lange termijn, per categorie.</p>
-    </button>
 
-    <button class="quad" data-panel="ai">
-      <span class="eyebrow tag">Dagelijkse les</span>
-      <h2>AI</h2>
-      <p>Elke dag iets leren, in drie minuten.</p>
-    </button>
+    <div class="colside">
+      <button class="quad" data-panel="zilverweide">
+        <span class="eyebrow tag">Onderneming</span>
+        <h2>Zilverweide</h2>
+        <p>Korte en lange termijn, per categorie.</p>
+      </button>
+      <div class="tile-wrap">
+        <button class="quad" data-panel="thoth">
+          <span class="eyebrow tag">Opschrijven</span>
+          <h2>Thoth</h2>
+          <p>Inspiratie bewaren of iets niet vergeten.</p>
+        </button>
+        <button class="snap" id="snapBtn" aria-label="Snel iets opschrijven" title="Snel iets opschrijven">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M13.5 2 4 13.2h6.2L9.8 22 20 10.5h-6.4z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
 
-    <button class="quad" data-panel="thoth">
-      <span class="eyebrow tag">Opschrijven</span>
-      <h2>Thoth</h2>
-      <p>Inspiratie bewaren of iets niet vergeten.</p>
-    </button>
+    <div class="colmid">
+      <button class="quad" data-panel="intiboard">
+        <span class="eyebrow tag">Deze app</span>
+        <h2>Inti</h2>
+        <p>Verder bouwen en bijschaven.</p>
+      </button>
 
-    <button class="quad" data-panel="fix">
-      <span class="eyebrow tag">Afwerken</span>
-      <span class="badge" id="fixBadge">0</span>
-      <h2>Fix shit</h2>
-      <p>De drie oudste dingen die nog liggen.</p>
-    </button>
+      <div class="sunslot">
+        <div class="sunwrap">
+          <button class="sunbtn" id="sunBtn" aria-label="Begin de dag">
+            <img id="sunImg" alt="">
+            <span class="fallback" id="sunFallback" style="display:none">INTI</span>
+          </button>
+        </div>
+        <div class="hint" id="sunHint">Raak de zon aan</div>
+      </div>
 
-    <div class="sunwrap">
-      <button class="sunbtn" id="sunBtn" aria-label="Begin de dag">
-        <img id="sunImg" alt="">
-        <span class="fallback" id="sunFallback" style="display:none">INTI</span>
+      <button class="quad quad-leeg" data-panel="leeg">
+        <span class="eyebrow tag">Vrij</span>
+        <h2>Nog leeg</h2>
+        <p>Ruimte voor wat hierna komt.</p>
       </button>
     </div>
-    <div class="hint" id="sunHint">Raak de zon aan</div>
+
+    <div class="colside">
+      <button class="quad" data-panel="ai">
+        <span class="eyebrow tag">Dagelijkse les</span>
+        <h2>AI</h2>
+        <p>Elke dag iets leren, in tien minuten.</p>
+      </button>
+      <button class="quad" data-panel="fix">
+        <span class="eyebrow tag">Afwerken</span>
+        <span class="badge" id="fixBadge">0</span>
+        <h2>Fix shit</h2>
+        <p>De drie oudste dingen die nog liggen.</p>
+      </button>
+    </div>
+
   </div>
 </div>
 
@@ -695,34 +762,8 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
   </div>
 </div>
 
-<div class="panel" id="zilverweide">
-  <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>Zilverweide</h2></div>
-  <div class="panel-body zw-body">
-
-    <div class="zw-tabs">
-      <button data-term="kort" class="on">Korte termijn</button>
-      <button data-term="lang">Lange termijn</button>
-    </div>
-
-    <div class="zw-grid">
-      <div class="zw-col show" data-term="kort">
-        <div class="zw-colhead"><span class="eyebrow">Korte termijn</span><span class="zw-n" id="zwNkort">0</span></div>
-        <div id="zwKort"></div>
-      </div>
-
-      <div class="zw-rail">
-        <button class="zw-plus" id="zwPlus" aria-label="Iets toevoegen">+</button>
-        <button class="zw-minus" id="zwMinus" aria-label="Verwijderen aan of uit">&minus;</button>
-      </div>
-
-      <div class="zw-col" data-term="lang">
-        <div class="zw-colhead"><span class="eyebrow">Lange termijn</span><span class="zw-n" id="zwNlang">0</span></div>
-        <div id="zwLang"></div>
-      </div>
-    </div>
-  </div>
-
-</div>
+<!-- de twee borden worden door de code zelf opgebouwd -->
+<div id="boards"></div>
 
 <div class="panel" id="ai">
   <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>Project AI</h2></div>
@@ -742,6 +783,21 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
       <button id="aiDone"></button>
       <button class="step" id="aiNext" aria-label="Volgende les">&rarr;</button>
     </div>
+  </div>
+</div>
+
+<div class="panel" id="kluis">
+  <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>Kluis</h2></div>
+  <div class="panel-body">
+    <p class="kluis-intro">Alles wat in Inti staat, in één bestand. Bewaar het waar je wilt, en zet het terug wanneer je wilt.</p>
+    <div class="kluis-cijfers" id="kluisCijfers"></div>
+    <button class="btn-gold" id="kluisSave">Bewaren of versturen</button>
+    <button class="btn-plain kluis-knop" id="kluisCopy">Kopieer als leesbare tekst</button>
+    <div class="kluis-scheiding"></div>
+    <span class="eyebrow">Terugzetten</span>
+    <p class="kluis-uitleg">Kies een eerder bewaard bestand. Wat er al staat blijft staan, wat ontbreekt komt terug. Dubbel importeren levert geen dubbele regels op.</p>
+    <label class="btn-plain kluis-knop" for="kluisFile" style="display:block;text-align:center;cursor:pointer">Bestand kiezen</label>
+    <input type="file" id="kluisFile" accept="application/json,.json" hidden>
   </div>
 </div>
 
@@ -783,6 +839,21 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
       </div>
     </div>
   </div>
+
+<div class="sheet" id="snapSheet">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <span class="eyebrow">Snel opschrijven</span>
+      <button class="sheet-x" id="snapX" aria-label="Sluiten">&times;</button>
+    </div>
+    <textarea id="snapText" placeholder="Wat mag je niet vergeten?"></textarea>
+    <label class="prio-row" id="snapPrioRow">
+      <input type="checkbox" id="snapPrio">
+      <span>Hoge prioriteit, komt bij Fix shit altijd bovenaan</span>
+    </label>
+    <button class="btn-gold" id="snapSave">Zet op de lijst</button>
+  </div>
+</div>
 
 <div class="zw-rail-m" id="zwRailM">
   <button class="zw-plus" id="zwPlusM" aria-label="Iets toevoegen">+</button>
@@ -1027,7 +1098,7 @@ import {
 import {
   initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
   collection, doc, addDoc, deleteDoc, updateDoc, setDoc, getDoc,
-  onSnapshot, query, orderBy
+  onSnapshot, query, orderBy, getDocs
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
 const $ = s => document.querySelector(s);
@@ -1071,7 +1142,7 @@ if(!ready){
 let db, auth, uid=null;
 let items = [];          // alles uit Thoth, oudste eerst
 let fixShown = [];       // de drie die nu bij Fix shit staan
-let unsub = null, unsubZW = null;
+let unsub = null;
 
 if(ready){
   const app = initializeApp(CONFIG.firebase);
@@ -1118,12 +1189,14 @@ async function start(){
     renderInspiration();
   }, err => toast("Verbinding hapert: "+err.code));
 
-  // luister live mee met Zilverweide
-  const qz = query(collection(db,"users",uid,"zilverweide"), orderBy("createdAt","asc"));
-  unsubZW = onSnapshot(qz, snap => {
-    zw = snap.docs.map(d=>({id:d.id, ...d.data()}));
-    renderZW();
-  }, err => toast("Verbinding hapert: "+err.code));
+  // luister live mee met elk bord
+  BOARDS.forEach(b => {
+    const qb = query(collection(db,"users",uid,b.col), orderBy("createdAt","asc"));
+    bs[b.id].unsub = onSnapshot(qb, snap => {
+      bs[b.id].data = snap.docs.map(d=>({id:d.id, ...d.data()}));
+      renderBoard(b.id);
+    }, err => toast("Verbinding hapert: "+err.code));
+  });
 
   // is de zon vandaag al aangeraakt?
   try{
@@ -1137,8 +1210,8 @@ async function start(){
 }
 function stop(){
   if(unsub) unsub();
-  if(unsubZW) unsubZW();
-  items=[]; fixShown=[]; zw=[];
+  BOARDS.forEach(b => { if(bs[b.id].unsub) bs[b.id].unsub(); bs[b.id].data = []; });
+  items=[]; fixShown=[];
   document.body.classList.remove("lit");
   $("#app").classList.remove("on");
   $("#gate").style.display="grid";
@@ -1183,17 +1256,20 @@ function lightUp(i, showPanel){
    ============================================================ */
 function openPanel(id){
   $("#"+id).classList.add("open");
-  document.body.classList.toggle("zw-open", id === "zilverweide");
+  const bord = BOARDS.some(b => b.id === id);
+  if(bord) bActief = id;
+  document.body.classList.toggle("zw-open", bord);
 }
 function closePanels(){
   $$(".panel").forEach(p=>p.classList.remove("open"));
-  closeSheet();
+  closeSheet(); closeSnap();
   document.body.classList.remove("zw-open");
 }
 $$("[data-close]").forEach(b=>b.addEventListener("click", closePanels));
 document.addEventListener("keydown", e=>{
   if(e.key!=="Escape") return;
-  if($("#zwSheet").classList.contains("open")) closeSheet();
+  if($("#snapSheet").classList.contains("open")) closeSnap();
+  else if($("#zwSheet").classList.contains("open")) closeSheet();
   else closePanels();
 });
 
@@ -1205,7 +1281,8 @@ $$(".quad").forEach(q => q.addEventListener("click", () => {
     return;
   }
   const id = q.dataset.panel;
-  if(id==="fix") pickFix();
+  if(id === "leeg"){ toast("Deze plek is nog vrij"); return; }
+  if(id === "fix") pickFix();
   openPanel(id);
 }));
 
@@ -1345,46 +1422,96 @@ function finish(btn, action, msg){
 }
 
 /* ============================================================
-   ZILVERWEIDE
-   Twee soorten kaartjes in dezelfde map:
-     kind:"cat"   -> een categorie, met een naam
-     kind:"todo"  -> een to do, met een termijn (kort of lang) en een categorie
+   BORDEN  ·  Zilverweide en Inti werken precies hetzelfde.
+   Wil je er een derde bij? Zet hem in de lijst hieronder en
+   geef de zesde tegel op het plein zijn data-panel mee.
    ============================================================ */
-let zw = [];            // alles uit Zilverweide
-let zwTrim = false;     // staat het minnetje aan?
-let zwAddTerm = "kort"; // welke termijn staat er in het toevoegblad
+const BOARDS = [
+  { id:"zilverweide", titel:"Zilverweide", col:"zilverweide" },
+  { id:"intiboard",   titel:"Inti",        col:"intiboard"   }
+];
+const bs = {};                 // per bord de gegevens en de stand van het minnetje
+let bActief = BOARDS[0].id;    // welk bord staat er open
+let zwAddTerm = "kort";
 
-const zwCats  = () => zw.filter(d => d.kind === "cat");
-const zwTodos = () => zw.filter(d => d.kind === "todo");
+BOARDS.forEach(b => bs[b.id] = { data:[], trim:false, unsub:null });
 
-function renderZW(){
-  const cats = zwCats();
+function bouwBorden(){
+  $("#boards").innerHTML = BOARDS.map(b => `
+  <div class="panel" id="${b.id}">
+    <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>${b.titel}</h2></div>
+    <div class="panel-body zw-body">
+      <div class="zw-tabs">
+        <button data-term="kort" class="on">Korte termijn</button>
+        <button data-term="lang">Lange termijn</button>
+      </div>
+      <div class="zw-grid">
+        <div class="zw-col show" data-term="kort">
+          <div class="zw-colhead"><span class="eyebrow">Korte termijn</span><span class="zw-n" id="${b.id}Nkort">0</span></div>
+          <div id="${b.id}Kort"></div>
+        </div>
+        <div class="zw-rail">
+          <button class="zw-plus" data-plus="${b.id}" aria-label="Iets toevoegen">+</button>
+          <button class="zw-minus" data-minus="${b.id}" aria-label="Verwijderen aan of uit">&minus;</button>
+        </div>
+        <div class="zw-col" data-term="lang">
+          <div class="zw-colhead"><span class="eyebrow">Lange termijn</span><span class="zw-n" id="${b.id}Nlang">0</span></div>
+          <div id="${b.id}Lang"></div>
+        </div>
+      </div>
+    </div>
+  </div>`).join("");
 
+  $$("#boards [data-close]").forEach(x => x.addEventListener("click", closePanels));
+  $$("#boards [data-plus]").forEach(x => x.addEventListener("click", () => {
+    bActief = x.dataset.plus; openSheet("pick");
+  }));
+  $$("#boards [data-minus]").forEach(x => x.addEventListener("click", () => toggleTrim(x.dataset.minus)));
+  $$("#boards .zw-tabs button").forEach(x => x.addEventListener("click", () => {
+    const paneel = x.closest(".panel");
+    paneel.querySelectorAll(".zw-tabs button").forEach(y => y.classList.toggle("on", y === x));
+    paneel.querySelectorAll(".zw-col").forEach(c => c.classList.toggle("show", c.dataset.term === x.dataset.term));
+  }));
+}
+bouwBorden();
+
+function toggleTrim(id){
+  const s = bs[id]; s.trim = !s.trim;
+  $("#"+id).classList.toggle("trim", s.trim);
+  document.body.classList.toggle("trimming", s.trim);
+  toast(s.trim ? "Tik op een kruisje om iets te verwijderen" : "Verwijderen staat uit");
+}
+
+const catsVan  = id => bs[id].data.filter(d => d.kind === "cat");
+const todosVan = id => bs[id].data.filter(d => d.kind === "todo");
+
+function renderBoard(id){
+  const cats = catsVan(id);
   ["kort","lang"].forEach(term => {
-    const list = zwTodos().filter(t => t.term === term);
-    $(term==="kort" ? "#zwNkort" : "#zwNlang").textContent = list.length;
+    const list = todosVan(id).filter(t => t.term === term);
+    $(`#${id}N${term}`).textContent = list.length;
 
     let html = "";
     const los = list.filter(t => !t.catId || !cats.some(c => c.id === t.catId));
-    if(los.length) html += zwGroup("Algemeen", null, los, term);
-    cats.forEach(c => { html += zwGroup(c.name, c.id, list.filter(t => t.catId === c.id), term); });
-
+    if(los.length) html += groep(id, "Algemeen", null, los, term);
+    cats.forEach(c => { html += groep(id, c.name, c.id, list.filter(t => t.catId === c.id), term); });
     if(!html) html = `<div class="empty"><span class="big">Nog niets</span>
       Gebruik de plus in het midden voor je eerste categorie of to do.</div>`;
 
-    $(term==="kort" ? "#zwKort" : "#zwLang").innerHTML = html;
+    $(`#${id}${term==="kort"?"Kort":"Lang"}`).innerHTML = html;
   });
-
-  // keuzelijst met categorieen bijwerken
-  const sel = $("#zwTodoCat"), keep = sel.value;
-  sel.innerHTML = `<option value="">Algemeen</option>` +
-    cats.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
-  if([...sel.options].some(o => o.value === keep)) sel.value = keep;
-
-  zwBind();
+  if(id === bActief) vulCategorieLijst(id);
+  bindBoard(id);
 }
 
-function zwGroup(naam, catId, list, term){
+function vulCategorieLijst(id){
+  const sel = $("#zwTodoCat"), keep = sel.value;
+  sel.innerHTML = `<option value="">Algemeen</option>` +
+    catsVan(id).map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
+  if([...sel.options].some(o => o.value === keep)) sel.value = keep;
+}
+
+function groep(id, naam, catId, list, term){
   const pijl = term === "kort" ? "&rarr;" : "&larr;";
   const items = list.map(t => `
     <div class="zw-item" data-id="${t.id}">
@@ -1392,7 +1519,6 @@ function zwGroup(naam, catId, list, term){
       <button class="zw-move" data-move="${t.id}" title="Naar de andere kolom">${pijl}</button>
       <button class="zw-kill" data-tdel="${t.id}" aria-label="Verwijderen">&times;</button>
     </div>`).join("");
-
   return `<div class="zw-cat">
       <div class="zw-cat-head">
         <span class="zw-cat-name">${escapeHtml(naam)}</span>
@@ -1402,61 +1528,49 @@ function zwGroup(naam, catId, list, term){
     </div>`;
 }
 
-function zwBind(){
-  // van kort naar lang en terug
-  $$("#zilverweide [data-move]").forEach(b => b.addEventListener("click", async () => {
-    const id = b.dataset.move;
-    const t = zw.find(x => x.id === id);
+function bindBoard(id){
+  const col = BOARDS.find(b => b.id === id).col;
+  const pad = ref => doc(db,"users",uid,col,ref);
+
+  $$(`#${id} [data-move]`).forEach(b => b.addEventListener("click", async () => {
+    const t = bs[id].data.find(x => x.id === b.dataset.move);
     if(!t) return;
     b.closest(".zw-item").classList.add("gone");
-    try{
-      await updateDoc(doc(db,"users",uid,"zilverweide",id),
-        { term: t.term === "kort" ? "lang" : "kort" });
-    }catch(e){ toast("Verplaatsen lukt niet"); renderZW(); }
+    try{ await updateDoc(pad(t.id), { term: t.term === "kort" ? "lang" : "kort" }); }
+    catch(e){ toast("Verplaatsen lukt niet"); renderBoard(id); }
   }));
 
-  // een to do weggooien
-  $$("#zilverweide [data-tdel]").forEach(b => b.addEventListener("click", async () => {
+  $$(`#${id} [data-tdel]`).forEach(b => b.addEventListener("click", async () => {
     b.closest(".zw-item").classList.add("gone");
-    try{ await deleteDoc(doc(db,"users",uid,"zilverweide",b.dataset.tdel)); }
-    catch(e){ toast("Verwijderen lukt niet"); renderZW(); }
+    try{ await deleteDoc(pad(b.dataset.tdel)); }
+    catch(e){ toast("Verwijderen lukt niet"); renderBoard(id); }
   }));
 
-  // een categorie weggooien, de to do's blijven bestaan
-  $$("#zilverweide [data-cdel]").forEach(b => b.addEventListener("click", async () => {
-    const id = b.dataset.cdel;
-    const erfgenamen = zwTodos().filter(t => t.catId === id);
+  $$(`#${id} [data-cdel]`).forEach(b => b.addEventListener("click", async () => {
+    const catId = b.dataset.cdel;
+    const erf = todosVan(id).filter(t => t.catId === catId);
     try{
-      for(const t of erfgenamen){
-        await updateDoc(doc(db,"users",uid,"zilverweide",t.id), { catId: null });
-      }
-      await deleteDoc(doc(db,"users",uid,"zilverweide",id));
-      toast(erfgenamen.length
-        ? `Categorie weg, ${erfgenamen.length} verhuisd naar Algemeen`
-        : "Categorie weg");
+      for(const t of erf) await updateDoc(pad(t.id), { catId: null });
+      await deleteDoc(pad(catId));
+      toast(erf.length ? `Categorie weg, ${erf.length} verhuisd naar Algemeen` : "Categorie weg");
     }catch(e){ toast("Verwijderen lukt niet"); }
   }));
 }
 
-/* --- de twee knopjes in het midden, en hun tweelingen op de telefoon --- */
-function zwToggleTrim(){
-  zwTrim = !zwTrim;
-  $("#zilverweide").classList.toggle("trim", zwTrim);
-  document.body.classList.toggle("trimming", zwTrim);
-  toast(zwTrim ? "Tik op een kruisje om iets te verwijderen" : "Verwijderen staat uit");
-}
-$("#zwPlus").addEventListener("click", () => openSheet("pick"));
+/* --- de zwevende knoppen op de telefoon horen bij het open bord --- */
 $("#zwPlusM").addEventListener("click", () => openSheet("pick"));
-$("#zwMinus").addEventListener("click", zwToggleTrim);
-$("#zwMinusM").addEventListener("click", zwToggleTrim);
+$("#zwMinusM").addEventListener("click", () => toggleTrim(bActief));
 
 /* --- het blad om iets toe te voegen --- */
 function openSheet(view){
+  vulCategorieLijst(bActief);
   $("#zwPick").hidden     = view !== "pick";
   $("#zwFormTodo").hidden = view !== "todo";
   $("#zwFormCat").hidden  = view !== "cat";
+  const naam = BOARDS.find(b => b.id === bActief).titel;
   $("#sheetTitle").textContent =
-    view === "todo" ? "Nieuwe to do" : view === "cat" ? "Nieuwe categorie" : "Toevoegen";
+    view === "todo" ? "Nieuwe to do in " + naam :
+    view === "cat"  ? "Nieuwe categorie in " + naam : "Toevoegen aan " + naam;
   $("#zwSheet").classList.add("open");
   if(view === "todo") setTimeout(() => $("#zwTodoText").focus(), 90);
   if(view === "cat")  setTimeout(() => $("#zwCatName").focus(), 90);
@@ -1466,7 +1580,6 @@ function closeSheet(){ $("#zwSheet").classList.remove("open"); }
 $("#zwSheetX").addEventListener("click", closeSheet);
 $("#zwSheet").addEventListener("click", e => { if(e.target.id === "zwSheet") closeSheet(); });
 $$("#zwPick button").forEach(b => b.addEventListener("click", () => openSheet(b.dataset.add)));
-
 $$("#zwTermSeg button").forEach(b => b.addEventListener("click", () => {
   zwAddTerm = b.dataset.t;
   $$("#zwTermSeg button").forEach(x => x.classList.toggle("on", x === b));
@@ -1475,37 +1588,28 @@ $$("#zwTermSeg button").forEach(b => b.addEventListener("click", () => {
 $("#zwTodoSave").addEventListener("click", async () => {
   const text = $("#zwTodoText").value.trim();
   if(!text){ toast("Er staat nog niets in"); return; }
+  const col = BOARDS.find(b => b.id === bActief).col;
   try{
-    await addDoc(collection(db,"users",uid,"zilverweide"),{
-      kind:"todo", text,
-      term: zwAddTerm,
+    await addDoc(collection(db,"users",uid,col),{
+      kind:"todo", text, term: zwAddTerm,
       catId: $("#zwTodoCat").value || null,
       createdAt: Date.now()
     });
     $("#zwTodoText").value = "";
-    closeSheet();
-    toast("Toegevoegd");
+    closeSheet(); toast("Toegevoegd");
   }catch(e){ toast("Opslaan lukt niet"); }
 });
 
 $("#zwCatSave").addEventListener("click", async () => {
   const naam = $("#zwCatName").value.trim();
   if(!naam){ toast("Geef de categorie een naam"); return; }
+  const col = BOARDS.find(b => b.id === bActief).col;
   try{
-    await addDoc(collection(db,"users",uid,"zilverweide"),{
-      kind:"cat", name: naam, createdAt: Date.now()
-    });
+    await addDoc(collection(db,"users",uid,col),{ kind:"cat", name: naam, createdAt: Date.now() });
     $("#zwCatName").value = "";
-    closeSheet();
-    toast("Categorie gemaakt");
+    closeSheet(); toast("Categorie gemaakt");
   }catch(e){ toast("Opslaan lukt niet"); }
 });
-
-/* --- op de telefoon wissel je met tabbladen tussen kort en lang --- */
-$$(".zw-tabs button").forEach(b => b.addEventListener("click", () => {
-  $$(".zw-tabs button").forEach(x => x.classList.toggle("on", x === b));
-  $$("#zilverweide .zw-col").forEach(c => c.classList.toggle("show", c.dataset.term === b.dataset.term));
-}));
 
 /* ============================================================
    PROJECT AI
@@ -1564,6 +1668,155 @@ $("#aiDone").addEventListener("click", ()=>{
   if(aiAt < LESSONS.length-1) aiAt++;
   else if(!was) toast("Alle lessen gehad. Mooi.");
   saveAI(); renderAI();
+});
+
+/* ============================================================
+   KLUIS  ·  alles eruit halen en weer terugzetten
+   ============================================================ */
+const METAS = ["dag","ai"];
+
+async function alles(){
+  const uit = { app:"Inti", versie:1, datum:new Date().toISOString(), thoth:[], meta:{} };
+  const snapT = await getDocs(query(collection(db,"users",uid,"thoth"), orderBy("createdAt","asc")));
+  uit.thoth = snapT.docs.map(d => ({id:d.id, ...d.data()}));
+  for(const b of BOARDS) uit[b.col] = bs[b.id].data;
+  for(const m of METAS){
+    const s = await getDoc(doc(db,"users",uid,"meta",m));
+    if(s.exists()) uit.meta[m] = s.data();
+  }
+  return uit;
+}
+
+function alsTekst(d){
+  const r = [`INTI, bewaard op ${new Date(d.datum).toLocaleString("nl-NL")}`,""];
+  const geh = d.thoth.filter(i=>i.kind==="geheugen");
+  const ins = d.thoth.filter(i=>i.kind==="inspiratie");
+  if(geh.length){ r.push("NIET VERGETEN"); geh.forEach(i=>r.push(`- ${i.prio?"[!] ":""}${i.text}`)); r.push(""); }
+  if(ins.length){ r.push("INSPIRATIE"); ins.forEach(i=>r.push(`- ${i.text}`)); r.push(""); }
+  for(const b of BOARDS){
+    const rij = d[b.col] || [];
+    if(!rij.length) continue;
+    r.push(b.titel.toUpperCase());
+    const cats = rij.filter(x=>x.kind==="cat");
+    ["kort","lang"].forEach(term => {
+      const t = rij.filter(x=>x.kind==="todo" && x.term===term);
+      if(!t.length) return;
+      r.push(`  ${term==="kort"?"Korte":"Lange"} termijn`);
+      t.forEach(x => {
+        const c = cats.find(y=>y.id===x.catId);
+        r.push(`  - [${c?c.name:"Algemeen"}] ${x.text}`);
+      });
+    });
+    r.push("");
+  }
+  if(d.meta.ai) r.push(`AI-lessen gedaan: ${(d.meta.ai.done||[]).length} van ${LESSONS.length}`);
+  return r.join("\n");
+}
+
+function toonKluis(){
+  const geh = items.filter(i=>i.kind==="geheugen").length;
+  const ins = items.filter(i=>i.kind==="inspiratie").length;
+  const bord = BOARDS.map(b => todosVan(b.id).length).reduce((a,c)=>a+c,0);
+  $("#kluisCijfers").innerHTML = `
+    <div><b>${geh}</b><span>niet vergeten</span></div>
+    <div><b>${ins}</b><span>inspiratie</span></div>
+    <div><b>${bord}</b><span>to do's</span></div>
+    <div><b>${aiDone.length}</b><span>lessen gedaan</span></div>`;
+}
+
+$("#kluisBtn").addEventListener("click", () => {
+  if(!document.body.classList.contains("lit")){ toast("Begin bij de zon"); return; }
+  toonKluis(); openPanel("kluis");
+});
+
+$("#kluisSave").addEventListener("click", async () => {
+  toast("Bezig met inpakken...");
+  try{
+    const d = await alles();
+    const naam = `inti-${today()}.json`;
+    const blob = new Blob([JSON.stringify(d,null,2)], {type:"application/json"});
+    const file = new File([blob], naam, {type:"application/json"});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({ files:[file], title:"Inti reservekopie" });
+    }else{
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = naam; a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+      toast("Bestand opgeslagen");
+    }
+  }catch(e){ if(e.name !== "AbortError") toast("Inpakken lukt niet"); }
+});
+
+$("#kluisCopy").addEventListener("click", async () => {
+  try{
+    await navigator.clipboard.writeText(alsTekst(await alles()));
+    toast("Op je klembord gezet");
+  }catch(e){ toast("Kopieren lukt niet in deze browser"); }
+});
+
+$("#kluisFile").addEventListener("change", async e => {
+  const f = e.target.files[0];
+  if(!f) return;
+  toast("Bezig met terugzetten...");
+  try{
+    const d = JSON.parse(await f.text());
+    if(d.app !== "Inti") throw new Error("verkeerd bestand");
+    let n = 0;
+    for(const i of (d.thoth||[])){
+      const {id, ...rest} = i;
+      await setDoc(doc(db,"users",uid,"thoth",id), rest, {merge:true}); n++;
+    }
+    for(const b of BOARDS){
+      for(const i of (d[b.col]||[])){
+        const {id, ...rest} = i;
+        await setDoc(doc(db,"users",uid,b.col,id), rest, {merge:true}); n++;
+      }
+    }
+    for(const m of METAS){
+      if(d.meta && d.meta[m]) await setDoc(doc(db,"users",uid,"meta",m), d.meta[m], {merge:true});
+    }
+    toast(`${n} regels teruggezet`);
+    loadAI(); toonKluis();
+  }catch(err){ toast("Dit bestand kan ik niet lezen"); }
+  e.target.value = "";
+});
+
+/* ============================================================
+   SNEL OPSCHRIJVEN  ·  de bliksem op de Thoth-tegel
+   Werkt ook voordat je de zon hebt aangeraakt, want een inval
+   wacht niet op een ritueel.
+   ============================================================ */
+function openSnap(){
+  $("#snapText").value = "";
+  $("#snapPrio").checked = false;
+  $("#snapPrioRow").classList.remove("on");
+  $("#snapSheet").classList.add("open");
+  setTimeout(() => $("#snapText").focus(), 90);
+}
+function closeSnap(){ $("#snapSheet").classList.remove("open"); }
+
+$("#snapBtn").addEventListener("click", openSnap);
+$("#snapX").addEventListener("click", closeSnap);
+$("#snapSheet").addEventListener("click", e => { if(e.target.id === "snapSheet") closeSnap(); });
+$("#snapPrio").addEventListener("change", e => {
+  $("#snapPrioRow").classList.toggle("on", e.target.checked);
+});
+
+async function bewaarSnap(){
+  const text = $("#snapText").value.trim();
+  if(!text){ toast("Er staat nog niets in"); return; }
+  const prio = $("#snapPrio").checked;
+  closeSnap();
+  try{
+    await addDoc(collection(db,"users",uid,"thoth"),{
+      text, kind:"geheugen", prio, createdAt: Date.now(), snoozeUntil: null
+    });
+    toast(prio ? "Bovenaan gezet" : "Op de lijst gezet");
+  }catch(e){ toast("Opslaan lukt niet"); }
+}
+$("#snapSave").addEventListener("click", bewaarSnap);
+$("#snapText").addEventListener("keydown", e => {
+  if(e.key === "Enter" && (e.metaKey || e.ctrlKey)) bewaarSnap();
 });
 
 function escapeHtml(s){
