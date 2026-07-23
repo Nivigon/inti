@@ -397,7 +397,6 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 
 /* ---------- project ai ---------- */
 .ai-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
-.ai-dots{display:flex;gap:7px}
 .ai-dots button{
   width:10px;height:10px;border-radius:50%;padding:0;
   border:1px solid var(--gold-dim);background:none;transition:.2s;
@@ -417,34 +416,60 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 .ai-task .eyebrow{color:var(--turquoise);display:block;margin-bottom:11px}
 .ai-task p{line-height:1.8;font-size:.94rem;margin-bottom:.7em}
 .ai-task p:last-child{margin-bottom:0}
-.ai-nav{display:flex;gap:10px;margin-top:28px;align-items:stretch}
-.ai-nav .step{
-  padding:13px 17px;border-radius:10px;border:1px solid var(--earth-3);
-  font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--bone-dim);
-  transition:border-color .2s,color .2s;
+.ai-arch{
+  margin-left:auto;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--bone-dim);border:1px solid var(--earth-3);padding:9px 14px;border-radius:9px;
+  transition:color .2s,border-color .2s;flex-shrink:0;
 }
-.ai-nav .step:hover:not(:disabled){border-color:var(--gold-dim);color:var(--gold)}
-.ai-nav .step:disabled{opacity:.25;cursor:default}
-.ai-nav .btn-gold{flex:1;margin:0}
+.ai-arch:hover{color:var(--gold);border-color:var(--gold-dim)}
 .ai-herhaal{
   display:block;background:rgba(61,143,136,.14);border:1px solid var(--turquoise);
-  border-radius:10px;padding:11px 14px;margin-bottom:18px;
+  border-radius:10px;padding:11px 14px;margin:14px 0 4px;
   font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--turquoise);
 }
-.ai-extra{display:flex;gap:10px;margin-top:12px}
-.ai-extra button{
-  flex:1;padding:12px;border-radius:10px;border:1px solid var(--earth-3);
-  font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--bone-dim);
+.ai-keuze{margin-top:30px;display:flex;flex-direction:column;gap:10px}
+.ai-keuze .btn-gold{width:100%;margin:0}
+.ai-keuze-rij{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ai-tweede{
+  padding:13px;border-radius:10px;border:1px solid var(--earth-3);
+  font-size:.7rem;letter-spacing:.11em;text-transform:uppercase;color:var(--bone-dim);
   transition:border-color .2s,color .2s;
 }
-#aiKeep:hover{border-color:var(--turquoise);color:var(--turquoise)}
-#aiKeep.on{border-color:var(--turquoise);color:var(--turquoise);background:rgba(61,143,136,.12)}
+#aiKeep:hover,#aiHerhaalNog:hover{border-color:var(--turquoise);color:var(--turquoise)}
 #aiDrop:hover{border-color:var(--cochineal);color:var(--cochineal)}
-.badge-goud{background:var(--gold) !important;color:#20170c !important}
-.ai-dots button.weg{display:none}
-.ai-dots button.keep{border-color:var(--turquoise)}
-.ai-nav .btn-plain{
-  flex:1;border:1px solid var(--gold-dim);border-radius:var(--r);color:var(--gold);
+.ai-reden-uitleg{color:var(--bone-dim);font-size:.9rem;line-height:1.7;margin:12px 0 22px;max-width:48ch}
+.ai-redenen{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ai-redenen button{
+  padding:16px 14px;border-radius:10px;border:1px solid var(--earth-3);
+  background:var(--earth);font-size:.85rem;color:var(--bone);text-align:left;line-height:1.4;
+  transition:border-color .2s,color .2s;
+}
+.ai-redenen button:hover{border-color:var(--cochineal);color:var(--red-bright)}
+.ai-over{
+  display:block;width:100%;margin-top:20px;padding:12px;
+  font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dim);
+}
+.ai-over:hover{color:var(--bone-dim)}
+.arch-item{border:1px solid var(--earth-3);border-radius:var(--r);margin-bottom:9px;overflow:hidden}
+.arch-item.bewaard{border-left:2px solid var(--turquoise)}
+.arch-item.verworpen{border-left:2px solid var(--cochineal)}
+.arch-head{
+  width:100%;display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  padding:15px 16px;text-align:left;background:var(--earth);
+}
+.arch-head:hover{background:var(--earth-2)}
+.arch-titel{font-family:var(--display);font-size:1rem;color:var(--bone)}
+.arch-meta{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--bone-dim);flex-shrink:0}
+.arch-body{padding:4px 16px 16px;border-top:1px solid var(--earth-3)}
+.arch-body p{font-size:.88rem;line-height:1.75;margin:.7em 0;color:var(--bone-dim)}
+.arch-acts{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+.arch-acts button{
+  padding:11px;border-radius:9px;border:1px solid var(--earth-3);
+  font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--bone-dim);
+}
+.arch-acts button:hover{border-color:var(--gold-dim);color:var(--gold)}
+.btn-plain{
+  border:1px solid var(--gold-dim);border-radius:var(--r);color:var(--gold);
   font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:500;
 }
 
@@ -806,30 +831,48 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
 <div id="boards"></div>
 
 <div class="panel" id="ai">
-  <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>Project AI</h2></div>
+  <div class="panel-head">
+    <button class="back" data-close>&#8595;</button>
+    <h2>Project AI</h2>
+    <button class="ai-arch" id="aiArchBtn">Archief</button>
+  </div>
   <div class="panel-body">
 
     <div id="aiLes">
-      <div class="ai-top">
-        <span class="eyebrow" id="aiNr"></span>
-        <div class="ai-dots" id="aiDots"></div>
-      </div>
-      <div class="ai-herhaal" id="aiHerhaal" hidden>Herhaling van een les die je wilde bewaren</div>
+      <span class="eyebrow" id="aiNr"></span>
+      <div class="ai-herhaal" id="aiHerhaal" hidden>Een les die je wilde bewaren</div>
       <h3 class="ai-title" id="aiTitle"></h3>
       <div class="ai-text" id="aiText"></div>
       <div class="ai-task">
         <span class="eyebrow">Probeer dit, vijf tot tien minuten</span>
         <div id="aiTask"></div>
       </div>
-      <div class="ai-nav">
-        <button class="step" id="aiPrev" aria-label="Vorige les">&larr;</button>
-        <button id="aiDone"></button>
-        <button class="step" id="aiNext" aria-label="Volgende les">&rarr;</button>
+
+      <div class="ai-keuze" id="aiKeuze">
+        <button class="btn-gold" id="aiDone">Gedaan, volgende les</button>
+        <div class="ai-keuze-rij">
+          <button class="ai-tweede" id="aiKeep">Bewaren voor later</button>
+          <button class="ai-tweede" id="aiDrop">Verwerpen</button>
+        </div>
       </div>
-      <div class="ai-extra">
-        <button id="aiKeep"></button>
-        <button id="aiDrop">Verwerpen</button>
+
+      <div class="ai-keuze" id="aiHerhaalKeuze" hidden>
+        <button class="btn-gold" id="aiHerhaalKlaar">Klaar hiermee</button>
+        <button class="ai-tweede" id="aiHerhaalNog">Nog eens over vijf dagen</button>
       </div>
+    </div>
+
+    <div id="aiReden" hidden>
+      <span class="eyebrow">Wat was er mis?</span>
+      <h3 class="ai-title" id="aiRedenTitel"></h3>
+      <p class="ai-reden-uitleg">Eén tik helpt me betere lessen voor je schrijven. Het gaat mee in je reservekopie. Overslaan mag.</p>
+      <div class="ai-redenen">
+        <button data-reden="te makkelijk">Te makkelijk</button>
+        <button data-reden="niet relevant voor mij">Niet relevant voor mij</button>
+        <button data-reden="te vaag">Te vaag</button>
+        <button data-reden="wist ik al">Dit wist ik al</button>
+      </div>
+      <button class="ai-over" id="aiRedenOver">Overslaan</button>
     </div>
 
     <div id="aiKlaar" hidden>
@@ -841,7 +884,15 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
         <div id="aiVraag"></div>
       </div>
       <button class="btn-gold" id="aiKopieer" style="width:100%;margin-top:22px">Kopieer de vraag voor Claude</button>
-      <button class="btn-plain kluis-knop" id="aiTerug">Toch nog eens teruglezen</button>
+    </div>
+
+    <div id="aiArchief" hidden>
+      <div class="zw-tabs th-tabs">
+        <button data-lijst="bewaard" class="on">Bewaard <span id="aiNbewaard">0</span></button>
+        <button data-lijst="verworpen">Verworpen <span id="aiNweg">0</span></button>
+      </div>
+      <div id="aiArchLijst"></div>
+      <button class="btn-plain kluis-knop" id="aiArchTerug">Terug naar de les</button>
     </div>
 
   </div>
@@ -1691,119 +1742,105 @@ $("#zwCatSave").addEventListener("click", async () => {
 
 /* ============================================================
    PROJECT AI
-   Een les kan drie dingen zijn: gedaan, bewaard of verworpen.
-   Verworpen lessen verdwijnen uit beeld maar blijven bewaard,
-   zodat ze in de reservekopie meegaan.
+   Werkt als een stapel, niet als een lijst. Je ziet steeds één
+   les waar je nog geen oordeel over hebt. Elke les krijgt precies
+   een afloop: gedaan, bewaard of verworpen. Alles blijft bewaard
+   en gaat mee in de reservekopie.
    ============================================================ */
 const HERHAAL_DAGEN = 5;
 
-let aiAt = 0;
-let aiDone = [];        // afgevinkt
-let aiWeg = [];         // verworpen, zie je niet meer
-let aiBewaard = [];     // wil je nog eens terugzien
+let aiStatus = {};          // {lesnummer: "gedaan" | "bewaard" | "verworpen"}
+let aiReden  = {};          // {lesnummer: waarom verworpen}
 let aiHerhaalDatum = null;
-let aiWijzer = 0;       // welke bewaarde les is aan de beurt
-let aiHerhaling = null; // staat er nu een herhaling op het scherm
-let aiBladeren = false; // teruglezen terwijl je eigenlijk klaar bent
+let aiWijzer = 0;           // welke bewaarde les is aan de beurt
+let aiHerhaling = null;     // staat er nu een herhaling op het scherm
+let aiWachtReden = null;    // welke les vraagt nog om een reden
+let aiArchLijst = "bewaard";
 
-const actieveLessen = () => LESSONS.map((_,i)=>i).filter(i => !aiWeg.includes(i));
+const metStatus  = s => LESSONS.map((_,i)=>i).filter(i => aiStatus[i] === s);
+const openLessen = () => LESSONS.map((_,i)=>i).filter(i => !aiStatus[i]);
 const herhalingKlaar = () =>
-  aiBewaard.length > 0 && (!aiHerhaalDatum || dagenSinds(aiHerhaalDatum) >= HERHAAL_DAGEN);
+  metStatus("bewaard").length > 0 && (!aiHerhaalDatum || dagenSinds(aiHerhaalDatum) >= HERHAAL_DAGEN);
 
 async function loadAI(){
   try{
     const s = await getDoc(doc(db,"users",uid,"meta","ai"));
     const d = s.exists() ? s.data() : {};
-    aiDone    = Array.isArray(d.done)     ? d.done     : [];
-    aiWeg     = Array.isArray(d.weg)      ? d.weg      : [];
-    aiBewaard = Array.isArray(d.bewaard)  ? d.bewaard  : [];
+    aiStatus = d.status && typeof d.status === "object" ? {...d.status} : {};
+    aiReden  = d.reden  && typeof d.reden  === "object" ? {...d.reden}  : {};
+    // oude opzet met drie lijstjes netjes overzetten
+    if(!d.status){
+      (d.weg     || []).forEach(i => aiStatus[i] = "verworpen");
+      (d.bewaard || []).forEach(i => aiStatus[i] = "bewaard");
+      (d.done    || []).forEach(i => { if(!aiStatus[i]) aiStatus[i] = "gedaan"; });
+    }
     aiHerhaalDatum = d.herhaald || null;
-    aiWijzer  = Number.isInteger(d.wijzer) ? d.wijzer : 0;
-    aiAt      = Number.isInteger(d.at) ? Math.min(d.at, LESSONS.length-1) : 0;
-  }catch(e){ aiDone=[]; aiWeg=[]; aiBewaard=[]; aiAt=0; }
+    aiWijzer = Number.isInteger(d.wijzer) ? d.wijzer : 0;
+  }catch(e){ aiStatus = {}; aiReden = {}; }
   renderAI(); aiBadge();
 }
 async function saveAI(){
   try{
     await setDoc(doc(db,"users",uid,"meta","ai"),
-      { at: aiAt, done: aiDone, weg: aiWeg, bewaard: aiBewaard,
-        herhaald: aiHerhaalDatum, wijzer: aiWijzer }, {merge:true});
+      { status: aiStatus, reden: aiReden, herhaald: aiHerhaalDatum, wijzer: aiWijzer },
+      {merge:true});
   }catch(e){ /* offline, komt later goed */ }
 }
 
-function aiBadge(){
-  const b = $("#aiBadge");
-  b.classList.toggle("on", herhalingKlaar());
-}
+function aiBadge(){ $("#aiBadge").classList.toggle("on", herhalingKlaar()); }
 
-/* --- het paneel openen: eerst kijken of er een herhaling klaarstaat --- */
 function openAI(){
-  if(herhalingKlaar()) aiHerhaling = aiBewaard[aiWijzer % aiBewaard.length];
-  aiBladeren = false;
+  if(herhalingKlaar()){
+    const bew = metStatus("bewaard");
+    aiHerhaling = bew[aiWijzer % bew.length];
+  }
+  aiWachtReden = null;
   renderAI();
   openPanel("ai");
 }
 
+function aiToon(deel){
+  ["aiLes","aiReden","aiKlaar","aiArchief"].forEach(x => $("#"+x).hidden = x !== deel);
+}
+
 function renderAI(){
-  const act = actieveLessen();
-  if(aiHerhaling !== null && LESSONS[aiHerhaling]) return toonLes(aiHerhaling, true);
-  if(!act.length) return toonKlaar("Je hebt alle lessen verworpen. Tijd voor nieuwe.");
-  if(!aiBladeren && act.every(i => aiDone.includes(i)))
-    return toonKlaar(`Je hebt alle ${act.length} lessen afgerond. Tijd voor nieuwe.`);
-  if(!act.includes(aiAt)) aiAt = act.find(i => !aiDone.includes(i)) ?? act[0];
-  toonLes(aiAt, false);
+  aiBadge();
+  if(aiWachtReden !== null)   return toonReden();
+  if(aiHerhaling !== null)    return toonLes(aiHerhaling, true);
+  const open = openLessen();
+  if(!open.length)            return toonKlaar();
+  toonLes(open[0], false);
 }
 
 function toonLes(i, isHerhaling){
+  aiToon("aiLes");
   const L = LESSONS[i];
-  $("#aiLes").hidden = false;
-  $("#aiKlaar").hidden = true;
-  $("#aiHerhaal").hidden = !isHerhaling;
+  const open = openLessen().length;
 
-  const act = actieveLessen();
+  $("#aiHerhaal").hidden = !isHerhaling;
   $("#aiNr").textContent = isHerhaling
-    ? `Bewaarde les ${i+1}`
-    : `Les ${act.indexOf(i)+1} van ${act.length} · ${aiDone.filter(x=>act.includes(x)).length} gedaan`;
+    ? `Bewaarde les ${i+1} van ${LESSONS.length}`
+    : `Les ${i+1} · nog ${open} te gaan`;
   $("#aiTitle").textContent = L.title;
   $("#aiText").innerHTML = alinea(L.text);
   $("#aiTask").innerHTML = alinea(L.task);
 
-  $("#aiDots").innerHTML = LESSONS.map((_,n) =>
-    `<button data-go="${n}" class="${aiWeg.includes(n)?"weg":""} ${aiDone.includes(n)?"done":""} ${aiBewaard.includes(n)?"keep":""} ${n===i?"now":""}"
-      aria-label="Les ${n+1}"></button>`).join("");
-  $$("#aiDots button").forEach(b => b.addEventListener("click", () => {
-    aiHerhaling = null; aiBladeren = true; aiAt = +b.dataset.go; saveAI(); renderAI();
-  }));
-
-  $("#aiPrev").disabled = isHerhaling || act.indexOf(i) <= 0;
-  $("#aiNext").disabled = isHerhaling || act.indexOf(i) >= act.length-1;
-
-  const knop = $("#aiDone");
-  if(isHerhaling){
-    knop.textContent = "Gezien, terug naar de lessen";
-    knop.className = "btn-gold";
-  }else{
-    const klaar = aiDone.includes(i);
-    knop.textContent = klaar
-      ? (act.indexOf(i) === act.length-1 ? "Naar het overzicht" : "Volgende les")
-      : "Gedaan, volgende";
-    knop.className = klaar ? "btn-plain" : "btn-gold";
-  }
-
-  const keep = $("#aiKeep");
-  keep.textContent = aiBewaard.includes(i) ? "Bewaard" : "Bewaar voor later";
-  keep.classList.toggle("on", aiBewaard.includes(i));
-  $("#aiDrop").hidden = isHerhaling;
-  aiBadge();
+  $("#aiKeuze").hidden = isHerhaling;
+  $("#aiHerhaalKeuze").hidden = !isHerhaling;
 }
 
-function toonKlaar(regel){
-  $("#aiLes").hidden = true;
-  $("#aiKlaar").hidden = false;
+function toonReden(){
+  aiToon("aiReden");
+  $("#aiRedenTitel").textContent = LESSONS[aiWachtReden].title;
+}
+
+function toonKlaar(){
+  aiToon("aiKlaar");
+  const g = metStatus("gedaan").length, b = metStatus("bewaard").length, v = metStatus("verworpen").length;
   $("#aiKlaarTekst").innerHTML = alinea(
-    `${regel || "Je bent door de lessen heen."}
-Van de ${LESSONS.length} lessen heb je er ${aiDone.length} afgevinkt, ${aiBewaard.length} bewaard en ${aiWeg.length} verworpen.
-Maak een nieuwe reeks met Claude. Neem er je reservekopie uit de kluis bij, want daarin staat wat je goed vond en wat niet.`);
+    `Er liggen geen nieuwe lessen meer op de stapel.
+Van de ${LESSONS.length} heb je er ${g} afgerond, ${b} bewaard en ${v} verworpen.
+Maak een nieuwe reeks met Claude. Neem je reservekopie uit de kluis mee, want daarin staat wat je goed vond, wat niet, en waarom.`);
   $("#aiVraag").innerHTML = alinea(NIEUWE_LESSEN_VRAAG);
 }
 
@@ -1811,69 +1848,117 @@ const NIEUWE_LESSEN_VRAAG =
 `Ik gebruik een zelfgebouwde app die Inti heet, met daarin korte lessen over werken met Claude.
 Ik ben door mijn lessen heen en wil tien nieuwe.
 Vorm per les: een titel, vijf tot acht regels uitleg in gewoon Nederlands zonder jargon, en een opdracht die ik in vijf tot tien minuten kan doen.
-Ik voeg mijn reservekopie uit Inti toe. Daarin zie je per les of ik hem heb afgerond, bewaard of verworpen.
+Ik voeg mijn reservekopie uit Inti toe. Daarin staat per les of ik hem heb afgerond, bewaard of verworpen, en bij de verworpen lessen ook waarom.
 Kijk daar eerst naar, vertel me wat je eruit opmaakt, en lever de tien nieuwe lessen aan in hetzelfde formaat als de LESSONS-lijst in mijn bestand.`;
 
 const alinea = t => t.trim().split("\n").map(r=>`<p>${escapeHtml(r.trim())}</p>`).join("");
 
-/* --- knoppen --- */
-$("#aiPrev").addEventListener("click", ()=>{
-  const act = actieveLessen(), n = act.indexOf(aiAt);
-  if(n > 0){ aiAt = act[n-1]; aiBladeren = true; saveAI(); renderAI(); }
-});
-$("#aiNext").addEventListener("click", ()=>{
-  const act = actieveLessen(), n = act.indexOf(aiAt);
-  if(n < act.length-1){ aiAt = act[n+1]; aiBladeren = true; saveAI(); renderAI(); }
-});
+/* --- de drie afloopknoppen --- */
+function zetStatus(i, s){ aiStatus[i] = s; saveAI(); }
 
 $("#aiDone").addEventListener("click", ()=>{
-  if(aiHerhaling !== null){
-    aiHerhaalDatum = today();
-    aiWijzer = (aiWijzer + 1) % Math.max(1, aiBewaard.length);
-    aiHerhaling = null;
-    saveAI(); renderAI();
-    toast("Tot over vijf dagen");
-    return;
-  }
-  const act = actieveLessen(), n = act.indexOf(aiAt);
-  if(!aiDone.includes(aiAt)){ aiDone.push(aiAt); toast(`Les ${aiAt+1} afgevinkt`); }
-  if(n < act.length-1){ aiAt = act[n+1]; aiBladeren = true; }
-  else aiBladeren = false;
-  saveAI(); renderAI();
+  const i = openLessen()[0]; if(i === undefined) return;
+  zetStatus(i, "gedaan"); toast("Afgerond"); renderAI();
 });
-
 $("#aiKeep").addEventListener("click", ()=>{
-  const i = aiHerhaling !== null ? aiHerhaling : aiAt;
-  if(aiBewaard.includes(i)){
-    aiBewaard = aiBewaard.filter(x => x !== i);
-    toast("Niet meer bewaard");
-  }else{
-    aiBewaard.push(i);
-    toast(`Bewaard, komt over ${HERHAAL_DAGEN} dagen terug`);
-  }
-  saveAI(); renderAI();
+  const i = openLessen()[0]; if(i === undefined) return;
+  zetStatus(i, "bewaard"); toast(`Bewaard, komt binnen ${HERHAAL_DAGEN} dagen terug`); renderAI();
 });
-
 $("#aiDrop").addEventListener("click", ()=>{
-  if(aiHerhaling !== null) return;
-  const i = aiAt;
-  if(!aiWeg.includes(i)) aiWeg.push(i);
-  aiBewaard = aiBewaard.filter(x => x !== i);
-  aiDone    = aiDone.filter(x => x !== i);
-  const act = actieveLessen();
-  aiAt = act.find(x => !aiDone.includes(x)) ?? act[0] ?? 0;
-  aiBladeren = false;
-  saveAI(); renderAI();
-  toast("Verworpen. Hij blijft wel in je reservekopie staan.");
+  const i = openLessen()[0]; if(i === undefined) return;
+  zetStatus(i, "verworpen");
+  aiWachtReden = i;
+  renderAI();
 });
 
-$("#aiTerug").addEventListener("click", ()=>{ aiBladeren = true; renderAI(); });
+$$("#aiReden .ai-redenen button").forEach(b => b.addEventListener("click", ()=>{
+  aiReden[aiWachtReden] = b.dataset.reden;
+  aiWachtReden = null; saveAI(); renderAI();
+  toast("Genoteerd, dank je");
+}));
+$("#aiRedenOver").addEventListener("click", ()=>{ aiWachtReden = null; renderAI(); });
+
+/* --- de herhaling --- */
+$("#aiHerhaalKlaar").addEventListener("click", ()=>{
+  aiStatus[aiHerhaling] = "gedaan";
+  aiHerhaalDatum = today();
+  aiHerhaling = null;
+  saveAI(); renderAI();
+  toast("Uit de herhaling gehaald");
+});
+$("#aiHerhaalNog").addEventListener("click", ()=>{
+  const bew = metStatus("bewaard");
+  aiWijzer = (aiWijzer + 1) % Math.max(1, bew.length);
+  aiHerhaalDatum = today();
+  aiHerhaling = null;
+  saveAI(); renderAI();
+  toast(`Tot over ${HERHAAL_DAGEN} dagen`);
+});
+
 $("#aiKopieer").addEventListener("click", async ()=>{
   try{
     await navigator.clipboard.writeText(NIEUWE_LESSEN_VRAAG);
     toast("Gekopieerd, plak hem bij Claude");
   }catch(e){ toast("Kopieren lukt niet in deze browser"); }
 });
+
+/* --- archief --- */
+$("#aiArchBtn").addEventListener("click", ()=>{ renderArchief(); aiToon("aiArchief"); });
+$("#aiArchTerug").addEventListener("click", renderAI);
+$$("#aiArchief .zw-tabs button").forEach(b => b.addEventListener("click", ()=>{
+  aiArchLijst = b.dataset.lijst;
+  $$("#aiArchief .zw-tabs button").forEach(x => x.classList.toggle("on", x === b));
+  renderArchief();
+}));
+
+function renderArchief(){
+  $("#aiNbewaard").textContent = metStatus("bewaard").length;
+  $("#aiNweg").textContent     = metStatus("verworpen").length;
+
+  const lijst = metStatus(aiArchLijst);
+  const box = $("#aiArchLijst");
+  if(!lijst.length){
+    box.innerHTML = `<div class="empty"><span class="big">Nog leeg</span>
+      ${aiArchLijst === "bewaard"
+        ? "Lessen die je bewaart komen hier te staan en keren om de vijf dagen terug."
+        : "Lessen die je verwerpt verdwijnen uit de stapel en belanden hier."}</div>`;
+    return;
+  }
+  box.innerHTML = lijst.map(i => `
+    <div class="arch-item ${aiArchLijst}">
+      <button class="arch-head" data-klap="${i}">
+        <span class="arch-titel">${escapeHtml(LESSONS[i].title)}</span>
+        <span class="arch-meta">${aiReden[i] ? escapeHtml(aiReden[i]) : "les " + (i+1)}</span>
+      </button>
+      <div class="arch-body" hidden>
+        ${alinea(LESSONS[i].text)}
+        <div class="arch-acts">
+          <button data-terug="${i}">Terug op de stapel</button>
+          ${aiArchLijst === "bewaard"
+            ? `<button data-weg="${i}">Verwerpen</button>`
+            : `<button data-bewaar="${i}">Toch bewaren</button>`}
+        </div>
+      </div>
+    </div>`).join("");
+
+  $$("#aiArchLijst [data-klap]").forEach(b => b.addEventListener("click", ()=>{
+    const body = b.nextElementSibling;
+    body.hidden = !body.hidden;
+  }));
+  $$("#aiArchLijst [data-terug]").forEach(b => b.addEventListener("click", ()=>{
+    const i = +b.dataset.terug;
+    delete aiStatus[i]; delete aiReden[i];
+    saveAI(); renderArchief(); toast("Staat weer op de stapel");
+  }));
+  $$("#aiArchLijst [data-weg]").forEach(b => b.addEventListener("click", ()=>{
+    aiStatus[+b.dataset.weg] = "verworpen"; saveAI(); renderArchief();
+  }));
+  $$("#aiArchLijst [data-bewaar]").forEach(b => b.addEventListener("click", ()=>{
+    const i = +b.dataset.bewaar;
+    aiStatus[i] = "bewaard"; delete aiReden[i];
+    saveAI(); renderArchief();
+  }));
+}
 
 /* ============================================================
    KLUIS  ·  alles eruit halen en weer terugzetten
@@ -1888,8 +1973,8 @@ async function alles(){
   uit.lessen = LESSONS.map((l,i) => ({
     nr: i+1,
     titel: l.title,
-    status: aiWeg.includes(i) ? "verworpen" : aiDone.includes(i) ? "gedaan" : "open",
-    bewaard: aiBewaard.includes(i),
+    status: aiStatus[i] || "open",
+    reden: aiReden[i] || null,
     tekst: l.text,
     opdracht: l.task
   }));
@@ -1924,7 +2009,7 @@ function alsTekst(d){
   }
   if(d.lessen && d.lessen.length){
     r.push("AI-LESSEN");
-    d.lessen.forEach(l => r.push(`- ${l.nr}. ${l.titel} (${l.status}${l.bewaard ? ", bewaard" : ""})`));
+    d.lessen.forEach(l => r.push(`- ${l.nr}. ${l.titel} (${l.status}${l.reden ? ": " + l.reden : ""})`));
     r.push("");
   }
   return r.join("\n");
@@ -2013,9 +2098,9 @@ function toonCijfers(){
     <div><b>${geh}</b><span>niet vergeten</span></div>
     <div><b>${ins}</b><span>inspiratie</span></div>
     <div><b>${bord}</b><span>to do's</span></div>
-    <div><b>${aiDone.length}</b><span>lessen gedaan</span></div>
-    <div><b>${aiBewaard.length}</b><span>bewaard</span></div>
-    <div><b>${aiWeg.length}</b><span>verworpen</span></div>`;
+    <div><b>${metStatus("gedaan").length}</b><span>lessen gedaan</span></div>
+    <div><b>${metStatus("bewaard").length}</b><span>bewaard</span></div>
+    <div><b>${metStatus("verworpen").length}</b><span>verworpen</span></div>`;
   $("#kluisCijfers").innerHTML = html;
   $("#slotCijfers").innerHTML  = html;
   if(laatsteKopie){
