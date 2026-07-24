@@ -608,6 +608,9 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
 }
 .sheet textarea{min-height:92px;resize:vertical}
 .sheet textarea:focus,.sheet input:focus,.sheet select:focus{border-color:var(--gold-dim);outline:none}
+/* het aanvinkvakje mag niet meegroeien met de brede sheet-velden */
+.sheet .prio-row{display:flex;margin:16px 0 0}
+.sheet .prio-row input{width:19px}
 .seg{display:flex;gap:8px}
 .seg button{
   flex:1;padding:12px;border:1px solid var(--earth-3);border-radius:10px;
@@ -999,10 +1002,6 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
       <button class="sheet-x" id="snapX" aria-label="Sluiten">&times;</button>
     </div>
     <textarea id="snapText" placeholder="Wat moet er gebeuren?"></textarea>
-    <label class="eyebrow" for="snapDate">Deadline, mag leeg</label>
-    <input type="date" id="snapDate">
-    <label class="eyebrow" for="snapTijd">Tijd, mag leeg</label>
-    <input type="time" id="snapTijd">
     <label class="eyebrow">Herhalen</label>
     <div class="seg" id="snapHerhaalSeg">
       <button data-h="nooit" class="on">Nooit</button>
@@ -1010,6 +1009,20 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
       <button data-h="week">Week</button>
       <button data-h="maand">Maand</button>
     </div>
+    <div id="snapDatumRij">
+      <label class="eyebrow" for="snapDate">Deadline, mag leeg</label>
+      <input type="date" id="snapDate">
+    </div>
+    <div id="snapWeekRij" hidden>
+      <label class="eyebrow" for="snapWeekdag">Welke dag</label>
+      <select id="snapWeekdag"></select>
+    </div>
+    <div id="snapMaandRij" hidden>
+      <label class="eyebrow" for="snapMaanddag">Welke dag van de maand</label>
+      <select id="snapMaanddag"></select>
+    </div>
+    <label class="eyebrow" for="snapTijd">Tijd, mag leeg</label>
+    <input type="time" id="snapTijd">
     <label class="prio-row" id="snapPrioRow">
       <input type="checkbox" id="snapPrio">
       <span>Hoge prioriteit, komt bij Fix shit altijd bovenaan</span>
@@ -1025,10 +1038,6 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
       <button class="sheet-x" id="editX" aria-label="Sluiten">&times;</button>
     </div>
     <textarea id="editText" placeholder="Wat moet er gebeuren?"></textarea>
-    <label class="eyebrow" for="editDate">Deadline, mag leeg</label>
-    <input type="date" id="editDate">
-    <label class="eyebrow" for="editTijd">Tijd, mag leeg</label>
-    <input type="time" id="editTijd">
     <label class="eyebrow">Herhalen</label>
     <div class="seg" id="editHerhaalSeg">
       <button data-h="nooit" class="on">Nooit</button>
@@ -1036,6 +1045,20 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
       <button data-h="week">Week</button>
       <button data-h="maand">Maand</button>
     </div>
+    <div id="editDatumRij">
+      <label class="eyebrow" for="editDate">Deadline, mag leeg</label>
+      <input type="date" id="editDate">
+    </div>
+    <div id="editWeekRij" hidden>
+      <label class="eyebrow" for="editWeekdag">Welke dag</label>
+      <select id="editWeekdag"></select>
+    </div>
+    <div id="editMaandRij" hidden>
+      <label class="eyebrow" for="editMaanddag">Welke dag van de maand</label>
+      <select id="editMaanddag"></select>
+    </div>
+    <label class="eyebrow" for="editTijd">Tijd, mag leeg</label>
+    <input type="time" id="editTijd">
     <label class="prio-row" id="editPrioRow">
       <input type="checkbox" id="editPrio">
       <span>Hoge prioriteit, komt bij Fix shit altijd bovenaan</span>
@@ -1710,6 +1733,50 @@ function herhaalTekst(it){
 function segZet(segId, waarde){
   $$(segId+" button").forEach(b => b.classList.toggle("on", b.dataset.h === waarde));
 }
+// de eerstvolgende datum met een bepaalde weekdag (0 zondag tot 6 zaterdag)
+function volgendeWeekdag(dow){
+  const d = new Date();
+  d.setDate(d.getDate() + (dow - d.getDay() + 7) % 7);
+  return dayKey(d);
+}
+// de eerstvolgende datum met een bepaalde dag van de maand (1 tot 31)
+function volgendeMaanddag(dag){
+  const d = new Date();
+  const inDezeMaand = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+  if(d.getDate() <= Math.min(dag, inDezeMaand)){
+    d.setDate(Math.min(dag, inDezeMaand));
+  }else{
+    d.setDate(1); d.setMonth(d.getMonth()+1);
+    const l = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+    d.setDate(Math.min(dag, l));
+  }
+  return dayKey(d);
+}
+// laat in een sheet alleen het wanneer-veld zien dat bij de herhaal-keuze past
+function herhaalRijen(prefix, waarde){
+  $("#"+prefix+"DatumRij").hidden = waarde !== "nooit";
+  $("#"+prefix+"WeekRij").hidden  = waarde !== "week";
+  $("#"+prefix+"MaandRij").hidden = waarde !== "maand";
+}
+// vul de keuzelijsten voor weekdag en dag van de maand, in beide sheets
+function vulKeuzes(){
+  const dagen = [[1,"Maandag"],[2,"Dinsdag"],[3,"Woensdag"],[4,"Donderdag"],[5,"Vrijdag"],[6,"Zaterdag"],[0,"Zondag"]];
+  const wk = dagen.map(([v,n]) => `<option value="${v}">${n}</option>`).join("");
+  const md = Array.from({length:31}, (_,i) => `<option value="${i+1}">${i+1}e</option>`).join("");
+  ["snap","edit"].forEach(p => { $("#"+p+"Weekdag").innerHTML = wk; $("#"+p+"Maanddag").innerHTML = md; });
+}
+vulKeuzes();
+// bereken de eerste deadline uit de keuze in een sheet
+function berekenDeadline(prefix, keuze, tijd){
+  let deadline;
+  if(keuze === "week")       deadline = volgendeWeekdag(Number($("#"+prefix+"Weekdag").value));
+  else if(keuze === "maand") deadline = volgendeMaanddag(Number($("#"+prefix+"Maanddag").value));
+  else if(keuze === "dag")   deadline = today();
+  else                       return $("#"+prefix+"Date").value || null;   // nooit: gewoon de gekozen datum
+  // is die eerste keer vandaag maar de tijd al voorbij, pak dan de volgende keer
+  if(deadline === today() && tijd && tijd < nuTijd()) deadline = volgendeDatum(deadline, keuze);
+  return deadline;
+}
 function geheugenTaken(){
   return items.filter(i => i.kind==="geheugen");
 }
@@ -1876,10 +1943,16 @@ function openEdit(id){
   if(!it) return;
   editId = id;
   $("#editText").value = it.text || "";
-  $("#editDate").value = it.deadline || "";
-  $("#editTijd").value = it.tijd || "";
   editHerhaal = it.herhaal || "nooit";
+  // datumveld alleen voor eenmalig; voor herhaling de juiste keuze uit de bestaande deadline
+  $("#editDate").value = it.herhaal ? "" : (it.deadline || "");
+  $("#editWeekdag").value = (it.herhaal === "week" && it.deadline)
+    ? new Date(it.deadline+"T00:00:00").getDay() : new Date().getDay();
+  $("#editMaanddag").value = (it.herhaal === "maand" && it.deadline)
+    ? Number(it.deadline.split("-")[2]) : new Date().getDate();
+  $("#editTijd").value = it.tijd || "";
   segZet("#editHerhaalSeg", editHerhaal);
+  herhaalRijen("edit", editHerhaal);
   $("#editPrio").checked = !!it.prio;
   $("#editPrioRow").classList.toggle("on", !!it.prio);
   $("#editSheet").classList.add("open");
@@ -1892,7 +1965,7 @@ $("#editPrio").addEventListener("change", e => {
   $("#editPrioRow").classList.toggle("on", e.target.checked);
 });
 $$("#editHerhaalSeg button").forEach(b => b.addEventListener("click", () => {
-  editHerhaal = b.dataset.h; segZet("#editHerhaalSeg", editHerhaal);
+  editHerhaal = b.dataset.h; segZet("#editHerhaalSeg", editHerhaal); herhaalRijen("edit", editHerhaal);
 }));
 $("#editSave").addEventListener("click", async () => {
   if(!editId){ closeEdit(); return; }
@@ -1901,8 +1974,8 @@ $("#editSave").addEventListener("click", async () => {
   const id = editId;
   const herhaal = editHerhaal === "nooit" ? null : editHerhaal;
   const tijd = $("#editTijd").value || null;
-  let deadline = $("#editDate").value || null;
-  if((herhaal || tijd) && !deadline) deadline = today();   // een tijd of herhaling hoort bij een dag
+  let deadline = berekenDeadline("edit", editHerhaal, tijd);
+  if(tijd && !deadline) deadline = today();   // een tijd zonder dag hoort bij vandaag
   const gegevens = { text, prio: $("#editPrio").checked, deadline, tijd, herhaal };
   closeEdit();
   try{
@@ -2566,15 +2639,18 @@ function openSnap(){
   $("#snapText").value = "";
   $("#snapDate").value = "";
   $("#snapTijd").value = "";
+  $("#snapWeekdag").value = new Date().getDay();     // standaard vandaag
+  $("#snapMaanddag").value = new Date().getDate();
   snapHerhaal = "nooit";
   segZet("#snapHerhaalSeg", "nooit");
+  herhaalRijen("snap", "nooit");
   $("#snapPrio").checked = false;
   $("#snapPrioRow").classList.remove("on");
   $("#snapSheet").classList.add("open");
   setTimeout(() => $("#snapText").focus(), 90);
 }
 $$("#snapHerhaalSeg button").forEach(b => b.addEventListener("click", () => {
-  snapHerhaal = b.dataset.h; segZet("#snapHerhaalSeg", snapHerhaal);
+  snapHerhaal = b.dataset.h; segZet("#snapHerhaalSeg", snapHerhaal); herhaalRijen("snap", snapHerhaal);
 }));
 function closeSnap(){ $("#snapSheet").classList.remove("open"); }
 
@@ -2591,8 +2667,8 @@ async function bewaarSnap(){
   const prio = $("#snapPrio").checked;
   const herhaal = snapHerhaal === "nooit" ? null : snapHerhaal;
   const tijd = $("#snapTijd").value || null;
-  let deadline = $("#snapDate").value || null;
-  if((herhaal || tijd) && !deadline) deadline = today();   // een tijd of herhaling hoort bij een dag
+  let deadline = berekenDeadline("snap", snapHerhaal, tijd);
+  if(tijd && !deadline) deadline = today();   // een tijd zonder dag hoort bij vandaag
   closeSnap();
   try{
     await addDoc(collection(db,"users",uid,"thoth"),{
