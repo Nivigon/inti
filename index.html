@@ -1001,6 +1001,8 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
     <textarea id="snapText" placeholder="Wat moet er gebeuren?"></textarea>
     <label class="eyebrow" for="snapDate">Deadline, mag leeg</label>
     <input type="date" id="snapDate">
+    <label class="eyebrow" for="snapTijd">Tijd, mag leeg</label>
+    <input type="time" id="snapTijd">
     <label class="eyebrow">Herhalen</label>
     <div class="seg" id="snapHerhaalSeg">
       <button data-h="nooit" class="on">Nooit</button>
@@ -1025,6 +1027,8 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
     <textarea id="editText" placeholder="Wat moet er gebeuren?"></textarea>
     <label class="eyebrow" for="editDate">Deadline, mag leeg</label>
     <input type="date" id="editDate">
+    <label class="eyebrow" for="editTijd">Tijd, mag leeg</label>
+    <input type="time" id="editTijd">
     <label class="eyebrow">Herhalen</label>
     <div class="seg" id="editHerhaalSeg">
       <button data-h="nooit" class="on">Nooit</button>
@@ -1665,6 +1669,15 @@ function datumKort(iso){
   return `${d[2]} ${MAANDEN[d[1]-1]}`;
 }
 const DAGEN = ["zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag"];
+const nuTijd = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+// een taak is te laat als de datum voorbij is, of als het vandaag is en de tijd voorbij is
+function teLaat(it){
+  if(!it.deadline) return false;
+  const t = today();
+  if(it.deadline < t) return true;
+  if(it.deadline === t && it.tijd && it.tijd < nuTijd()) return true;
+  return false;
+}
 // de volgende datum in de reeks, uit een datum en een herhaling
 function volgendeDatum(iso, herhaal){
   const [y,m,d] = iso.split("-").map(Number);
@@ -1685,11 +1698,12 @@ function volgendeHerhaling(iso, herhaal){
   while(next < today() && guard++ < 500) next = volgendeDatum(next, herhaal);
   return next;
 }
-// leesbaar terug: elke dag, elke vrijdag, elke 12e
+// leesbaar terug: elke dag, elke vrijdag 16:00, elke 12e
 function herhaalTekst(it){
-  if(it.herhaal === "dag")   return "elke dag";
-  if(it.herhaal === "week")  return "elke " + (it.deadline ? DAGEN[new Date(it.deadline+"T00:00:00").getDay()] : "week");
-  if(it.herhaal === "maand") return it.deadline ? `elke ${Number(it.deadline.split("-")[2])}e` : "elke maand";
+  const tijd = it.tijd ? " " + it.tijd : "";
+  if(it.herhaal === "dag")   return "elke dag" + tijd;
+  if(it.herhaal === "week")  return "elke " + (it.deadline ? DAGEN[new Date(it.deadline+"T00:00:00").getDay()] : "week") + tijd;
+  if(it.herhaal === "maand") return (it.deadline ? `elke ${Number(it.deadline.split("-")[2])}e` : "elke maand") + tijd;
   return "";
 }
 // zet het juiste knopje aan in een keuzebalk
@@ -1711,8 +1725,9 @@ const verg = (a,b) => a<b ? -1 : a>b ? 1 : 0;
 function sorteerTaken(a,b){
   const r = rang(a) - rang(b);
   if(r) return r;
-  // op datum sorteren we dichtstbij of meest te laat eerst, anders oudste eerst
-  if(rang(a) === 0 || rang(a) === 2) return verg(a.deadline, b.deadline) || (a.createdAt - b.createdAt);
+  // op datum sorteren we dichtstbij of meest te laat eerst, dan op tijd, anders oudste eerst
+  if(rang(a) === 0 || rang(a) === 2)
+    return verg(a.deadline, b.deadline) || verg(a.tijd||"", b.tijd||"") || (a.createdAt - b.createdAt);
   return a.createdAt - b.createdAt;
 }
 function actieveTaken(){
@@ -1783,12 +1798,12 @@ function opzijLabel(n){
   return `<span class="opzij-tag t${tier}">${n}x opzij gezet</span>`;
 }
 /* deadline op een kaartje: groen in de toekomst, goud vandaag, rood als het te laat is */
-function deadlineTag(iso){
-  if(!iso) return "";
-  const t = today();
-  if(iso < t)   return `<div class="dl laat">Te laat, was ${datumKort(iso)}</div>`;
-  if(iso === t) return `<div class="dl nu">Moet vandaag</div>`;
-  return `<div class="dl">Voor ${datumKort(iso)}</div>`;
+function deadlineTag(it){
+  if(!it.deadline) return "";
+  const tijd = it.tijd ? " " + it.tijd : "";
+  if(teLaat(it))          return `<div class="dl laat">Te laat, was ${datumKort(it.deadline)}${tijd}</div>`;
+  if(it.deadline === today()) return `<div class="dl nu">Moet vandaag${tijd}</div>`;
+  return `<div class="dl">Voor ${datumKort(it.deadline)}${tijd}</div>`;
 }
 
 function renderFix(){
@@ -1805,7 +1820,7 @@ function renderFix(){
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
       </button>
       ${i.prio ? `<span class="prio-tag">Hoge prioriteit</span>` : ""}
-      ${deadlineTag(i.deadline)}
+      ${deadlineTag(i)}
       ${i.herhaal ? `<span class="herhaal-tag">&#8635; ${herhaalTekst(i)}</span>` : ""}
       ${opzijLabel(i.opzij)}
       <div class="txt">${escapeHtml(i.text)}</div>
@@ -1862,6 +1877,7 @@ function openEdit(id){
   editId = id;
   $("#editText").value = it.text || "";
   $("#editDate").value = it.deadline || "";
+  $("#editTijd").value = it.tijd || "";
   editHerhaal = it.herhaal || "nooit";
   segZet("#editHerhaalSeg", editHerhaal);
   $("#editPrio").checked = !!it.prio;
@@ -1884,9 +1900,10 @@ $("#editSave").addEventListener("click", async () => {
   if(!text){ toast("Er staat nog niets in"); return; }
   const id = editId;
   const herhaal = editHerhaal === "nooit" ? null : editHerhaal;
+  const tijd = $("#editTijd").value || null;
   let deadline = $("#editDate").value || null;
-  if(herhaal && !deadline) deadline = today();   // een herhaling heeft een moment nodig
-  const gegevens = { text, prio: $("#editPrio").checked, deadline, herhaal };
+  if((herhaal || tijd) && !deadline) deadline = today();   // een tijd of herhaling hoort bij een dag
+  const gegevens = { text, prio: $("#editPrio").checked, deadline, tijd, herhaal };
   closeEdit();
   try{
     await updateDoc(doc(db,"users",uid,"thoth",id), gegevens);
@@ -2336,7 +2353,7 @@ function alsTekst(d){
   const r = [`INTI, bewaard op ${new Date(d.datum).toLocaleString("nl-NL")}`,""];
   const geh = d.thoth.filter(i=>i.kind==="geheugen");
   const ins = d.thoth.filter(i=>i.kind==="inspiratie");
-  if(geh.length){ r.push("NIET VERGETEN"); geh.forEach(i=>r.push(`- ${i.prio?"[!] ":""}${i.text}${i.deadline?` (voor ${datumKort(i.deadline)})`:""}${i.herhaal?` [${herhaalTekst(i)}]`:""}`)); r.push(""); }
+  if(geh.length){ r.push("NIET VERGETEN"); geh.forEach(i=>r.push(`- ${i.prio?"[!] ":""}${i.text}${i.deadline?` (voor ${datumKort(i.deadline)}${i.tijd?` ${i.tijd}`:""})`:""}${i.herhaal?` [${herhaalTekst(i)}]`:""}`)); r.push(""); }
   if(ins.length){ r.push("INSPIRATIE"); ins.forEach(i=>r.push(`- ${i.text}`)); r.push(""); }
   for(const b of BOARDS){
     const rij = d[b.col] || [];
@@ -2548,6 +2565,7 @@ let snapHerhaal = "nooit";
 function openSnap(){
   $("#snapText").value = "";
   $("#snapDate").value = "";
+  $("#snapTijd").value = "";
   snapHerhaal = "nooit";
   segZet("#snapHerhaalSeg", "nooit");
   $("#snapPrio").checked = false;
@@ -2572,14 +2590,15 @@ async function bewaarSnap(){
   if(!text){ toast("Er staat nog niets in"); return; }
   const prio = $("#snapPrio").checked;
   const herhaal = snapHerhaal === "nooit" ? null : snapHerhaal;
+  const tijd = $("#snapTijd").value || null;
   let deadline = $("#snapDate").value || null;
-  if(herhaal && !deadline) deadline = today();   // een herhaling heeft een moment nodig
+  if((herhaal || tijd) && !deadline) deadline = today();   // een tijd of herhaling hoort bij een dag
   closeSnap();
   try{
     await addDoc(collection(db,"users",uid,"thoth"),{
-      text, kind:"geheugen", prio, deadline, herhaal, createdAt: Date.now(), snoozeUntil: null
+      text, kind:"geheugen", prio, deadline, tijd, herhaal, createdAt: Date.now(), snoozeUntil: null
     });
-    toast(herhaal ? `Herhaalt ${herhaalTekst({herhaal, deadline})}` : prio ? "Bovenaan gezet" : "Op de lijst gezet");
+    toast(herhaal ? `Herhaalt ${herhaalTekst({herhaal, deadline, tijd})}` : prio ? "Bovenaan gezet" : "Op de lijst gezet");
   }catch(e){ toast("Opslaan lukt niet"); }
 }
 $("#snapSave").addEventListener("click", bewaarSnap);
