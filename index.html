@@ -160,9 +160,10 @@ body.lit .quad:hover{border-color:var(--gold-dim);transform:translateY(-2px)}
   display:none;place-items:center;
 }
 .quad .badge.on{display:grid}
-/* op de Fix shit-tegel staat de snelknop rechtsboven, dus het getal schuift ernaast */
-#fixBadge{top:16px;right:58px}
-@media (max-width:360px){ #fixBadge{top:12px;right:50px} }
+/* op de Fix shit-tegel staat de snelknop linksboven, naast Afwerken, richting het
+   midden van het scherm; het getal blijft rechtsboven op zijn standaardplek */
+.tile-wrap-fix .snap{left:11px;right:auto}
+.tile-wrap-fix .tag{left:56px;top:24px}
 
 /* de zon */
 .sunwrap{position:relative;width:var(--sun);height:var(--sun);z-index:5;flex-shrink:0}
@@ -787,7 +788,7 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
         <h2>AI</h2>
         <p>Elke dag iets leren, in tien minuten.</p>
       </button>
-      <div class="tile-wrap">
+      <div class="tile-wrap tile-wrap-fix">
         <button class="quad" data-panel="fix">
           <span class="eyebrow tag">Afwerken</span>
           <span class="badge" id="fixBadge">0</span>
