@@ -34,7 +34,8 @@ en de sheets `#zwSheet` (toevoegen op een bord), `#snapSheet` (snel opschrijven)
 Alles hangt onder `users/{uid}`:
 
 - Collectie `thoth`: Thoth-items. Velden `text`, `kind` ("inspiratie" of "geheugen"),
-  `prio`, `createdAt`, `snoozeUntil`.
+  `prio`, `createdAt`, `snoozeUntil`, `opzij` (hoe vaak een geheugen-item bij Fix shit
+  opzij is gezet).
 - Collectie `zilverweide` en collectie `intiboard`: de twee borden. Docs met
   `kind` "cat" (velden `name`, `createdAt`) of "todo" (velden `text`, `term` "kort"
   of "lang", `catId`, `createdAt`).

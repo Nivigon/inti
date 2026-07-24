@@ -356,6 +356,18 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
   display:block;color:var(--red-bright);font-weight:600;
   font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:9px;
 }
+/* labeltje: hoe vaak iets al opzij is gezet. wordt groter en feller bij lang uitstellen */
+.opzij-tag{
+  display:inline-block;margin-bottom:10px;
+  color:var(--bone-dim);font-weight:500;
+  font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;
+  transition:color .3s,font-size .3s;
+}
+.opzij-tag.t2{color:var(--gold);font-size:.72rem;letter-spacing:.16em}
+.opzij-tag.t3{
+  color:var(--red-bright);font-weight:700;font-size:.86rem;letter-spacing:.14em;
+  text-shadow:0 0 16px rgba(236,122,104,.35);
+}
 
 /* ---------- slot: verplichte reservekopie ---------- */
 #slot{
@@ -1611,24 +1623,77 @@ function renderInspiration(){
 /* ============================================================
    FIX SHIT
    ============================================================ */
-function openTasks(){
+/* alle geheugen-dingen, gesplitst in actief (nu op de lijst) en even opzij gezet */
+const sorteerTaken = (a,b) => (b.prio?1:0) - (a.prio?1:0) || a.createdAt - b.createdAt;
+function geheugenTaken(){
+  return items.filter(i => i.kind==="geheugen");
+}
+function actieveTaken(){
   const t = today();
-  return items
-    .filter(i => i.kind==="geheugen" && (!i.snoozeUntil || i.snoozeUntil <= t))
-    .sort((a,b) => (b.prio?1:0) - (a.prio?1:0) || a.createdAt - b.createdAt);
+  return geheugenTaken()
+    .filter(i => !i.snoozeUntil || i.snoozeUntil <= t)
+    .sort(sorteerTaken);
+}
+function opzijTaken(){
+  const t = today();
+  return geheugenTaken()
+    .filter(i => i.snoozeUntil && i.snoozeUntil > t)
+    .sort((a,b) => (b.prio?1:0)-(a.prio?1:0) || (b.opzij||0)-(a.opzij||0) || a.createdAt - b.createdAt);
 }
 function renderCounts(){
-  const n = openTasks().length;
+  const n = geheugenTaken().length;   // alles op je lijst, ook de opzij-gezette
   $("#fixCount").textContent = n;
   const badge = $("#fixBadge");
   badge.textContent = n;
   badge.classList.toggle("on", n>0);
 }
+
+let laatstOpzij = null;   // id dat je zojuist opzij zette, even overslaan bij aanvullen
+
+/* vul de lijst aan tot drie: eerst de actieve dingen, dan de opzij-gezette.
+   negeerId valt helemaal weg (net gedaan of weggehaald). Het net weggetikte
+   kaartje slaan we over zolang er nog iets anders is, en komt anders terug. */
+function vulAan(negeerId){
+  const getoond = new Set(fixShown);
+  if(negeerId) getoond.add(negeerId);
+
+  for(const i of actieveTaken()){
+    if(fixShown.length >= 3) break;
+    if(i.id === laatstOpzij) continue;
+    if(!getoond.has(i.id)){ fixShown.push(i.id); getoond.add(i.id); }
+  }
+  for(const i of opzijTaken()){
+    if(fixShown.length >= 3) break;
+    if(i.id === laatstOpzij) continue;
+    if(!getoond.has(i.id)){ fixShown.push(i.id); getoond.add(i.id); }
+  }
+  // niks anders meer over? dan mag het net weggetikte kaartje alsnog terugkomen
+  if(fixShown.length < 3 && laatstOpzij && !getoond.has(laatstOpzij)
+     && geheugenTaken().some(i => i.id === laatstOpzij)){
+    fixShown.push(laatstOpzij);
+  }
+}
+
 function pickFix(){
-  fixShown = openTasks().slice(0,3).map(i=>i.id);
+  fixShown = [];
+  laatstOpzij = null;
+  vulAan();
   renderFix();
 }
-$("#fixRefresh").addEventListener("click", ()=>{ pickFix(); toast("Lijst aangevuld"); });
+// Vul aan: haalt meteen alles erbij, ook de opzij-gezette dingen
+$("#fixRefresh").addEventListener("click", ()=>{
+  laatstOpzij = null;
+  fixShown = [...actieveTaken(), ...opzijTaken()].map(i => i.id);
+  renderFix();
+  toast(fixShown.length ? "Alles erbij gehaald" : "Er staat niets op je lijst");
+});
+
+/* het labeltje dat toont hoe vaak iets al opzij is gezet, oplopend in kleur en grootte */
+function opzijLabel(n){
+  if(!n) return "";
+  const tier = n >= 6 ? 3 : n >= 3 ? 2 : 1;
+  return `<span class="opzij-tag t${tier}">${n}x opzij gezet</span>`;
+}
 
 function renderFix(){
   const box = $("#fixList");
@@ -1641,11 +1706,12 @@ function renderFix(){
   box.innerHTML = list.map(i=>`
     <div class="task${i.prio ? " prio" : ""}" data-id="${i.id}">
       ${i.prio ? `<span class="prio-tag">Hoge prioriteit</span>` : ""}
+      ${opzijLabel(i.opzij)}
       <div class="txt">${escapeHtml(i.text)}</div>
       <div class="when eyebrow" style="margin-bottom:12px">${human(i.createdAt)} opgeschreven</div>
       <div class="acts">
         <button class="act-done" data-done="${i.id}">Gedaan</button>
-        <button class="act-later" data-later="${i.id}">Morgen weer</button>
+        <button class="act-later" data-later="${i.id}">Even opzij</button>
       </div>
     </div>`).join("");
 
@@ -1654,18 +1720,23 @@ function renderFix(){
   }));
   box.querySelectorAll("[data-later]").forEach(b=>b.addEventListener("click",()=>{
     finish(b, async id => {
-      await updateDoc(doc(db,"users",uid,"thoth",id),{ snoozeUntil: tomorrow() });
-    }, "Tot morgen");
+      const it = items.find(x=>x.id===id);
+      await updateDoc(doc(db,"users",uid,"thoth",id),
+        { snoozeUntil: tomorrow(), opzij: (it?.opzij||0)+1 });
+    }, "Even opzij gezet");
   }));
 }
 function finish(btn, action, msg){
   const id = btn.dataset.done || btn.dataset.later;
+  const isOpzij = !!btn.dataset.later;
   const card = btn.closest(".task");
   card.classList.add("gone");
   fixShown = fixShown.filter(x=>x!==id);
+  laatstOpzij = isOpzij ? id : null;
   setTimeout(async ()=>{
     try{ await action(id); toast(msg); }
     catch(e){ toast("Opslaan lukt niet"); }
+    vulAan(isOpzij ? null : id);   // meteen weer aanvullen tot drie
     renderFix();
   },320);
 }
