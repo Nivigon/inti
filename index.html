@@ -307,6 +307,13 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 }
 .dl.nu{color:var(--gold-bright);font-weight:600}
 .dl.laat{color:var(--red-bright);font-weight:700;text-shadow:0 0 16px rgba(236,122,104,.35)}
+/* labeltje voor een terugkerende taak */
+.herhaal-tag{
+  display:inline-block;margin:0 0 10px 10px;
+  font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--bone-dim);font-weight:500;
+}
+.dl + .herhaal-tag{margin-left:10px}
 .task .acts{display:flex;gap:10px}
 .task .acts button{
   flex:1;padding:11px;border-radius:10px;font-size:.72rem;
@@ -994,6 +1001,13 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
     <textarea id="snapText" placeholder="Wat moet er gebeuren?"></textarea>
     <label class="eyebrow" for="snapDate">Deadline, mag leeg</label>
     <input type="date" id="snapDate">
+    <label class="eyebrow">Herhalen</label>
+    <div class="seg" id="snapHerhaalSeg">
+      <button data-h="nooit" class="on">Nooit</button>
+      <button data-h="dag">Dag</button>
+      <button data-h="week">Week</button>
+      <button data-h="maand">Maand</button>
+    </div>
     <label class="prio-row" id="snapPrioRow">
       <input type="checkbox" id="snapPrio">
       <span>Hoge prioriteit, komt bij Fix shit altijd bovenaan</span>
@@ -1011,6 +1025,13 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
     <textarea id="editText" placeholder="Wat moet er gebeuren?"></textarea>
     <label class="eyebrow" for="editDate">Deadline, mag leeg</label>
     <input type="date" id="editDate">
+    <label class="eyebrow">Herhalen</label>
+    <div class="seg" id="editHerhaalSeg">
+      <button data-h="nooit" class="on">Nooit</button>
+      <button data-h="dag">Dag</button>
+      <button data-h="week">Week</button>
+      <button data-h="maand">Maand</button>
+    </div>
     <label class="prio-row" id="editPrioRow">
       <input type="checkbox" id="editPrio">
       <span>Hoge prioriteit, komt bij Fix shit altijd bovenaan</span>
@@ -1643,6 +1664,38 @@ function datumKort(iso){
   const d = iso.split("-").map(Number);
   return `${d[2]} ${MAANDEN[d[1]-1]}`;
 }
+const DAGEN = ["zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag"];
+// de volgende datum in de reeks, uit een datum en een herhaling
+function volgendeDatum(iso, herhaal){
+  const [y,m,d] = iso.split("-").map(Number);
+  const dt = new Date(y, m-1, d);
+  if(herhaal === "dag")  dt.setDate(dt.getDate()+1);
+  if(herhaal === "week") dt.setDate(dt.getDate()+7);
+  if(herhaal === "maand"){
+    dt.setDate(1);                       // eerst naar de 1e, anders springt hij over korte maanden heen
+    dt.setMonth(dt.getMonth()+1);
+    const laatste = new Date(dt.getFullYear(), dt.getMonth()+1, 0).getDate();
+    dt.setDate(Math.min(d, laatste));    // de 31e wordt de laatste dag in korte maanden
+  }
+  return dayKey(dt);
+}
+// blijf doorschuiven tot de volgende keer vandaag of later is
+function volgendeHerhaling(iso, herhaal){
+  let next = volgendeDatum(iso, herhaal), guard = 0;
+  while(next < today() && guard++ < 500) next = volgendeDatum(next, herhaal);
+  return next;
+}
+// leesbaar terug: elke dag, elke vrijdag, elke 12e
+function herhaalTekst(it){
+  if(it.herhaal === "dag")   return "elke dag";
+  if(it.herhaal === "week")  return "elke " + (it.deadline ? DAGEN[new Date(it.deadline+"T00:00:00").getDay()] : "week");
+  if(it.herhaal === "maand") return it.deadline ? `elke ${Number(it.deadline.split("-")[2])}e` : "elke maand";
+  return "";
+}
+// zet het juiste knopje aan in een keuzebalk
+function segZet(segId, waarde){
+  $$(segId+" button").forEach(b => b.classList.toggle("on", b.dataset.h === waarde));
+}
 function geheugenTaken(){
   return items.filter(i => i.kind==="geheugen");
 }
@@ -1753,6 +1806,7 @@ function renderFix(){
       </button>
       ${i.prio ? `<span class="prio-tag">Hoge prioriteit</span>` : ""}
       ${deadlineTag(i.deadline)}
+      ${i.herhaal ? `<span class="herhaal-tag">&#8635; ${herhaalTekst(i)}</span>` : ""}
       ${opzijLabel(i.opzij)}
       <div class="txt">${escapeHtml(i.text)}</div>
       <div class="when eyebrow" style="margin-bottom:12px">${human(i.createdAt)} opgeschreven</div>
@@ -1764,7 +1818,17 @@ function renderFix(){
 
   box.querySelectorAll("[data-edit]").forEach(b=>b.addEventListener("click",()=>openEdit(b.dataset.edit)));
   box.querySelectorAll("[data-done]").forEach(b=>b.addEventListener("click",()=>{
-    finish(b, async id => { await deleteDoc(doc(db,"users",uid,"thoth",id)); }, "Gedaan");
+    const it = items.find(x=>x.id===b.dataset.done);
+    if(it && it.herhaal && it.deadline){
+      // een terugkerend ding gaat niet weg, maar schuift door naar de volgende keer
+      const next = volgendeHerhaling(it.deadline, it.herhaal);
+      finish(b, async id => {
+        await updateDoc(doc(db,"users",uid,"thoth",id),
+          { deadline: next, snoozeUntil: null, opzij: 0 });
+      }, `Gedaan, komt terug op ${datumKort(next)}`);
+    } else {
+      finish(b, async id => { await deleteDoc(doc(db,"users",uid,"thoth",id)); }, "Gedaan");
+    }
   }));
   box.querySelectorAll("[data-later]").forEach(b=>b.addEventListener("click",()=>{
     finish(b, async id => {
@@ -1791,12 +1855,15 @@ function finish(btn, action, msg){
 
 /* --- een taak aanpassen via het potloodje: tekst, deadline en prioriteit --- */
 let editId = null;
+let editHerhaal = "nooit";
 function openEdit(id){
   const it = items.find(i => i.id === id);
   if(!it) return;
   editId = id;
   $("#editText").value = it.text || "";
   $("#editDate").value = it.deadline || "";
+  editHerhaal = it.herhaal || "nooit";
+  segZet("#editHerhaalSeg", editHerhaal);
   $("#editPrio").checked = !!it.prio;
   $("#editPrioRow").classList.toggle("on", !!it.prio);
   $("#editSheet").classList.add("open");
@@ -1808,12 +1875,18 @@ $("#editSheet").addEventListener("click", e => { if(e.target.id === "editSheet")
 $("#editPrio").addEventListener("change", e => {
   $("#editPrioRow").classList.toggle("on", e.target.checked);
 });
+$$("#editHerhaalSeg button").forEach(b => b.addEventListener("click", () => {
+  editHerhaal = b.dataset.h; segZet("#editHerhaalSeg", editHerhaal);
+}));
 $("#editSave").addEventListener("click", async () => {
   if(!editId){ closeEdit(); return; }
   const text = $("#editText").value.trim();
   if(!text){ toast("Er staat nog niets in"); return; }
   const id = editId;
-  const gegevens = { text, prio: $("#editPrio").checked, deadline: $("#editDate").value || null };
+  const herhaal = editHerhaal === "nooit" ? null : editHerhaal;
+  let deadline = $("#editDate").value || null;
+  if(herhaal && !deadline) deadline = today();   // een herhaling heeft een moment nodig
+  const gegevens = { text, prio: $("#editPrio").checked, deadline, herhaal };
   closeEdit();
   try{
     await updateDoc(doc(db,"users",uid,"thoth",id), gegevens);
@@ -2263,7 +2336,7 @@ function alsTekst(d){
   const r = [`INTI, bewaard op ${new Date(d.datum).toLocaleString("nl-NL")}`,""];
   const geh = d.thoth.filter(i=>i.kind==="geheugen");
   const ins = d.thoth.filter(i=>i.kind==="inspiratie");
-  if(geh.length){ r.push("NIET VERGETEN"); geh.forEach(i=>r.push(`- ${i.prio?"[!] ":""}${i.text}${i.deadline?` (voor ${datumKort(i.deadline)})`:""}`)); r.push(""); }
+  if(geh.length){ r.push("NIET VERGETEN"); geh.forEach(i=>r.push(`- ${i.prio?"[!] ":""}${i.text}${i.deadline?` (voor ${datumKort(i.deadline)})`:""}${i.herhaal?` [${herhaalTekst(i)}]`:""}`)); r.push(""); }
   if(ins.length){ r.push("INSPIRATIE"); ins.forEach(i=>r.push(`- ${i.text}`)); r.push(""); }
   for(const b of BOARDS){
     const rij = d[b.col] || [];
@@ -2471,14 +2544,20 @@ $("#kluisFile").addEventListener("change", async e => {
    Werkt ook voordat je de zon hebt aangeraakt, want een inval
    wacht niet op een ritueel.
    ============================================================ */
+let snapHerhaal = "nooit";
 function openSnap(){
   $("#snapText").value = "";
   $("#snapDate").value = "";
+  snapHerhaal = "nooit";
+  segZet("#snapHerhaalSeg", "nooit");
   $("#snapPrio").checked = false;
   $("#snapPrioRow").classList.remove("on");
   $("#snapSheet").classList.add("open");
   setTimeout(() => $("#snapText").focus(), 90);
 }
+$$("#snapHerhaalSeg button").forEach(b => b.addEventListener("click", () => {
+  snapHerhaal = b.dataset.h; segZet("#snapHerhaalSeg", snapHerhaal);
+}));
 function closeSnap(){ $("#snapSheet").classList.remove("open"); }
 
 $("#snapBtn").addEventListener("click", openSnap);
@@ -2492,13 +2571,15 @@ async function bewaarSnap(){
   const text = $("#snapText").value.trim();
   if(!text){ toast("Er staat nog niets in"); return; }
   const prio = $("#snapPrio").checked;
-  const deadline = $("#snapDate").value || null;
+  const herhaal = snapHerhaal === "nooit" ? null : snapHerhaal;
+  let deadline = $("#snapDate").value || null;
+  if(herhaal && !deadline) deadline = today();   // een herhaling heeft een moment nodig
   closeSnap();
   try{
     await addDoc(collection(db,"users",uid,"thoth"),{
-      text, kind:"geheugen", prio, deadline, createdAt: Date.now(), snoozeUntil: null
+      text, kind:"geheugen", prio, deadline, herhaal, createdAt: Date.now(), snoozeUntil: null
     });
-    toast(prio ? "Bovenaan gezet" : "Op de lijst gezet");
+    toast(herhaal ? `Herhaalt ${herhaalTekst({herhaal, deadline})}` : prio ? "Bovenaan gezet" : "Op de lijst gezet");
   }catch(e){ toast("Opslaan lukt niet"); }
 }
 $("#snapSave").addEventListener("click", bewaarSnap);
