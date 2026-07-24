@@ -37,7 +37,8 @@ Alles hangt onder `users/{uid}`:
 
 - Collectie `thoth`: Thoth-items. Velden `text`, `kind` ("inspiratie" of "geheugen"),
   `prio`, `createdAt`, `snoozeUntil`, `opzij` (hoe vaak een geheugen-item bij Fix shit
-  opzij is gezet), `deadline` (optionele datum "JJJJ-MM-DD" van een geheugen-item)
+  opzij is gezet), `deadline` (optionele datum "JJJJ-MM-DD" van een geheugen-item),
+  `tijd` (optioneel tijdstip "UU:MM" bij de deadline; "te laat" wordt tijd-bewust)
   en `herhaal` (null of "dag"/"week"/"maand" voor een terugkerende to do; de deadline
   schuift bij Gedaan door naar de volgende keer). Inspiratie komt binnen via Thoth,
   geheugen-items (de to do's) via de snelknop.
