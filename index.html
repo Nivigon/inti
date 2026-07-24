@@ -263,6 +263,7 @@ textarea.entry{
   border-radius:var(--r);padding:16px;line-height:1.6;
 }
 textarea.entry:focus{border-color:var(--gold-dim);outline:none}
+.th-uitleg{font-size:.86rem;line-height:1.6;color:var(--bone-dim);max-width:52ch}
 
 .list{margin-top:34px;display:flex;flex-direction:column;gap:9px}
 .item{
@@ -280,6 +281,7 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 
 /* fix shit */
 .task{
+  position:relative;
   background:var(--earth);border:1px solid var(--earth-3);
   border-left:2px solid var(--cochineal);
   border-radius:var(--r);padding:18px 18px 14px;margin-bottom:12px;
@@ -287,6 +289,21 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 }
 .task.gone{opacity:0;transform:translateX(24px)}
 .task .txt{line-height:1.6;margin-bottom:14px;white-space:pre-wrap;word-break:break-word}
+/* potloodje om een taak aan te passen */
+.task-edit{
+  position:absolute;top:12px;right:12px;
+  color:var(--bone-dim);line-height:1;padding:4px;transition:color .2s,transform .2s;
+}
+.task-edit svg{width:15px;height:15px;display:block}
+.task-edit:hover{color:var(--gold);transform:rotate(-8deg)}
+/* deadline op een taak, feller naarmate hij dichterbij of voorbij is */
+.dl{
+  display:inline-block;margin-bottom:10px;
+  font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;font-weight:500;
+  color:var(--turquoise);
+}
+.dl.nu{color:var(--gold-bright);font-weight:600}
+.dl.laat{color:var(--red-bright);font-weight:700;text-shadow:0 0 16px rgba(236,122,104,.35)}
 .task .acts{display:flex;gap:10px}
 .task .acts button{
   flex:1;padding:11px;border-radius:10px;font-size:.72rem;
@@ -721,11 +738,11 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
       </button>
       <div class="tile-wrap">
         <button class="quad" data-panel="thoth">
-          <span class="eyebrow tag">Opschrijven</span>
+          <span class="eyebrow tag">Ideeën</span>
           <h2>Thoth</h2>
-          <p>Inspiratie bewaren of iets niet vergeten.</p>
+          <p>Inspiratie bewaren en teruglezen.</p>
         </button>
-        <button class="snap" id="snapBtn" aria-label="Snel iets opschrijven" title="Snel iets opschrijven">
+        <button class="snap" id="snapBtn" aria-label="Een to do opschrijven" title="Een to do opschrijven">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M13.5 2 4 13.2h6.2L9.8 22 20 10.5h-6.4z"/>
           </svg>
@@ -799,21 +816,9 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
     </div>
 
     <div id="thSchrijf">
-      <div class="choice">
-        <button class="insp" data-kind="inspiratie">
-          <strong>Inspiratie</strong>
-          <span>Een idee, een vondst, iets om later mee verder te gaan.</span>
-        </button>
-        <button class="geh" data-kind="geheugen">
-          <strong>Geheugen</strong>
-          <span>Iets wat je niet mag vergeten. Komt terug bij Fix shit.</span>
-        </button>
-      </div>
+      <p class="th-uitleg">Een idee, een vondst, iets om later mee verder te gaan.
+      Moet er iets gedaan worden? Gebruik de snelknop, dan komt het bij Fix shit.</p>
       <textarea class="entry" id="thothText" placeholder="Schrijf het op..."></textarea>
-      <label class="prio-row" id="prioRow" hidden>
-        <input type="checkbox" id="prioBox">
-        <span>Hoge prioriteit, komt bij Fix shit altijd bovenaan</span>
-      </label>
       <button class="btn-gold" id="thothSave" style="width:100%;margin-top:12px">Bewaren</button>
     </div>
 
@@ -983,12 +988,31 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
       <span class="eyebrow">Snel opschrijven</span>
       <button class="sheet-x" id="snapX" aria-label="Sluiten">&times;</button>
     </div>
-    <textarea id="snapText" placeholder="Wat mag je niet vergeten?"></textarea>
+    <textarea id="snapText" placeholder="Wat moet er gebeuren?"></textarea>
+    <label class="eyebrow" for="snapDate">Deadline, mag leeg</label>
+    <input type="date" id="snapDate">
     <label class="prio-row" id="snapPrioRow">
       <input type="checkbox" id="snapPrio">
       <span>Hoge prioriteit, komt bij Fix shit altijd bovenaan</span>
     </label>
     <button class="btn-gold" id="snapSave">Zet op de lijst</button>
+  </div>
+</div>
+
+<div class="sheet" id="editSheet">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <span class="eyebrow">Aanpassen</span>
+      <button class="sheet-x" id="editX" aria-label="Sluiten">&times;</button>
+    </div>
+    <textarea id="editText" placeholder="Wat moet er gebeuren?"></textarea>
+    <label class="eyebrow" for="editDate">Deadline, mag leeg</label>
+    <input type="date" id="editDate">
+    <label class="prio-row" id="editPrioRow">
+      <input type="checkbox" id="editPrio">
+      <span>Hoge prioriteit, komt bij Fix shit altijd bovenaan</span>
+    </label>
+    <button class="btn-gold" id="editSave">Opslaan</button>
   </div>
 </div>
 
@@ -1522,13 +1546,14 @@ function openPanel(id){
 }
 function closePanels(){
   $$(".panel").forEach(p=>p.classList.remove("open"));
-  closeSheet(); closeSnap();
+  closeSheet(); closeSnap(); closeEdit();
   document.body.classList.remove("zw-open");
 }
 $$("[data-close]").forEach(b=>b.addEventListener("click", closePanels));
 document.addEventListener("keydown", e=>{
   if(e.key!=="Escape") return;
-  if($("#snapSheet").classList.contains("open")) closeSnap();
+  if($("#editSheet").classList.contains("open")) closeEdit();
+  else if($("#snapSheet").classList.contains("open")) closeSnap();
   else if($("#zwSheet").classList.contains("open")) closeSheet();
   else closePanels();
 });
@@ -1550,32 +1575,17 @@ $$(".quad").forEach(q => q.addEventListener("click", () => {
 /* ============================================================
    THOTH
    ============================================================ */
-let kind = "inspiratie";
-$$("#thoth .choice button").forEach(b => b.addEventListener("click", () => {
-  $$("#thoth .choice button").forEach(x=>x.classList.remove("sel"));
-  b.classList.add("sel");
-  kind = b.dataset.kind;
-  $("#prioRow").hidden = kind !== "geheugen";
-  if(kind !== "geheugen"){ $("#prioBox").checked = false; $("#prioRow").classList.remove("on"); }
-}));
-$$("#thoth .choice button")[0].classList.add("sel");
-$("#prioBox").addEventListener("change", e => {
-  $("#prioRow").classList.toggle("on", e.target.checked);
-});
-
+/* Thoth is de ideeenbank: hier bewaar je alleen inspiratie.
+   Een to do leg je vast met de snelknop, die komt bij Fix shit. */
 $("#thothSave").addEventListener("click", async () => {
   const text = $("#thothText").value.trim();
   if(!text){ toast("Er staat nog niets in"); return; }
   try{
-    const prio = kind==="geheugen" && $("#prioBox").checked;
     await addDoc(collection(db,"users",uid,"thoth"),{
-      text, kind, prio,
-      createdAt: Date.now(),
-      snoozeUntil: null
+      text, kind:"inspiratie", createdAt: Date.now()
     });
     $("#thothText").value="";
-    $("#prioBox").checked=false; $("#prioRow").classList.remove("on");
-    toast(prio ? "Bovenaan gezet" : kind==="geheugen" ? "Op de lijst gezet" : "Bewaard");
+    toast("Bewaard");
   }catch(e){ toast("Opslaan lukt niet: "+e.code); }
 });
 
@@ -1624,21 +1634,43 @@ function renderInspiration(){
    FIX SHIT
    ============================================================ */
 /* alle geheugen-dingen, gesplitst in actief (nu op de lijst) en even opzij gezet */
-const sorteerTaken = (a,b) => (b.prio?1:0) - (a.prio?1:0) || a.createdAt - b.createdAt;
+const MAANDEN = ["januari","februari","maart","april","mei","juni",
+                 "juli","augustus","september","oktober","november","december"];
+function datumKort(iso){
+  const d = iso.split("-").map(Number);
+  return `${d[2]} ${MAANDEN[d[1]-1]}`;
+}
 function geheugenTaken(){
   return items.filter(i => i.kind==="geheugen");
 }
+/* rangorde voor Fix shit: 0 te laat of vandaag, 1 hoge prio, 2 komende deadline, 3 de rest */
+function rang(i){
+  const t = today();
+  if(i.deadline && i.deadline <= t) return 0;
+  if(i.prio) return 1;
+  if(i.deadline) return 2;
+  return 3;
+}
+const verg = (a,b) => a<b ? -1 : a>b ? 1 : 0;
+function sorteerTaken(a,b){
+  const r = rang(a) - rang(b);
+  if(r) return r;
+  // op datum sorteren we dichtstbij of meest te laat eerst, anders oudste eerst
+  if(rang(a) === 0 || rang(a) === 2) return verg(a.deadline, b.deadline) || (a.createdAt - b.createdAt);
+  return a.createdAt - b.createdAt;
+}
 function actieveTaken(){
   const t = today();
+  // een deadline van vandaag of eerder telt altijd mee, ook al is het ding opzij gezet
   return geheugenTaken()
-    .filter(i => !i.snoozeUntil || i.snoozeUntil <= t)
+    .filter(i => !i.snoozeUntil || i.snoozeUntil <= t || (i.deadline && i.deadline <= t))
     .sort(sorteerTaken);
 }
 function opzijTaken(){
   const t = today();
   return geheugenTaken()
-    .filter(i => i.snoozeUntil && i.snoozeUntil > t)
-    .sort((a,b) => (b.prio?1:0)-(a.prio?1:0) || (b.opzij||0)-(a.opzij||0) || a.createdAt - b.createdAt);
+    .filter(i => i.snoozeUntil && i.snoozeUntil > t && !(i.deadline && i.deadline <= t))
+    .sort(sorteerTaken);
 }
 function renderCounts(){
   const n = geheugenTaken().length;   // alles op je lijst, ook de opzij-gezette
@@ -1694,18 +1726,30 @@ function opzijLabel(n){
   const tier = n >= 6 ? 3 : n >= 3 ? 2 : 1;
   return `<span class="opzij-tag t${tier}">${n}x opzij gezet</span>`;
 }
+/* deadline op een kaartje: groen in de toekomst, goud vandaag, rood als het te laat is */
+function deadlineTag(iso){
+  if(!iso) return "";
+  const t = today();
+  if(iso < t)   return `<div class="dl laat">Te laat, was ${datumKort(iso)}</div>`;
+  if(iso === t) return `<div class="dl nu">Moet vandaag</div>`;
+  return `<div class="dl">Voor ${datumKort(iso)}</div>`;
+}
 
 function renderFix(){
   const box = $("#fixList");
   const list = fixShown.map(id => items.find(i=>i.id===id)).filter(Boolean);
   if(!list.length){
     box.innerHTML = `<div class="empty"><span class="big">Niets meer open</span>
-      Alles wat je bij Thoth onder geheugen zet, komt hier terug.</div>`;
+      Alles wat je met de snelknop opschrijft, komt hier terug.</div>`;
     return;
   }
   box.innerHTML = list.map(i=>`
     <div class="task${i.prio ? " prio" : ""}" data-id="${i.id}">
+      <button class="task-edit" data-edit="${i.id}" aria-label="Aanpassen" title="Aanpassen">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+      </button>
       ${i.prio ? `<span class="prio-tag">Hoge prioriteit</span>` : ""}
+      ${deadlineTag(i.deadline)}
       ${opzijLabel(i.opzij)}
       <div class="txt">${escapeHtml(i.text)}</div>
       <div class="when eyebrow" style="margin-bottom:12px">${human(i.createdAt)} opgeschreven</div>
@@ -1715,6 +1759,7 @@ function renderFix(){
       </div>
     </div>`).join("");
 
+  box.querySelectorAll("[data-edit]").forEach(b=>b.addEventListener("click",()=>openEdit(b.dataset.edit)));
   box.querySelectorAll("[data-done]").forEach(b=>b.addEventListener("click",()=>{
     finish(b, async id => { await deleteDoc(doc(db,"users",uid,"thoth",id)); }, "Gedaan");
   }));
@@ -1740,6 +1785,41 @@ function finish(btn, action, msg){
     renderFix();
   },320);
 }
+
+/* --- een taak aanpassen via het potloodje: tekst, deadline en prioriteit --- */
+let editId = null;
+function openEdit(id){
+  const it = items.find(i => i.id === id);
+  if(!it) return;
+  editId = id;
+  $("#editText").value = it.text || "";
+  $("#editDate").value = it.deadline || "";
+  $("#editPrio").checked = !!it.prio;
+  $("#editPrioRow").classList.toggle("on", !!it.prio);
+  $("#editSheet").classList.add("open");
+  setTimeout(() => $("#editText").focus(), 90);
+}
+function closeEdit(){ $("#editSheet").classList.remove("open"); editId = null; }
+$("#editX").addEventListener("click", closeEdit);
+$("#editSheet").addEventListener("click", e => { if(e.target.id === "editSheet") closeEdit(); });
+$("#editPrio").addEventListener("change", e => {
+  $("#editPrioRow").classList.toggle("on", e.target.checked);
+});
+$("#editSave").addEventListener("click", async () => {
+  if(!editId){ closeEdit(); return; }
+  const text = $("#editText").value.trim();
+  if(!text){ toast("Er staat nog niets in"); return; }
+  const id = editId;
+  const gegevens = { text, prio: $("#editPrio").checked, deadline: $("#editDate").value || null };
+  closeEdit();
+  try{
+    await updateDoc(doc(db,"users",uid,"thoth",id), gegevens);
+    const lokaal = items.find(i => i.id === id);   // meteen tonen, snapshot bevestigt zo
+    if(lokaal) Object.assign(lokaal, gegevens);
+    renderFix();
+    toast("Aangepast");
+  }catch(e){ toast("Opslaan lukt niet"); }
+});
 
 /* ============================================================
    BORDEN  ·  Zilverweide en Inti werken precies hetzelfde.
@@ -2180,7 +2260,7 @@ function alsTekst(d){
   const r = [`INTI, bewaard op ${new Date(d.datum).toLocaleString("nl-NL")}`,""];
   const geh = d.thoth.filter(i=>i.kind==="geheugen");
   const ins = d.thoth.filter(i=>i.kind==="inspiratie");
-  if(geh.length){ r.push("NIET VERGETEN"); geh.forEach(i=>r.push(`- ${i.prio?"[!] ":""}${i.text}`)); r.push(""); }
+  if(geh.length){ r.push("NIET VERGETEN"); geh.forEach(i=>r.push(`- ${i.prio?"[!] ":""}${i.text}${i.deadline?` (voor ${datumKort(i.deadline)})`:""}`)); r.push(""); }
   if(ins.length){ r.push("INSPIRATIE"); ins.forEach(i=>r.push(`- ${i.text}`)); r.push(""); }
   for(const b of BOARDS){
     const rij = d[b.col] || [];
@@ -2390,6 +2470,7 @@ $("#kluisFile").addEventListener("change", async e => {
    ============================================================ */
 function openSnap(){
   $("#snapText").value = "";
+  $("#snapDate").value = "";
   $("#snapPrio").checked = false;
   $("#snapPrioRow").classList.remove("on");
   $("#snapSheet").classList.add("open");
@@ -2408,10 +2489,11 @@ async function bewaarSnap(){
   const text = $("#snapText").value.trim();
   if(!text){ toast("Er staat nog niets in"); return; }
   const prio = $("#snapPrio").checked;
+  const deadline = $("#snapDate").value || null;
   closeSnap();
   try{
     await addDoc(collection(db,"users",uid,"thoth"),{
-      text, kind:"geheugen", prio, createdAt: Date.now(), snoozeUntil: null
+      text, kind:"geheugen", prio, deadline, createdAt: Date.now(), snoozeUntil: null
     });
     toast(prio ? "Bovenaan gezet" : "Op de lijst gezet");
   }catch(e){ toast("Opslaan lukt niet"); }
