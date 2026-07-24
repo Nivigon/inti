@@ -21,13 +21,15 @@ Het plein heeft zes tegels rond de zon in het midden:
 - Zon (`#sunBtn`) opent de legende van vandaag, paneel `#legend`.
 - Zilverweide en Inti zijn de twee borden (paneel `#zilverweide` en `#intiboard`),
   opgebouwd door de code in `#boards`.
-- Thoth (`#thoth`) om inspiratie of iets-niet-vergeten op te schrijven.
+- Thoth (`#thoth`) is de ideeenbank, alleen inspiratie opschrijven en teruglezen.
+  To do's leg je vast met de snelknop (`#snapBtn`), die komen bij Fix shit.
 - AI (`#ai`, "Project AI") toont elke dag een les.
 - Fix shit (`#fix`) toont de drie oudste geheugen-items.
 - Eén tegel is nog leeg.
 
 Verdere schermen: `#kluis` (reservekopie), `#slot` (herinnering om te back-uppen),
-en de sheets `#zwSheet` (toevoegen op een bord), `#snapSheet` (snel opschrijven).
+en de sheets `#zwSheet` (toevoegen op een bord), `#snapSheet` (snel een to do
+opschrijven, met optionele deadline) en `#editSheet` (een Fix shit-taak aanpassen).
 
 ## Firestore
 
@@ -35,7 +37,8 @@ Alles hangt onder `users/{uid}`:
 
 - Collectie `thoth`: Thoth-items. Velden `text`, `kind` ("inspiratie" of "geheugen"),
   `prio`, `createdAt`, `snoozeUntil`, `opzij` (hoe vaak een geheugen-item bij Fix shit
-  opzij is gezet).
+  opzij is gezet) en `deadline` (optionele datum "JJJJ-MM-DD" van een geheugen-item).
+  Inspiratie komt binnen via Thoth, geheugen-items (de to do's) via de snelknop.
 - Collectie `zilverweide` en collectie `intiboard`: de twee borden. Docs met
   `kind` "cat" (velden `name`, `createdAt`) of "todo" (velden `text`, `term` "kort"
   of "lang", `catId`, `createdAt`).
