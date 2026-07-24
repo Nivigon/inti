@@ -160,6 +160,9 @@ body.lit .quad:hover{border-color:var(--gold-dim);transform:translateY(-2px)}
   display:none;place-items:center;
 }
 .quad .badge.on{display:grid}
+/* op de Fix shit-tegel staat de snelknop rechtsboven, dus het getal schuift ernaast */
+#fixBadge{top:16px;right:58px}
+@media (max-width:360px){ #fixBadge{top:12px;right:50px} }
 
 /* de zon */
 .sunwrap{position:relative;width:var(--sun);height:var(--sun);z-index:5;flex-shrink:0}
@@ -736,18 +739,11 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
         <h2>Zilverweide</h2>
         <p>Korte en lange termijn, per categorie.</p>
       </button>
-      <div class="tile-wrap">
-        <button class="quad" data-panel="thoth">
-          <span class="eyebrow tag">Ideeën</span>
-          <h2>Thoth</h2>
-          <p>Inspiratie bewaren en teruglezen.</p>
-        </button>
-        <button class="snap" id="snapBtn" aria-label="Een to do opschrijven" title="Een to do opschrijven">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M13.5 2 4 13.2h6.2L9.8 22 20 10.5h-6.4z"/>
-          </svg>
-        </button>
-      </div>
+      <button class="quad" data-panel="thoth">
+        <span class="eyebrow tag">Ideeën</span>
+        <h2>Thoth</h2>
+        <p>Inspiratie bewaren en teruglezen.</p>
+      </button>
     </div>
 
     <div class="colmid">
@@ -781,12 +777,19 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
         <h2>AI</h2>
         <p>Elke dag iets leren, in tien minuten.</p>
       </button>
-      <button class="quad" data-panel="fix">
-        <span class="eyebrow tag">Afwerken</span>
-        <span class="badge" id="fixBadge">0</span>
-        <h2>Fix shit</h2>
-        <p>De drie oudste dingen die nog liggen.</p>
-      </button>
+      <div class="tile-wrap">
+        <button class="quad" data-panel="fix">
+          <span class="eyebrow tag">Afwerken</span>
+          <span class="badge" id="fixBadge">0</span>
+          <h2>Fix shit</h2>
+          <p>De drie oudste dingen die nog liggen.</p>
+        </button>
+        <button class="snap" id="snapBtn" aria-label="Een to do opschrijven" title="Een to do opschrijven">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M13.5 2 4 13.2h6.2L9.8 22 20 10.5h-6.4z"/>
+          </svg>
+        </button>
+      </div>
     </div>
 
   </div>
