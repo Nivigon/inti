@@ -37,8 +37,10 @@ Alles hangt onder `users/{uid}`:
 
 - Collectie `thoth`: Thoth-items. Velden `text`, `kind` ("inspiratie" of "geheugen"),
   `prio`, `createdAt`, `snoozeUntil`, `opzij` (hoe vaak een geheugen-item bij Fix shit
-  opzij is gezet) en `deadline` (optionele datum "JJJJ-MM-DD" van een geheugen-item).
-  Inspiratie komt binnen via Thoth, geheugen-items (de to do's) via de snelknop.
+  opzij is gezet), `deadline` (optionele datum "JJJJ-MM-DD" van een geheugen-item)
+  en `herhaal` (null of "dag"/"week"/"maand" voor een terugkerende to do; de deadline
+  schuift bij Gedaan door naar de volgende keer). Inspiratie komt binnen via Thoth,
+  geheugen-items (de to do's) via de snelknop.
 - Collectie `zilverweide` en collectie `intiboard`: de twee borden. Docs met
   `kind` "cat" (velden `name`, `createdAt`) of "todo" (velden `text`, `term` "kort"
   of "lang", `catId`, `createdAt`).
