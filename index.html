@@ -534,7 +534,13 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 .zw-cat{margin-bottom:24px}
 .zw-cat-head{display:flex;align-items:center;gap:8px;margin-bottom:9px}
 .zw-col[data-term=lang] .zw-cat-head{flex-direction:row-reverse}
-.zw-cat-name{font-family:var(--display);font-weight:400;font-size:.98rem;color:var(--gold)}
+.zw-cat-toggle{flex:1;display:flex;align-items:center;gap:9px;min-width:0}
+.zw-col[data-term=lang] .zw-cat-toggle{flex-direction:row-reverse}
+.zw-cat-chevron{color:var(--gold-dim);font-size:.62rem;line-height:1;flex-shrink:0}
+.zw-cat-toggle:hover .zw-cat-name{color:var(--gold-bright)}
+.zw-cat-toggle:hover .zw-cat-chevron{color:var(--gold)}
+.zw-cat-name{font-family:var(--display);font-weight:400;font-size:.98rem;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zw-cat-n{color:var(--bone-dim);font-size:.72rem;flex-shrink:0}
 .zw-cat-kill{display:none;color:var(--bone-dim);font-size:1rem;line-height:1;padding:0 3px}
 .zw-cat-kill:hover{color:var(--cochineal)}
 
@@ -1593,7 +1599,11 @@ function lightUp(i, showPanel){
 function openPanel(id){
   $("#"+id).classList.add("open");
   const bord = BOARDS.some(b => b.id === id);
-  if(bord) bActief = id;
+  if(bord){
+    bActief = id;
+    bs[id].open.clear();   // bij openen staan de categorieen standaard ingeklapt
+    renderBoard(id);
+  }
   document.body.classList.toggle("zw-open", bord);
 }
 function closePanels(){
@@ -2001,7 +2011,8 @@ const bs = {};                 // per bord de gegevens en de stand van het minne
 let bActief = BOARDS[0].id;    // welk bord staat er open
 let zwAddTerm = "kort";
 
-BOARDS.forEach(b => bs[b.id] = { data:[], trim:false, unsub:null });
+// open bevat de categorieen die uitgeklapt staan; standaard is alles ingeklapt
+BOARDS.forEach(b => bs[b.id] = { data:[], trim:false, unsub:null, open:new Set() });
 
 function bouwBorden(){
   $("#boards").innerHTML = BOARDS.map(b => `
@@ -2079,25 +2090,40 @@ function vulCategorieLijst(id){
 }
 
 function groep(id, naam, catId, list, term){
+  const key = catId || "algemeen";
+  const dicht = !bs[id].open.has(key);
   const pijl = term === "kort" ? "&rarr;" : "&larr;";
-  const items = list.map(t => `
+  let body = "";
+  if(!dicht){
+    body = list.map(t => `
     <div class="zw-item" data-id="${t.id}">
       <div class="txt">${escapeHtml(t.text)}</div>
       <button class="zw-move" data-move="${t.id}" title="Naar de andere kolom">${pijl}</button>
       <button class="zw-kill" data-tdel="${t.id}" aria-label="Verwijderen">&times;</button>
-    </div>`).join("");
+    </div>`).join("") || `<div class="zw-none">leeg</div>`;
+  }
   return `<div class="zw-cat">
       <div class="zw-cat-head">
-        <span class="zw-cat-name">${escapeHtml(naam)}</span>
+        <button class="zw-cat-toggle" data-toggle="${key}" aria-expanded="${!dicht}">
+          <span class="zw-cat-chevron">${dicht ? "&#9656;" : "&#9662;"}</span>
+          <span class="zw-cat-name">${escapeHtml(naam)}</span>
+          <span class="zw-cat-n">${list.length}</span>
+        </button>
         ${catId ? `<button class="zw-cat-kill" data-cdel="${catId}" aria-label="Categorie verwijderen">&times;</button>` : ""}
       </div>
-      ${items || `<div class="zw-none">leeg</div>`}
+      ${body}
     </div>`;
 }
 
 function bindBoard(id){
   const col = BOARDS.find(b => b.id === id).col;
   const pad = ref => doc(db,"users",uid,col,ref);
+
+  $$(`#${id} [data-toggle]`).forEach(b => b.addEventListener("click", () => {
+    const s = bs[id].open, key = b.dataset.toggle;
+    if(s.has(key)) s.delete(key); else s.add(key);   // in- of uitklappen
+    renderBoard(id);
+  }));
 
   $$(`#${id} [data-move]`).forEach(b => b.addEventListener("click", async () => {
     const t = bs[id].data.find(x => x.id === b.dataset.move);
@@ -2156,10 +2182,12 @@ $("#zwTodoSave").addEventListener("click", async () => {
   const text = $("#zwTodoText").value.trim();
   if(!text){ toast("Er staat nog niets in"); return; }
   const col = BOARDS.find(b => b.id === bActief).col;
+  const catId = $("#zwTodoCat").value || null;
+  bs[bActief].open.add(catId || "algemeen");   // klap de categorie open zodat je het nieuwe item ziet
   try{
     await addDoc(collection(db,"users",uid,col),{
       kind:"todo", text, term: zwAddTerm,
-      catId: $("#zwTodoCat").value || null,
+      catId,
       createdAt: Date.now()
     });
     $("#zwTodoText").value = "";
