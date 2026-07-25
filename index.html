@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14100b">
 <title>Inti</title>
+<!-- installeerbaar maken: relatief pad, want dit kan onder een submap draaien -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Inti">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..800&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
@@ -649,6 +656,24 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
 }
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
+/* ---------- offline-bolletje in de kop ---------- */
+.topleft{display:flex;align-items:center;gap:9px}
+.offline-dot{
+  width:9px;height:9px;border-radius:50%;flex-shrink:0;
+  background:var(--cochineal);box-shadow:0 0 8px rgba(168,57,44,.6);
+}
+
+/* ---------- balkje: nieuwe versie beschikbaar ---------- */
+#updateBar{
+  position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:300;
+  background:var(--earth-3);color:var(--bone);
+  border:1px solid var(--gold-dim);border-bottom:none;border-radius:12px 12px 0 0;
+  padding:13px 22px;padding-bottom:max(13px,calc(env(safe-area-inset-bottom) + 6px));
+  font-size:.82rem;letter-spacing:.02em;cursor:pointer;text-align:center;
+  box-shadow:0 -6px 24px rgba(0,0,0,.5);
+}
+#updateBar:hover{color:var(--gold-bright);border-color:var(--gold)}
+
 /* ---------- smal scherm: zon boven, tegels eronder ---------- */
 @media (max-width:900px){
   .plaza{grid-template-columns:1fr 1fr;gap:10px;min-height:0}
@@ -744,7 +769,10 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
      ============================================================ -->
 <div id="app">
   <div class="topbar">
-    <div class="date" id="today"></div>
+    <div class="topleft">
+      <span id="offlineDot" class="offline-dot" title="Je bent offline" hidden></span>
+      <div class="date" id="today"></div>
+    </div>
     <div style="display:flex;gap:18px"><button id="kluisBtn">Kluis</button><button id="logout">Sluiten</button></div>
   </div>
 
@@ -1080,6 +1108,7 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
 </div>
 
 <div class="toast" id="toast"></div>
+<div id="updateBar" hidden>Nieuwe versie beschikbaar, tik om te vernieuwen</div>
 
 <script type="module">
 /* ============================================================
@@ -2714,6 +2743,51 @@ $("#snapText").addEventListener("keydown", e => {
 function escapeHtml(s){
   return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
+</script>
+
+<script>
+/* ============================================================
+   Service worker, update-melding en offline-bolletje.
+   Los van de module hierboven, want dit heeft geen imports nodig.
+   ============================================================ */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(reg => {
+      if(reg.waiting) toonUpdate(reg.waiting);   // er wacht al een nieuwe versie
+      reg.addEventListener("updatefound", () => {
+        const nw = reg.installing;
+        if(!nw) return;
+        nw.addEventListener("statechange", () => {
+          // nieuwe versie klaar terwijl er al een actief is: meld het
+          if(nw.state === "installed" && navigator.serviceWorker.controller) toonUpdate(nw);
+        });
+      });
+    }).catch(() => {});
+
+    // na het activeren van de nieuwe versie de pagina eenmalig herladen
+    let herladen = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if(herladen) return;
+      herladen = true;
+      location.reload();
+    });
+  });
+}
+function toonUpdate(worker){
+  const bar = document.getElementById("updateBar");
+  if(!bar) return;
+  bar.hidden = false;
+  bar.onclick = () => { worker.postMessage("skipWaiting"); bar.textContent = "Vernieuwen..."; };
+}
+
+// het bolletje in de kop verschijnt zodra je offline bent
+function toonNet(){
+  const d = document.getElementById("offlineDot");
+  if(d) d.hidden = navigator.onLine;
+}
+window.addEventListener("online", toonNet);
+window.addEventListener("offline", toonNet);
+toonNet();
 </script>
 </body>
 </html>
