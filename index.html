@@ -1475,8 +1475,13 @@ const $$ = s => [...document.querySelectorAll(s)];
 /* --- kleine hulpjes --- */
 const pad = n => String(n).padStart(2,"0");
 const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-const today = () => dayKey(new Date());
-const tomorrow = () => { const d=new Date(); d.setDate(d.getDate()+1); return dayKey(d); };
+// de dag in Inti begint pas om 5 uur s ochtends. De nacht na twaalven hoort
+// dus nog bij de vorige dag: de zon, deadlines en het uitstellen slaan pas om
+// 5 uur om. Verander alleen dit getal om de grens te verzetten.
+const DAG_START_UUR = 5;
+const intiDag = d => { const x = new Date(d.getTime()); x.setHours(x.getHours() - DAG_START_UUR); return dayKey(x); };
+const today = () => intiDag(new Date());
+const tomorrow = () => { const d=new Date(); d.setDate(d.getDate()+1); return intiDag(d); };
 function toast(msg){
   const t=$("#toast"); t.textContent=msg; t.classList.add("on");
   clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("on"),2200);
@@ -1732,14 +1737,12 @@ function datumKort(iso){
   return `${d[2]} ${MAANDEN[d[1]-1]}`;
 }
 const DAGEN = ["zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag"];
-const nuTijd = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
-// een taak is te laat als de datum voorbij is, of als het vandaag is en de tijd voorbij is
+// een taak is te laat als het echte moment voorbij is (bij een tijd), of als de
+// dag voor de huidige Inti-dag ligt (zonder tijd). Zo klopt het ook na middernacht.
 function teLaat(it){
   if(!it.deadline) return false;
-  const t = today();
-  if(it.deadline < t) return true;
-  if(it.deadline === t && it.tijd && it.tijd < nuTijd()) return true;
-  return false;
+  if(it.tijd) return new Date(it.deadline + "T" + it.tijd + ":00") < new Date();
+  return it.deadline < today();
 }
 // de volgende datum in de reeks, uit een datum en een herhaling
 function volgendeDatum(iso, herhaal){
@@ -1813,8 +1816,8 @@ function berekenDeadline(prefix, keuze, tijd){
   else if(keuze === "maand") deadline = volgendeMaanddag(Number($("#"+prefix+"Maanddag").value));
   else if(keuze === "dag")   deadline = today();
   else                       return $("#"+prefix+"Date").value || null;   // nooit: gewoon de gekozen datum
-  // is die eerste keer vandaag maar de tijd al voorbij, pak dan de volgende keer
-  if(deadline === today() && tijd && tijd < nuTijd()) deadline = volgendeDatum(deadline, keuze);
+  // is dat eerste moment al voorbij, pak dan de volgende keer
+  if(tijd && new Date(deadline + "T" + tijd + ":00") < new Date()) deadline = volgendeDatum(deadline, keuze);
   return deadline;
 }
 function geheugenTaken(){
