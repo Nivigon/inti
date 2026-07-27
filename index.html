@@ -548,8 +548,8 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 .zw-cat-toggle:hover .zw-cat-chevron{color:var(--gold)}
 .zw-cat-name{font-family:var(--display);font-weight:400;font-size:.98rem;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .zw-cat-n{color:var(--bone-dim);font-size:.72rem;flex-shrink:0}
-.zw-cat-kill{display:none;color:var(--bone-dim);font-size:1rem;line-height:1;padding:0 3px}
-.zw-cat-kill:hover{color:var(--cochineal)}
+.zw-cat-kill{display:block;color:var(--bone-dim);font-size:1rem;line-height:1;padding:0 3px;opacity:.6;transition:color .2s,opacity .2s}
+.zw-cat-kill:hover{color:var(--cochineal);opacity:1}
 
 .zw-item{
   display:flex;align-items:flex-start;gap:10px;
@@ -566,10 +566,12 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 .zw-move{color:var(--bone-dim);font-size:1rem;line-height:1.45;padding:0 2px;flex-shrink:0;transition:color .2s,transform .2s}
 .zw-move:hover{color:var(--gold);transform:translateX(2px)}
 .zw-col[data-term=lang] .zw-move:hover{transform:translateX(-2px)}
-.zw-kill{display:none;color:var(--bone-dim);font-size:1rem;line-height:1.35;flex-shrink:0;padding:0 2px}
-.zw-kill:hover{color:var(--cochineal)}
-#zilverweide.trim .zw-kill,#zilverweide.trim .zw-cat-kill{display:block}
-#zilverweide.trim .zw-move{opacity:.2;pointer-events:none}
+/* potloodje om een punt te bewerken */
+.zw-edit{color:var(--bone-dim);font-size:.9rem;line-height:1.4;flex-shrink:0;padding:0 2px;transition:color .2s}
+.zw-edit:hover{color:var(--gold)}
+/* verwijderknop per punt, altijd zichtbaar */
+.zw-kill{color:var(--bone-dim);font-size:1.05rem;line-height:1.3;flex-shrink:0;padding:0 2px;opacity:.6;transition:color .2s,opacity .2s}
+.zw-kill:hover{color:var(--cochineal);opacity:1}
 .zw-none{font-size:.74rem;color:var(--gold-dim);opacity:.55;padding:2px 0 8px;font-style:italic}
 .zw-col[data-term=lang] .zw-none{text-align:right}
 
@@ -582,7 +584,6 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
   background:var(--earth-2);border:1px solid var(--earth-3);border-radius:40px;
   box-shadow:0 10px 34px rgba(0,0,0,.55);
 }
-body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--cochineal);background:rgba(168,57,44,.15)}
 .zw-plus{
   width:48px;height:48px;border-radius:50%;flex-shrink:0;
   background:linear-gradient(180deg,var(--gold),#b8873a);color:#20170c;
@@ -590,14 +591,6 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
   box-shadow:0 0 24px rgba(212,162,76,.22);transition:transform .2s,box-shadow .3s;
 }
 .zw-plus:hover{transform:scale(1.09);box-shadow:0 0 34px rgba(212,162,76,.45)}
-.zw-minus{
-  width:26px;height:26px;border-radius:50%;flex-shrink:0;
-  border:1px solid var(--earth-3);color:var(--bone-dim);
-  font-size:.95rem;line-height:1;display:grid;place-items:center;
-  transition:border-color .2s,color .2s,background .2s;
-}
-.zw-minus:hover{border-color:var(--cochineal);color:var(--cochineal)}
-#zilverweide.trim .zw-minus{border-color:var(--cochineal);color:var(--cochineal);background:rgba(168,57,44,.15)}
 
 /* blad dat omhoog komt om iets toe te voegen */
 .sheet{
@@ -632,6 +625,12 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
 }
 .seg button.on{border-color:var(--gold);color:var(--gold);background:var(--earth)}
 .sheet .btn-gold{width:100%;margin-top:22px}
+.confirm-tekst{line-height:1.7;color:var(--bone);font-size:.98rem;margin:6px 0 4px}
+.confirm-nee{
+  display:block;width:100%;margin-top:12px;padding:12px;
+  font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--bone-dim);
+}
+.confirm-nee:hover{color:var(--bone)}
 
 @media (max-width:720px){
   .zw-tabs{display:flex}
@@ -1104,7 +1103,18 @@ body.trimming .zw-rail-m .zw-minus{border-color:var(--cochineal);color:var(--coc
 
 <div class="zw-rail-m" id="zwRailM">
   <button class="zw-plus" id="zwPlusM" aria-label="Iets toevoegen">+</button>
-  <button class="zw-minus" id="zwMinusM" aria-label="Verwijderen aan of uit">&minus;</button>
+</div>
+
+<div class="sheet" id="confirmSheet">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <span class="eyebrow">Weet je het zeker?</span>
+      <button class="sheet-x" id="confirmX" aria-label="Sluiten">&times;</button>
+    </div>
+    <p class="confirm-tekst" id="confirmText"></p>
+    <button class="btn-gold" id="confirmYes">Ja, verwijderen</button>
+    <button class="confirm-nee" id="confirmNo">Annuleren</button>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1642,13 +1652,14 @@ function openPanel(id){
 }
 function closePanels(){
   $$(".panel").forEach(p=>p.classList.remove("open"));
-  closeSheet(); closeSnap(); closeEdit();
+  closeSheet(); closeSnap(); closeEdit(); sluitBevestig(false);
   document.body.classList.remove("zw-open");
 }
 $$("[data-close]").forEach(b=>b.addEventListener("click", closePanels));
 document.addEventListener("keydown", e=>{
   if(e.key!=="Escape") return;
-  if($("#editSheet").classList.contains("open")) closeEdit();
+  if($("#confirmSheet").classList.contains("open")) sluitBevestig(false);
+  else if($("#editSheet").classList.contains("open")) closeEdit();
   else if($("#snapSheet").classList.contains("open")) closeSnap();
   else if($("#zwSheet").classList.contains("open")) closeSheet();
   else closePanels();
@@ -2039,12 +2050,13 @@ const BOARDS = [
   { id:"zilverweide", titel:"Zilverweide", col:"zilverweide" },
   { id:"intiboard",   titel:"Inti",        col:"intiboard"   }
 ];
-const bs = {};                 // per bord de gegevens en de stand van het minnetje
+const bs = {};                 // per bord de gegevens en de open categorieen
 let bActief = BOARDS[0].id;    // welk bord staat er open
 let zwAddTerm = "kort";
+let zwEditId = null;           // welke to do we aan het bewerken zijn (null is nieuw)
 
 // open bevat de categorieen die uitgeklapt staan; standaard is alles ingeklapt
-BOARDS.forEach(b => bs[b.id] = { data:[], trim:false, unsub:null, open:new Set() });
+BOARDS.forEach(b => bs[b.id] = { data:[], unsub:null, open:new Set() });
 
 function bouwBorden(){
   $("#boards").innerHTML = BOARDS.map(b => `
@@ -2062,7 +2074,6 @@ function bouwBorden(){
         </div>
         <div class="zw-rail">
           <button class="zw-plus" data-plus="${b.id}" aria-label="Iets toevoegen">+</button>
-          <button class="zw-minus" data-minus="${b.id}" aria-label="Verwijderen aan of uit">&minus;</button>
         </div>
         <div class="zw-col" data-term="lang">
           <div class="zw-colhead"><span class="eyebrow">Lange termijn</span><span class="zw-n" id="${b.id}Nlang">0</span></div>
@@ -2076,7 +2087,6 @@ function bouwBorden(){
   $$("#boards [data-plus]").forEach(x => x.addEventListener("click", () => {
     bActief = x.dataset.plus; openSheet("pick");
   }));
-  $$("#boards [data-minus]").forEach(x => x.addEventListener("click", () => toggleTrim(x.dataset.minus)));
   $$("#boards .zw-tabs button").forEach(x => x.addEventListener("click", () => {
     const paneel = x.closest(".panel");
     paneel.querySelectorAll(".zw-tabs button").forEach(y => y.classList.toggle("on", y === x));
@@ -2085,12 +2095,21 @@ function bouwBorden(){
 }
 bouwBorden();
 
-function toggleTrim(id){
-  const s = bs[id]; s.trim = !s.trim;
-  $("#"+id).classList.toggle("trim", s.trim);
-  document.body.classList.toggle("trimming", s.trim);
-  toast(s.trim ? "Tik op een kruisje om iets te verwijderen" : "Verwijderen staat uit");
+/* een bevestiging in de stijl van de app, geeft true of false terug */
+let bevestigKlaar = null;
+function bevestig(tekst){
+  $("#confirmText").textContent = tekst;
+  $("#confirmSheet").classList.add("open");
+  return new Promise(res => { bevestigKlaar = res; });
 }
+function sluitBevestig(ok){
+  $("#confirmSheet").classList.remove("open");
+  if(bevestigKlaar){ const f = bevestigKlaar; bevestigKlaar = null; f(ok); }
+}
+$("#confirmYes").addEventListener("click", () => sluitBevestig(true));
+$("#confirmNo").addEventListener("click", () => sluitBevestig(false));
+$("#confirmX").addEventListener("click", () => sluitBevestig(false));
+$("#confirmSheet").addEventListener("click", e => { if(e.target.id === "confirmSheet") sluitBevestig(false); });
 
 const catsVan  = id => bs[id].data.filter(d => d.kind === "cat");
 const todosVan = id => bs[id].data.filter(d => d.kind === "todo");
@@ -2130,8 +2149,9 @@ function groep(id, naam, catId, list, term){
     body = list.map(t => `
     <div class="zw-item" data-id="${t.id}">
       <div class="txt">${escapeHtml(t.text)}</div>
+      <button class="zw-edit" data-tedit="${t.id}" aria-label="Aanpassen" title="Aanpassen">&#9998;</button>
       <button class="zw-move" data-move="${t.id}" title="Naar de andere kolom">${pijl}</button>
-      <button class="zw-kill" data-tdel="${t.id}" aria-label="Verwijderen">&times;</button>
+      <button class="zw-kill" data-tdel="${t.id}" aria-label="Verwijderen" title="Verwijderen">&times;</button>
     </div>`).join("") || `<div class="zw-none">leeg</div>`;
   }
   return `<div class="zw-cat">
@@ -2165,7 +2185,10 @@ function bindBoard(id){
     catch(e){ toast("Verplaatsen lukt niet"); renderBoard(id); }
   }));
 
+  $$(`#${id} [data-tedit]`).forEach(b => b.addEventListener("click", () => openTodoEdit(id, b.dataset.tedit)));
+
   $$(`#${id} [data-tdel]`).forEach(b => b.addEventListener("click", async () => {
+    if(!await bevestig("Weet je zeker dat dit punt weg kan?")) return;
     b.closest(".zw-item").classList.add("gone");
     try{ await deleteDoc(pad(b.dataset.tdel)); }
     catch(e){ toast("Verwijderen lukt niet"); renderBoard(id); }
@@ -2174,6 +2197,10 @@ function bindBoard(id){
   $$(`#${id} [data-cdel]`).forEach(b => b.addEventListener("click", async () => {
     const catId = b.dataset.cdel;
     const erf = todosVan(id).filter(t => t.catId === catId);
+    const vraag = erf.length
+      ? `Weet je zeker dat deze categorie weg kan? De ${erf.length} punten erin gaan naar Algemeen.`
+      : "Weet je zeker dat deze categorie weg kan?";
+    if(!await bevestig(vraag)) return;
     try{
       for(const t of erf) await updateDoc(pad(t.id), { catId: null });
       await deleteDoc(pad(catId));
@@ -2182,12 +2209,31 @@ function bindBoard(id){
   }));
 }
 
-/* --- de zwevende knoppen op de telefoon horen bij het open bord --- */
+/* --- de zwevende plusknop op de telefoon hoort bij het open bord --- */
 $("#zwPlusM").addEventListener("click", () => openSheet("pick"));
-$("#zwMinusM").addEventListener("click", () => toggleTrim(bActief));
 
-/* --- het blad om iets toe te voegen --- */
+/* --- een bestaand punt bewerken via het potloodje --- */
+function openTodoEdit(id, todoId){
+  const t = todosVan(id).find(x => x.id === todoId);
+  if(!t) return;
+  bActief = id;
+  openSheet("todo");                 // toont het to do-formulier en zet zwEditId op null
+  zwEditId = todoId;                 // nu in bewerk-stand
+  $("#zwTodoText").value = t.text;
+  $("#zwTodoCat").value = t.catId || "";
+  zwAddTerm = t.term;
+  $$("#zwTermSeg button").forEach(x => x.classList.toggle("on", x.dataset.t === t.term));
+  $("#sheetTitle").textContent = "Punt aanpassen";
+  $("#zwTodoSave").textContent = "Opslaan";
+}
+
+/* --- het blad om iets toe te voegen (of, via het potloodje, aan te passen) --- */
 function openSheet(view){
+  zwEditId = null;                         // standaard: nieuw toevoegen
+  $("#zwTodoText").value = "";
+  $("#zwTodoSave").textContent = "Toevoegen";
+  zwAddTerm = "kort";
+  $$("#zwTermSeg button").forEach(x => x.classList.toggle("on", x.dataset.t === "kort"));
   vulCategorieLijst(bActief);
   $("#zwPick").hidden     = view !== "pick";
   $("#zwFormTodo").hidden = view !== "todo";
@@ -2215,15 +2261,18 @@ $("#zwTodoSave").addEventListener("click", async () => {
   if(!text){ toast("Er staat nog niets in"); return; }
   const col = BOARDS.find(b => b.id === bActief).col;
   const catId = $("#zwTodoCat").value || null;
-  bs[bActief].open.add(catId || "algemeen");   // klap de categorie open zodat je het nieuwe item ziet
+  bs[bActief].open.add(catId || "algemeen");   // klap de categorie open zodat je het punt ziet
   try{
-    await addDoc(collection(db,"users",uid,col),{
-      kind:"todo", text, term: zwAddTerm,
-      catId,
-      createdAt: Date.now()
-    });
-    $("#zwTodoText").value = "";
-    closeSheet(); toast("Toegevoegd");
+    if(zwEditId){
+      await updateDoc(doc(db,"users",uid,col,zwEditId), { text, term: zwAddTerm, catId });
+      closeSheet(); toast("Aangepast");
+    }else{
+      await addDoc(collection(db,"users",uid,col),{
+        kind:"todo", text, term: zwAddTerm, catId, createdAt: Date.now()
+      });
+      $("#zwTodoText").value = "";
+      closeSheet(); toast("Toegevoegd");
+    }
   }catch(e){ toast("Opslaan lukt niet"); }
 });
 
