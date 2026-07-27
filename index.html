@@ -551,8 +551,10 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 .zw-cat-kill{display:block;color:var(--bone-dim);font-size:1rem;line-height:1;padding:0 3px;opacity:.6;transition:color .2s,opacity .2s}
 .zw-cat-kill:hover{color:var(--cochineal);opacity:1}
 
+/* een punt: tekst boven, een subtiel potlood in de hoek, de knoppen eronder */
 .zw-item{
-  display:flex;align-items:flex-start;gap:10px;
+  position:relative;
+  display:flex;flex-direction:column;gap:9px;
   background:var(--earth);border:1px solid var(--earth-3);border-radius:10px;
   padding:11px 13px;margin-bottom:7px;
   transition:opacity .3s,transform .3s,border-color .2s;
@@ -560,18 +562,26 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 .zw-item:hover{border-color:var(--gold-dim)}
 .zw-item.gone{opacity:0;transform:scale(.95)}
 .zw-col[data-term=kort] .zw-item{border-left:2px solid var(--gold)}
-.zw-col[data-term=lang] .zw-item{border-right:2px solid var(--turquoise);flex-direction:row-reverse}
-.zw-item .txt{flex:1;font-size:.88rem;line-height:1.55;word-break:break-word;white-space:pre-wrap}
+.zw-col[data-term=lang] .zw-item{border-right:2px solid var(--turquoise)}
+.zw-item .txt{font-size:.88rem;line-height:1.55;word-break:break-word;white-space:pre-wrap;padding-right:22px}
 .zw-col[data-term=lang] .zw-item .txt{text-align:right}
-.zw-move{color:var(--bone-dim);font-size:1rem;line-height:1.45;padding:0 2px;flex-shrink:0;transition:color .2s,transform .2s}
-.zw-move:hover{color:var(--gold);transform:translateX(2px)}
-.zw-col[data-term=lang] .zw-move:hover{transform:translateX(-2px)}
-/* potloodje om een punt te bewerken */
-.zw-edit{color:var(--bone-dim);font-size:.9rem;line-height:1.4;flex-shrink:0;padding:0 2px;transition:color .2s}
+/* subtiel potloodje in de hoek */
+.zw-edit{
+  position:absolute;top:8px;right:9px;z-index:1;
+  color:var(--bone-dim);font-size:.85rem;line-height:1;padding:2px;transition:color .2s;
+}
 .zw-edit:hover{color:var(--gold)}
-/* verwijderknop per punt, altijd zichtbaar */
-.zw-kill{color:var(--bone-dim);font-size:1.05rem;line-height:1.3;flex-shrink:0;padding:0 2px;opacity:.6;transition:color .2s,opacity .2s}
-.zw-kill:hover{color:var(--cochineal);opacity:1}
+/* de knoppen onder een punt: het pijltje en verwijderen */
+.zw-acts{display:flex;gap:8px}
+.zw-acts button{
+  padding:7px 10px;border:1px solid var(--earth-3);border-radius:8px;
+  font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--bone-dim);
+  transition:border-color .2s,color .2s;
+}
+.zw-move{flex-shrink:0;font-size:.95rem;line-height:1;padding:5px 13px}
+.zw-move:hover{border-color:var(--gold-dim);color:var(--gold)}
+.zw-del{flex:1}
+.zw-del:hover{border-color:var(--cochineal);color:var(--cochineal)}
 .zw-none{font-size:.74rem;color:var(--gold-dim);opacity:.55;padding:2px 0 8px;font-style:italic}
 .zw-col[data-term=lang] .zw-none{text-align:right}
 
@@ -638,8 +648,7 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
   .zw-col{display:none}
   .zw-col.show{display:block}
   .zw-col[data-term=lang] .zw-colhead,
-  .zw-col[data-term=lang] .zw-cat-head,
-  .zw-col[data-term=lang] .zw-item{flex-direction:row}
+  .zw-col[data-term=lang] .zw-cat-head{flex-direction:row}
   .zw-col[data-term=lang] .zw-item .txt,
   .zw-col[data-term=lang] .zw-none{text-align:left}
   .zw-col[data-term=lang] .zw-item{border-right:none;border-left:2px solid var(--turquoise)}
@@ -2148,10 +2157,12 @@ function groep(id, naam, catId, list, term){
   if(!dicht){
     body = list.map(t => `
     <div class="zw-item" data-id="${t.id}">
-      <div class="txt">${escapeHtml(t.text)}</div>
       <button class="zw-edit" data-tedit="${t.id}" aria-label="Aanpassen" title="Aanpassen">&#9998;</button>
-      <button class="zw-move" data-move="${t.id}" title="Naar de andere kolom">${pijl}</button>
-      <button class="zw-kill" data-tdel="${t.id}" aria-label="Verwijderen" title="Verwijderen">&times;</button>
+      <div class="txt">${escapeHtml(t.text)}</div>
+      <div class="zw-acts">
+        <button class="zw-move" data-move="${t.id}" title="Naar de andere kolom">${pijl}</button>
+        <button class="zw-del" data-tdel="${t.id}">Verwijderen</button>
+      </div>
     </div>`).join("") || `<div class="zw-none">leeg</div>`;
   }
   return `<div class="zw-cat">
