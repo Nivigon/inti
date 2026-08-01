@@ -359,6 +359,44 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 .soon ul{margin:14px 0 0 18px}
 .soon li{margin-bottom:7px}
 
+/* feedback */
+.fb-cat{margin-bottom:26px}
+.fb-cat-head{
+  display:flex;align-items:center;gap:10px;
+  padding-bottom:9px;margin-bottom:12px;border-bottom:1px solid var(--earth-3);
+}
+.fb-cat-name{
+  flex:1;text-align:left;line-height:1.2;
+  font-family:var(--display);font-weight:400;font-size:1.12rem;color:var(--gold);
+}
+button.fb-cat-name{transition:color .2s}
+button.fb-cat-name:hover{color:var(--gold-bright)}
+.fb-cat-n{font-size:.66rem;letter-spacing:.14em;color:var(--bone-dim);flex-shrink:0}
+.fb-cat-kill{color:var(--bone-dim);font-size:1.2rem;line-height:1;padding:0 4px;flex-shrink:0;transition:color .2s}
+.fb-cat-kill:hover{color:var(--cochineal)}
+.fb-item{
+  display:flex;gap:13px;align-items:flex-start;
+  background:var(--earth);border:1px solid var(--earth-3);
+  border-left:2px solid var(--turquoise);border-radius:var(--r);
+  padding:15px 16px;margin-bottom:9px;
+  transition:opacity .35s,transform .35s;
+}
+.fb-item.gone{opacity:0;transform:translateX(24px)}
+.fb-item.vaak{border-left-color:var(--gold)}
+.fb-item .txt{flex:1;line-height:1.6;font-size:.92rem;white-space:pre-wrap;word-break:break-word}
+.fb-when{font-size:.66rem;color:var(--bone-dim);letter-spacing:.08em;margin-top:6px}
+.fb-count{
+  flex-shrink:0;align-self:flex-start;
+  font-size:.74rem;font-weight:600;letter-spacing:.04em;color:var(--gold);
+  border:1px solid var(--gold-dim);border-radius:20px;padding:3px 10px;
+}
+.fb-item-acts{display:flex;flex-direction:column;gap:9px;align-items:center;flex-shrink:0}
+.fb-edit,.fb-del{color:var(--bone-dim);line-height:1;padding:1px 3px;transition:color .2s}
+.fb-edit{font-size:.95rem}
+.fb-del{font-size:1.15rem}
+.fb-edit:hover{color:var(--gold)}
+.fb-del:hover{color:var(--cochineal)}
+
 .th-tabs{display:flex !important;margin-bottom:22px}
 .th-tabs span{color:var(--gold-dim);margin-left:4px}
 .blader-bar{
@@ -654,6 +692,7 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
   .zw-col[data-term=lang] .zw-item{border-right:none;border-left:2px solid var(--turquoise)}
   .zw-rail{display:none}
   body.zw-open .zw-rail-m{display:flex}
+  body.fb-open .zw-rail-m{display:none}
 }
 
 .toast{
@@ -903,6 +942,31 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 <!-- de twee borden worden door de code zelf opgebouwd -->
 <div id="boards"></div>
 
+<!-- feedback hoort bij Zilverweide, je opent het met de knop in dat bord -->
+<div class="panel" id="feedback">
+  <div class="panel-head"><button class="back" id="fbBack">&#8595;</button><h2>Feedback</h2></div>
+  <div class="panel-body">
+
+    <div class="zw-tabs th-tabs">
+      <button data-fview="schrijf" class="on">Opschrijven</button>
+      <button data-fview="overzicht">Overzicht <span id="fbN">0</span></button>
+    </div>
+
+    <div id="fbSchrijf">
+      <p class="th-uitleg">Een punt feedback, hoe klein ook. Inti sorteert het vanzelf bij
+      soortgelijke punten en maakt er categorieen bij. Komt iets vaker langs, dan telt de
+      teller op en schuift het naar boven.</p>
+      <textarea class="entry" id="fbText" placeholder="Wat viel er op?"></textarea>
+      <button class="btn-gold" id="fbSave" style="width:100%;margin-top:12px">Bewaren</button>
+    </div>
+
+    <div id="fbOverzicht" hidden>
+      <div id="fbList"></div>
+    </div>
+
+  </div>
+</div>
+
 <div class="panel" id="ai">
   <div class="panel-head">
     <button class="back" data-close>&#8595;</button>
@@ -1107,6 +1171,17 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
       <span>Hoge prioriteit, komt bij Fix shit altijd bovenaan</span>
     </label>
     <button class="btn-gold" id="editSave">Opslaan</button>
+  </div>
+</div>
+
+<div class="sheet" id="fbSheet">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <span class="eyebrow" id="fbSheetTitle">Aanpassen</span>
+      <button class="sheet-x" id="fbSheetX" aria-label="Sluiten">&times;</button>
+    </div>
+    <textarea id="fbEditText" placeholder="Wat viel er op?"></textarea>
+    <button class="btn-gold" id="fbEditSave">Opslaan</button>
   </div>
 </div>
 
@@ -1591,6 +1666,13 @@ async function start(){
     }, err => toast("Verbinding hapert: "+err.code));
   });
 
+  // luister live mee met de feedback
+  const qf = query(collection(db,"users",uid,"feedback"), orderBy("createdAt","asc"));
+  fbUnsub = onSnapshot(qf, snap => {
+    fbData = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderFeedback();
+  }, err => toast("Verbinding hapert: "+err.code));
+
   // is de zon vandaag al aangeraakt?
   try{
     const ref = doc(db,"users",uid,"meta","dag");
@@ -1605,7 +1687,8 @@ async function start(){
 function stop(){
   if(unsub) unsub();
   BOARDS.forEach(b => { if(bs[b.id].unsub) bs[b.id].unsub(); bs[b.id].data = []; });
-  items=[]; fixShown=[];
+  if(fbUnsub) fbUnsub();
+  fbData=[]; items=[]; fixShown=[];
   document.body.classList.remove("lit");
   $("#slot").classList.remove("open");
   $("#app").classList.remove("on");
@@ -1661,13 +1744,15 @@ function openPanel(id){
 }
 function closePanels(){
   $$(".panel").forEach(p=>p.classList.remove("open"));
-  closeSheet(); closeSnap(); closeEdit(); sluitBevestig(false);
+  closeSheet(); closeSnap(); closeEdit(); fbCloseEdit(); sluitBevestig(false);
   document.body.classList.remove("zw-open");
+  document.body.classList.remove("fb-open");
 }
 $$("[data-close]").forEach(b=>b.addEventListener("click", closePanels));
 document.addEventListener("keydown", e=>{
   if(e.key!=="Escape") return;
   if($("#confirmSheet").classList.contains("open")) sluitBevestig(false);
+  else if($("#fbSheet").classList.contains("open")) fbCloseEdit();
   else if($("#editSheet").classList.contains("open")) closeEdit();
   else if($("#snapSheet").classList.contains("open")) closeSnap();
   else if($("#zwSheet").classList.contains("open")) closeSheet();
@@ -1745,6 +1830,240 @@ function renderInspiration(){
     },300);
   }));
 }
+
+/* ============================================================
+   FEEDBACK
+   Losse feedbackpunten die Inti zelf op categorie sorteert.
+   Lijkt een punt op een bestaand punt, dan telt de teller op
+   in plaats van een dubbele regel te maken. Categorieen ontstaan
+   vanzelf uit de woorden, je hoeft ze niet vooraf te maken.
+   ============================================================ */
+let fbData = [];        // alle docs uit de collectie feedback (cat en punt)
+let fbUnsub = null;     // de live-luisteraar
+let fbEdit = null;      // wat we in het blad aan het bewerken zijn
+
+/* woorden die niets zeggen, die tellen niet mee bij het sorteren */
+const FB_STOP = new Set(("de het een en of maar want dus als dan die dat deze dit daar hier er is zijn was waren wordt worden word ben bent hebben heeft had niet geen wel ook nog al te heel erg zo veel meer minder aan op in uit met voor na door om bij tot van naar over onder tussen mijn jouw haar ons hun ik jij je hij zij ze we wij men wat wie waar hoe waarom omdat toen terwijl moet moeten kan kunnen zou zal maak maken doen gaat gaan iets niets alles wordt echt even nog steeds").split(/\s+/));
+
+/* alles klein, accenten en leestekens weg */
+function fbNorm(s){
+  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
+    .replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim();
+}
+/* de betekenisvolle woorden uit een tekst */
+function fbWoorden(s){
+  return [...new Set(fbNorm(s).split(" ").filter(w => w.length >= 3 && !FB_STOP.has(w)))];
+}
+/* twee woorden lijken op elkaar bij een gedeelde stam (knop en knoppen) */
+function fbWoordMatch(a,b){
+  if(a === b) return true;
+  return Math.min(a.length,b.length) >= 4 && (a.startsWith(b) || b.startsWith(a));
+}
+/* hoeveel woorden uit a een tegenhanger hebben in b */
+function fbOverlap(a,b){
+  return a.filter(w => b.some(x => fbWoordMatch(w,x))).length;
+}
+/* gelijkenis tussen twee woordenrijen, 0 tot 1 */
+function fbGelijk(a,b){
+  if(!a.length || !b.length) return 0;
+  return fbOverlap(a,b) / Math.max(a.length, b.length);
+}
+/* een naam voor een nieuwe categorie: het langste, meest kenmerkende woord */
+function fbCatNaam(woorden){
+  if(!woorden.length) return "Overig";
+  const w = woorden.slice().sort((a,b) => b.length - a.length)[0];
+  return w[0].toUpperCase() + w.slice(1);
+}
+
+/* --- het paneel openen en sluiten, het ligt boven Zilverweide --- */
+function openFeedback(){
+  document.body.classList.add("fb-open");   // verberg de mobiele plusknop van het bord eronder
+  $("#feedback").classList.add("open");
+  fbToon("schrijf");
+  renderFeedback();
+}
+function closeFeedback(){
+  document.body.classList.remove("fb-open");
+  $("#feedback").classList.remove("open");
+}
+function fbToon(view){
+  $$("#feedback [data-fview]").forEach(x => x.classList.toggle("on", x.dataset.fview === view));
+  $("#fbSchrijf").hidden   = view !== "schrijf";
+  $("#fbOverzicht").hidden = view !== "overzicht";
+}
+$("#fbBack").addEventListener("click", closeFeedback);
+$$("#feedback [data-fview]").forEach(b => b.addEventListener("click", () => fbToon(b.dataset.fview)));
+
+/* --- een punt opschrijven: optellen, of sorteren in een categorie --- */
+async function bewaarFeedback(){
+  const text = $("#fbText").value.trim();
+  if(!text){ toast("Er staat nog niets in"); return; }
+  const woorden = fbWoorden(text);
+  const punten = fbData.filter(d => d.kind === "punt");
+
+  // 1. lijkt dit op een bestaand punt? Dan tellen we op in plaats van dubbel te bewaren.
+  let beste = null, besteScore = 0;
+  for(const p of punten){
+    const s = fbGelijk(woorden, p.woorden || fbWoorden(p.text));
+    if(s > besteScore){ besteScore = s; beste = p; }
+  }
+  const HOOG = 0.8, TWIJFEL = 0.45;
+  if(beste && besteScore >= HOOG){ await fbTelOp(beste, text); return; }
+  if(beste && besteScore >= TWIJFEL){
+    if(await bevestig(`Lijkt dit op "${beste.text}"? Ja telt het bij dat punt op, Annuleren bewaart het los.`)){
+      await fbTelOp(beste, text); return;
+    }
+  }
+
+  // 2. nieuw punt: de best passende categorie zoeken, anders er zelf een maken
+  const cats = fbData.filter(d => d.kind === "cat");
+  let cat = null, catScore = 0;
+  for(const c of cats){
+    const s = fbOverlap(woorden, c.trefwoorden || []);
+    if(s > catScore){ catScore = s; cat = c; }
+  }
+  try{
+    let catId;
+    if(cat && catScore >= 1){
+      catId = cat.id;   // valt bij een bestaande categorie met dezelfde kernwoorden
+    }else{
+      // geen passende categorie: Inti maakt er zelf een, vernoemd naar het sterkste woord
+      const ref = await addDoc(collection(db,"users",uid,"feedback"),{
+        kind:"cat", name: fbCatNaam(woorden), trefwoorden: woorden.slice(0,12), createdAt: Date.now()
+      });
+      catId = ref.id;
+    }
+    await addDoc(collection(db,"users",uid,"feedback"),{
+      kind:"punt", text, woorden, catId, aantal:1, varianten:[text],
+      createdAt: Date.now(), laatste: Date.now()
+    });
+    $("#fbText").value = "";
+    toast(cat && catScore >= 1 ? `Bewaard bij ${cat.name}` : "Bewaard, nieuwe categorie gemaakt");
+  }catch(e){ toast("Opslaan lukt niet"); }
+}
+/* de teller van een bestaand punt ophogen en de nieuwe verwoording onthouden */
+async function fbTelOp(p, text){
+  const varianten = [...(p.varianten || [p.text])];
+  if(!varianten.includes(text)) varianten.push(text);
+  try{
+    await updateDoc(doc(db,"users",uid,"feedback",p.id),
+      { aantal:(p.aantal || 1) + 1, laatste: Date.now(), varianten });
+    $("#fbText").value = "";
+    toast(`Kwam al eens langs, nu ${(p.aantal || 1) + 1} keer`);
+  }catch(e){ toast("Opslaan lukt niet"); }
+}
+$("#fbSave").addEventListener("click", bewaarFeedback);
+$("#fbText").addEventListener("keydown", e => {
+  if(e.key === "Enter" && (e.metaKey || e.ctrlKey)) bewaarFeedback();
+});
+
+/* --- het overzicht opbouwen, meeste herhaling bovenaan --- */
+function renderFeedback(){
+  const box = $("#fbList");
+  if(!box) return;
+  const punten = fbData.filter(d => d.kind === "punt");
+  const cats   = fbData.filter(d => d.kind === "cat");
+  $("#fbN").textContent = punten.length;
+
+  if(!punten.length){
+    box.innerHTML = `<div class="empty"><span class="big">Nog leeg</span>
+      Schrijf je eerste punt op, Inti maakt er vanzelf categorieen bij.</div>`;
+    return;
+  }
+
+  const groepen = [];
+  cats.forEach(c => {
+    const lijst = punten.filter(p => p.catId === c.id);
+    if(lijst.length) groepen.push({ id:c.id, naam:c.name, lijst });
+  });
+  const los = punten.filter(p => !p.catId || !cats.some(c => c.id === p.catId));
+  if(los.length) groepen.push({ id:null, naam:"Overig", lijst:los });
+
+  const totaal = g => g.lijst.reduce((s,p) => s + (p.aantal || 1), 0);
+  groepen.sort((a,b) => totaal(b) - totaal(a));
+  groepen.forEach(g => g.lijst.sort((a,b) =>
+    (b.aantal || 1) - (a.aantal || 1) || (b.laatste || 0) - (a.laatste || 0)));
+
+  box.innerHTML = groepen.map(g => `
+    <div class="fb-cat">
+      <div class="fb-cat-head">
+        ${g.id
+          ? `<button class="fb-cat-name" data-cedit="${g.id}" title="Naam aanpassen">${escapeHtml(g.naam)}</button>`
+          : `<span class="fb-cat-name">${escapeHtml(g.naam)}</span>`}
+        <span class="fb-cat-n">${g.lijst.length}</span>
+        ${g.id ? `<button class="fb-cat-kill" data-ckill="${g.id}" aria-label="Categorie verwijderen">&times;</button>` : ""}
+      </div>
+      ${g.lijst.map(p => `
+        <div class="fb-item${(p.aantal || 1) > 1 ? " vaak" : ""}" data-id="${p.id}">
+          <div class="txt">${escapeHtml(p.text)}<div class="fb-when">${human(p.laatste || p.createdAt)}</div></div>
+          ${(p.aantal || 1) > 1
+            ? `<span class="fb-count" title="${escapeHtml((p.varianten || []).join("\n"))}">${p.aantal}&times;</span>`
+            : ""}
+          <div class="fb-item-acts">
+            <button class="fb-edit" data-fedit="${p.id}" title="Aanpassen">&#9998;</button>
+            <button class="fb-del" data-fdel="${p.id}" aria-label="Verwijderen">&times;</button>
+          </div>
+        </div>`).join("")}
+    </div>`).join("");
+  bindFeedback();
+}
+
+function bindFeedback(){
+  const pad = id => doc(db,"users",uid,"feedback",id);
+
+  $$("#fbList [data-fdel]").forEach(b => b.addEventListener("click", async () => {
+    if(!await bevestig("Weet je zeker dat dit punt weg kan?")) return;
+    b.closest(".fb-item").classList.add("gone");
+    setTimeout(async () => {
+      try{ await deleteDoc(pad(b.dataset.fdel)); }
+      catch(e){ toast("Verwijderen lukt niet"); renderFeedback(); }
+    },300);
+  }));
+
+  $$("#fbList [data-fedit]").forEach(b => b.addEventListener("click", () => fbOpenEdit("punt", b.dataset.fedit)));
+  $$("#fbList [data-cedit]").forEach(b => b.addEventListener("click", () => fbOpenEdit("cat", b.dataset.cedit)));
+
+  $$("#fbList [data-ckill]").forEach(b => b.addEventListener("click", async () => {
+    const catId = b.dataset.ckill;
+    const erf = fbData.filter(d => d.kind === "punt" && d.catId === catId);
+    const vraag = erf.length
+      ? `Weet je zeker dat deze categorie weg kan? De ${erf.length} punten erin gaan naar Overig.`
+      : "Weet je zeker dat deze categorie weg kan?";
+    if(!await bevestig(vraag)) return;
+    try{
+      for(const p of erf) await updateDoc(pad(p.id), { catId: null });
+      await deleteDoc(pad(catId));
+      toast(erf.length ? `Categorie weg, ${erf.length} naar Overig` : "Categorie weg");
+    }catch(e){ toast("Verwijderen lukt niet"); }
+  }));
+}
+
+/* --- een punt bewerken of een categorie hernoemen, in hetzelfde blad --- */
+function fbOpenEdit(type, id){
+  const d = fbData.find(x => x.id === id);
+  if(!d) return;
+  fbEdit = { type, id };
+  $("#fbSheetTitle").textContent = type === "cat" ? "Naam van de categorie" : "Feedback aanpassen";
+  $("#fbEditText").value = type === "cat" ? d.name : d.text;
+  $("#fbSheet").classList.add("open");
+  setTimeout(() => $("#fbEditText").focus(), 90);
+}
+function fbCloseEdit(){ $("#fbSheet").classList.remove("open"); fbEdit = null; }
+async function fbBewaarEdit(){
+  if(!fbEdit) return;
+  const val = $("#fbEditText").value.trim();
+  if(!val){ toast("Er staat nog niets in"); return; }
+  try{
+    const gegevens = fbEdit.type === "cat"
+      ? { name: val }
+      : { text: val, woorden: fbWoorden(val) };
+    await updateDoc(doc(db,"users",uid,"feedback",fbEdit.id), gegevens);
+    fbCloseEdit(); toast("Aangepast");
+  }catch(e){ toast("Opslaan lukt niet"); }
+}
+$("#fbSheetX").addEventListener("click", fbCloseEdit);
+$("#fbSheet").addEventListener("click", e => { if(e.target.id === "fbSheet") fbCloseEdit(); });
+$("#fbEditSave").addEventListener("click", fbBewaarEdit);
 
 /* ============================================================
    FIX SHIT
@@ -2070,7 +2389,7 @@ BOARDS.forEach(b => bs[b.id] = { data:[], unsub:null, open:new Set() });
 function bouwBorden(){
   $("#boards").innerHTML = BOARDS.map(b => `
   <div class="panel" id="${b.id}">
-    <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>${b.titel}</h2></div>
+    <div class="panel-head"><button class="back" data-close>&#8595;</button><h2>${b.titel}</h2>${b.id==="zilverweide"?`<button class="ai-arch" data-feedback>Feedback</button>`:""}</div>
     <div class="panel-body zw-body">
       <div class="zw-tabs">
         <button data-term="kort" class="on">Korte termijn</button>
@@ -2093,6 +2412,7 @@ function bouwBorden(){
   </div>`).join("");
 
   $$("#boards [data-close]").forEach(x => x.addEventListener("click", closePanels));
+  $$("#boards [data-feedback]").forEach(x => x.addEventListener("click", openFeedback));
   $$("#boards [data-plus]").forEach(x => x.addEventListener("click", () => {
     bActief = x.dataset.plus; openSheet("pick");
   }));
@@ -2528,6 +2848,7 @@ async function alles(){
   const snapT = await getDocs(query(collection(db,"users",uid,"thoth"), orderBy("createdAt","asc")));
   uit.thoth = snapT.docs.map(d => ({id:d.id, ...d.data()}));
   for(const b of BOARDS) uit[b.col] = bs[b.id].data;
+  uit.feedback = fbData;
   uit.lessen = LESSONS.map((l,i) => ({
     nr: i+1,
     titel: l.title,
@@ -2563,6 +2884,20 @@ function alsTekst(d){
         r.push(`  - [${c?c.name:"Algemeen"}] ${x.text}`);
       });
     });
+    r.push("");
+  }
+  const fb = d.feedback || [];
+  const fbPunten = fb.filter(x => x.kind === "punt");
+  if(fbPunten.length){
+    r.push("FEEDBACK");
+    const fbCats = fb.filter(x => x.kind === "cat");
+    const regel = (naam, lijst) => {
+      if(!lijst.length) return;
+      r.push(`  ${naam}`);
+      lijst.forEach(p => r.push(`  - ${p.text}${(p.aantal||1) > 1 ? ` (${p.aantal}x)` : ""}`));
+    };
+    fbCats.forEach(c => regel(c.name, fbPunten.filter(p => p.catId === c.id)));
+    regel("Overig", fbPunten.filter(p => !p.catId || !fbCats.some(c => c.id === p.catId)));
     r.push("");
   }
   if(d.lessen && d.lessen.length){
@@ -2740,6 +3075,10 @@ $("#kluisFile").addEventListener("change", async e => {
         const {id, ...rest} = i;
         await setDoc(doc(db,"users",uid,b.col,id), rest, {merge:true}); n++;
       }
+    }
+    for(const i of (d.feedback||[])){
+      const {id, ...rest} = i;
+      await setDoc(doc(db,"users",uid,"feedback",id), rest, {merge:true}); n++;
     }
     for(const m of METAS){
       if(d.meta && d.meta[m]) await setDoc(doc(db,"users",uid,"meta",m), d.meta[m], {merge:true});
