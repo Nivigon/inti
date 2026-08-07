@@ -25,11 +25,14 @@ Het plein heeft zes tegels rond de zon in het midden:
   To do's leg je vast met de snelknop (`#snapBtn`), die komen bij Fix shit.
 - AI (`#ai`, "Project AI") toont elke dag een les.
 - Fix shit (`#fix`) toont de drie oudste geheugen-items.
-- Eén tegel is nog leeg.
+- AMHC (`#amhc`) is de werklijst: to do's met een persoon en tijdsdruk, te bekijken
+  op urgentie, per persoon of gebundeld per onderwerp (op trefwoorden, met de
+  woordenlogica van de feedback). De tegel heeft een eigen snelknop (`#amhcSnapBtn`).
 
 Verdere schermen: `#kluis` (reservekopie), `#slot` (herinnering om te back-uppen),
 en de sheets `#zwSheet` (toevoegen op een bord), `#snapSheet` (snel een to do
-opschrijven, met optionele deadline) en `#editSheet` (een Fix shit-taak aanpassen).
+opschrijven, met optionele deadline), `#editSheet` (een Fix shit-taak aanpassen)
+en `#amhcSheet` (een AMHC-taak toevoegen of aanpassen).
 
 ## Firestore
 
@@ -45,6 +48,9 @@ Alles hangt onder `users/{uid}`:
 - Collectie `zilverweide` en collectie `intiboard`: de twee borden. Docs met
   `kind` "cat" (velden `name`, `createdAt`) of "todo" (velden `text`, `term` "kort"
   of "lang", `catId`, `createdAt`).
+- Collectie `amhc`: de werklijst. Velden `text`, `wie` (naam of null), `urg`
+  ("vandaag", "week" of "later") en `createdAt`. De bundels per onderwerp worden
+  niet opgeslagen maar bij elk tonen opnieuw uit de teksten berekend.
 - Doc `meta/dag`: `lastSun`, `legendIndex`. Onthoudt of de zon vandaag al aan was.
 - Doc `meta/ai`: `status`, `reden`, `herhaald`, `wijzer`. Voortgang van de lessen.
 - Doc `meta/kluis`: `laatste`, `uitstel`. Wanneer er voor het laatst geback-upt is.
