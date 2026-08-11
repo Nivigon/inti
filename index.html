@@ -396,6 +396,22 @@ button.fb-cat-name:hover{color:var(--gold-bright)}
 .fb-edit:hover{color:var(--gold)}
 .fb-del:hover{color:var(--cochineal)}
 
+/* feedback per personage */
+.fb-zoek{
+  width:100%;margin:18px 0 14px;
+  background:var(--earth);border:1px solid var(--earth-3);color:var(--bone);
+  border-radius:var(--r);padding:13px 15px;
+}
+.fb-zoek:focus{border-color:var(--gold-dim);outline:none}
+.fb-namen{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px}
+.fb-naam{
+  border:1px solid var(--earth-3);border-radius:20px;padding:7px 13px;
+  font-size:.78rem;color:var(--bone-dim);transition:color .2s,border-color .2s;
+}
+.fb-naam:hover{color:var(--gold);border-color:var(--gold-dim)}
+.fb-naam.on{border-color:var(--gold);color:var(--gold)}
+.fb-naam i{font-style:normal;color:var(--gold-dim);margin-left:7px}
+
 /* ---------- amhc ---------- */
 .amhc-tags{display:flex;gap:12px;flex-wrap:wrap;align-items:baseline}
 .amhc-wie{
@@ -992,6 +1008,7 @@ button.fb-cat-name:hover{color:var(--gold-bright)}
     <div class="zw-tabs th-tabs">
       <button data-fview="schrijf" class="on">Opschrijven</button>
       <button data-fview="overzicht">Overzicht <span id="fbN">0</span></button>
+      <button data-fview="wie">Personage</button>
     </div>
 
     <div id="fbSchrijf">
@@ -1004,6 +1021,14 @@ button.fb-cat-name:hover{color:var(--gold-bright)}
 
     <div id="fbOverzicht" hidden>
       <div id="fbList"></div>
+    </div>
+
+    <div id="fbWie" hidden>
+      <p class="th-uitleg">Alles wat er over een personage gezegd is, uit alle categorieen
+      bij elkaar. Inti raadt de namen zelf uit je punten, typen mag ook.</p>
+      <input class="fb-zoek" id="fbWieZoek" type="text" placeholder="Welke naam?" autocomplete="off">
+      <div class="fb-namen" id="fbNamen"></div>
+      <div id="fbWieList"></div>
     </div>
 
   </div>
@@ -1853,6 +1878,7 @@ async function start(){
   fbUnsub = onSnapshot(qf, snap => {
     fbData = snap.docs.map(d=>({id:d.id, ...d.data()}));
     renderFeedback();
+    fbRenderWie();
   }, err => toast("Verbinding hapert: "+err.code));
 
   // luister live mee met de AMHC-lijst
@@ -2081,6 +2107,8 @@ function fbToon(view){
   $$("#feedback [data-fview]").forEach(x => x.classList.toggle("on", x.dataset.fview === view));
   $("#fbSchrijf").hidden   = view !== "schrijf";
   $("#fbOverzicht").hidden = view !== "overzicht";
+  $("#fbWie").hidden       = view !== "wie";
+  if(view === "wie"){ $("#fbWieZoek").value = fbNaam; fbRenderWie(); }
 }
 $("#fbBack").addEventListener("click", closeFeedback);
 $$("#feedback [data-fview]").forEach(b => b.addEventListener("click", () => fbToon(b.dataset.fview)));
@@ -2184,25 +2212,32 @@ function renderFeedback(){
         <span class="fb-cat-n">${g.lijst.length}</span>
         ${g.id ? `<button class="fb-cat-kill" data-ckill="${g.id}" aria-label="Categorie verwijderen">&times;</button>` : ""}
       </div>
-      ${g.lijst.map(p => `
-        <div class="fb-item${(p.aantal || 1) > 1 ? " vaak" : ""}" data-id="${p.id}">
-          <div class="txt">${escapeHtml(p.text)}<div class="fb-when">${human(p.laatste || p.createdAt)}</div></div>
-          ${(p.aantal || 1) > 1
-            ? `<span class="fb-count" title="${escapeHtml((p.varianten || []).join("\n"))}">${p.aantal}&times;</span>`
-            : ""}
-          <div class="fb-item-acts">
-            <button class="fb-edit" data-fedit="${p.id}" title="Aanpassen">&#9998;</button>
-            <button class="fb-del" data-fdel="${p.id}" aria-label="Verwijderen">&times;</button>
-          </div>
-        </div>`).join("")}
+      ${g.lijst.map(p => fbItemHtml(p)).join("")}
     </div>`).join("");
-  bindFeedback();
+  bindFeedback("#fbList");
 }
 
-function bindFeedback(){
+/* een punt op het scherm, met daarbij de categorie als je die niet al ziet */
+function fbItemHtml(p, catNaam){
+  return `
+    <div class="fb-item${(p.aantal || 1) > 1 ? " vaak" : ""}" data-id="${p.id}">
+      <div class="txt">${escapeHtml(p.text)}<div class="fb-when">${human(p.laatste || p.createdAt)}${
+        catNaam ? " &middot; " + escapeHtml(catNaam) : ""}</div></div>
+      ${(p.aantal || 1) > 1
+        ? `<span class="fb-count" title="${escapeHtml((p.varianten || []).join("\n"))}">${p.aantal}&times;</span>`
+        : ""}
+      <div class="fb-item-acts">
+        <button class="fb-edit" data-fedit="${p.id}" title="Aanpassen">&#9998;</button>
+        <button class="fb-del" data-fdel="${p.id}" aria-label="Verwijderen">&times;</button>
+      </div>
+    </div>`;
+}
+
+/* de knoppen aanzetten, per lijst apart zodat ze niet dubbel gebonden worden */
+function bindFeedback(root){
   const pad = id => doc(db,"users",uid,"feedback",id);
 
-  $$("#fbList [data-fdel]").forEach(b => b.addEventListener("click", async () => {
+  $$(`${root} [data-fdel]`).forEach(b => b.addEventListener("click", async () => {
     if(!await bevestig("Weet je zeker dat dit punt weg kan?")) return;
     b.closest(".fb-item").classList.add("gone");
     setTimeout(async () => {
@@ -2211,10 +2246,10 @@ function bindFeedback(){
     },300);
   }));
 
-  $$("#fbList [data-fedit]").forEach(b => b.addEventListener("click", () => fbOpenEdit("punt", b.dataset.fedit)));
-  $$("#fbList [data-cedit]").forEach(b => b.addEventListener("click", () => fbOpenEdit("cat", b.dataset.cedit)));
+  $$(`${root} [data-fedit]`).forEach(b => b.addEventListener("click", () => fbOpenEdit("punt", b.dataset.fedit)));
+  $$(`${root} [data-cedit]`).forEach(b => b.addEventListener("click", () => fbOpenEdit("cat", b.dataset.cedit)));
 
-  $$("#fbList [data-ckill]").forEach(b => b.addEventListener("click", async () => {
+  $$(`${root} [data-ckill]`).forEach(b => b.addEventListener("click", async () => {
     const catId = b.dataset.ckill;
     const erf = fbData.filter(d => d.kind === "punt" && d.catId === catId);
     const vraag = erf.length
@@ -2255,6 +2290,104 @@ async function fbBewaarEdit(){
 $("#fbSheetX").addEventListener("click", fbCloseEdit);
 $("#fbSheet").addEventListener("click", e => { if(e.target.id === "fbSheet") fbCloseEdit(); });
 $("#fbEditSave").addEventListener("click", fbBewaarEdit);
+
+/* --- filteren op personage: alles over een naam, dwars door de categorieen heen --- */
+let fbNaam = "";   // de naam waarop je nu filtert, leeg is geen filter
+
+/* woorden die vooraan een zin een hoofdletter krijgen maar geen naam zijn */
+const FB_GEEN_NAAM = new Set(("misschien volgens soms vaak eerst later toch beter best tijdens zonder tegen samen verder alleen hoofdstuk scene begin einde verhaal zin tekst stuk deel pagina waarschijnlijk natuurlijk helaas gelukkig liever graag goed slecht mooi raar vreemd klopt voelt lijkt mist weer week dag vandaag gisteren morgen nogal opnieuw daarna daarom hierdoor zeker altijd nooit overal iedereen niemand iemand onze jullie hele prima jammer sterk zwak leuk saai snel traag lang kort eigenlijk gewoon vooral zelfs juist net kijk let denk voel klinkt overal probeer schrap laat zet").split(/\s+/));
+
+/* de bewaarde tekst plus alle verwoordingen die erbij opgeteld zijn */
+function fbTeksten(p){
+  return [...new Set([p.text, ...(p.varianten || [])])].filter(Boolean);
+}
+
+/* namen uit de feedback halen: een hoofdletter middenin een zin is bijna altijd
+   een naam, vooraan de zin alleen als het geen gewoon Nederlands woord is */
+function fbPersonages(){
+  const gevonden = new Map();
+  fbData.filter(d => d.kind === "punt").forEach(p => {
+    const raak = new Map();   // welke namen staan er in dit ene punt
+    fbTeksten(p).forEach(t => t.split(/[.!?\n]+/).forEach(zin => {
+      const woorden = zin.split(/[^A-Za-zÀ-ÖØ-öø-ÿ]+/).filter(Boolean);
+      woorden.forEach((w,i) => {
+        if(!/^[A-ZÀ-ÖØ-Þ][a-zà-öø-ÿ]{2,}$/.test(w)) return;
+        const sleutel = fbNorm(w);
+        if(!sleutel) return;
+        const middenin = i > 0;
+        if(!middenin && (FB_STOP.has(sleutel) || FB_GEEN_NAAM.has(sleutel))) return;
+        if(!raak.has(sleutel)) raak.set(sleutel, { naam:w, middenin });
+        else if(middenin) raak.get(sleutel).middenin = true;
+      });
+    }));
+    raak.forEach((v,sleutel) => {
+      if(!gevonden.has(sleutel)) gevonden.set(sleutel, { naam:v.naam, sleutel, punten:0, middenin:false });
+      const g = gevonden.get(sleutel);
+      g.punten++;
+      if(v.middenin) g.middenin = true;
+    });
+  });
+  return [...gevonden.values()].sort((a,b) =>
+    (b.middenin - a.middenin) || (b.punten - a.punten) || a.naam.localeCompare(b.naam,"nl"));
+}
+
+/* staat deze naam in dit punt? een beginstuk telt mee, zodat je al tijdens
+   het typen ziet wat er bij Fen, Fenna en Fenna's hoort */
+function fbNoemt(p, naam){
+  const delen = fbNorm(naam).split(" ").filter(d => d.length >= 2);
+  if(!delen.length) return false;
+  const woorden = fbNorm(fbTeksten(p).join(" ")).split(" ");
+  return delen.every(d => woorden.some(w => w.startsWith(d)));
+}
+
+function fbRenderWie(){
+  const chips = $("#fbNamen"), box = $("#fbWieList");
+  if(!chips || !box) return;
+  const naam = fbNaam.trim();
+  const namen = fbPersonages();
+
+  chips.innerHTML = namen.length
+    ? namen.map(g => `<button class="fb-naam${fbNorm(naam) === g.sleutel ? " on" : ""}"
+        data-fnaam="${escapeHtml(g.naam)}">${escapeHtml(g.naam)}<i>${g.punten}</i></button>`).join("")
+    : `<span class="th-uitleg">Nog geen namen gevonden in je punten.</span>`;
+  $$("#fbNamen [data-fnaam]").forEach(b => b.addEventListener("click", () => {
+    const n = b.dataset.fnaam;
+    fbNaam = fbNorm(n) === fbNorm(fbNaam) ? "" : n;   // nog eens tikken zet het filter uit
+    $("#fbWieZoek").value = fbNaam;
+    fbRenderWie();
+  }));
+
+  if(!naam){
+    box.innerHTML = `<div class="empty"><span class="big">Kies een naam</span>
+      Tik op een naam hierboven of typ er zelf een, dan zie je alles wat erover gezegd is.</div>`;
+    return;
+  }
+
+  const cats = fbData.filter(d => d.kind === "cat");
+  const lijst = fbData.filter(d => d.kind === "punt" && fbNoemt(d, naam))
+    .sort((a,b) => (b.aantal || 1) - (a.aantal || 1) || (b.laatste || 0) - (a.laatste || 0));
+
+  if(!lijst.length){
+    box.innerHTML = `<div class="empty"><span class="big">Niets gevonden</span>
+      Over ${escapeHtml(naam)} staat er nog geen punt.</div>`;
+    return;
+  }
+
+  box.innerHTML = `
+    <div class="fb-cat">
+      <div class="fb-cat-head">
+        <span class="fb-cat-name">${escapeHtml(naam)}</span>
+        <span class="fb-cat-n">${lijst.length}</span>
+      </div>
+      ${lijst.map(p => {
+        const c = cats.find(x => x.id === p.catId);
+        return fbItemHtml(p, c ? c.name : "Overig");
+      }).join("")}
+    </div>`;
+  bindFeedback("#fbWieList");
+}
+
+$("#fbWieZoek").addEventListener("input", e => { fbNaam = e.target.value; fbRenderWie(); });
 
 /* ============================================================
    FIX SHIT
