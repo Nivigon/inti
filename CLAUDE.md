@@ -24,8 +24,10 @@ Het plein heeft zes tegels rond de zon in het midden:
 - Thoth (`#thoth`) is de ideeenbank, alleen inspiratie opschrijven en teruglezen.
   Ideeen kunnen los blijven of onder een project hangen (bijvoorbeeld een spel).
   Bij Bewaard staat per groep een kopje met de punten eronder, in- en uitklapbaar,
-  met een regel om er meteen een punt bij te zetten. To do's leg je vast met de
-  snelknop (`#snapBtn`), die komen bij Fix shit.
+  met een regel om er meteen een punt bij te zetten. De tegel heeft een eigen
+  snelknop (`#thothSnapBtn`, turkoois) om zonder het paneel te openen een idee te
+  bewaren, met de projectkeuze erbij. To do's leg je vast met de snelknop
+  (`#snapBtn`, op de tegel Fix shit), die komen bij Fix shit.
 - AI (`#ai`, "Project AI") toont elke dag een les.
 - Fix shit (`#fix`) toont de drie oudste geheugen-items.
 - AMHC (`#amhc`) is de werklijst: to do's met een persoon en tijdsdruk, te bekijken
@@ -35,8 +37,9 @@ Het plein heeft zes tegels rond de zon in het midden:
 Verdere schermen: `#kluis` (reservekopie), `#slot` (herinnering om te back-uppen),
 en de sheets `#zwSheet` (toevoegen op een bord), `#snapSheet` (snel een to do
 opschrijven, met optionele deadline), `#editSheet` (een Fix shit-taak aanpassen),
-`#amhcSheet` (een AMHC-taak toevoegen of aanpassen) en `#projSheet` (een project
-in Thoth maken of hernoemen).
+`#amhcSheet` (een AMHC-taak toevoegen of aanpassen), `#thothSheet` (snel een idee
+opschrijven) en `#projSheet` (een project in Thoth maken of hernoemen; staat in de
+HTML na `#thothSheet`, zodat het daar netjes overheen komt).
 
 ## Firestore
 
