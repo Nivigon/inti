@@ -418,17 +418,72 @@ button.fb-cat-name:hover{color:var(--gold-bright)}
 .th-tabs{display:flex !important;margin-bottom:22px}
 .th-tabs span{color:var(--gold-dim);margin-left:4px}
 .blader-bar{
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
   padding-bottom:12px;border-bottom:1px solid var(--earth-3);
 }
-#inspRandom{
+.blader-knoppen{display:flex;gap:8px;flex-shrink:0}
+#inspRandom,#projNieuw{
   font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim);
   border:1px solid var(--earth-3);padding:8px 13px;border-radius:9px;
   transition:color .2s,border-color .2s;
 }
-#inspRandom:hover{color:var(--gold);border-color:var(--gold-dim)}
+#inspRandom:hover,#projNieuw:hover{color:var(--gold);border-color:var(--gold-dim)}
+#projNieuw{color:var(--gold-dim)}
 .item.flash{border-color:var(--gold);box-shadow:0 0 26px rgba(212,162,76,.28)}
-#thBlader .list{margin-top:18px}
+#thBlader .list{margin-top:18px;gap:0}
+
+/* het kiezen van een project bij het opschrijven */
+.th-kies{
+  width:100%;background:var(--earth);border:1px solid var(--earth-3);color:var(--bone);
+  border-radius:10px;padding:12px 14px;font-family:inherit;font-size:16px;line-height:1.5;
+}
+.th-kies:focus{border-color:var(--gold-dim);outline:none}
+#thSchrijf .eyebrow{display:block;margin:18px 0 8px}
+
+/* projecten in Thoth: een kopje met de punten eronder */
+.th-groep{margin-bottom:14px}
+.th-groep-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.th-groep-toggle{flex:1;display:flex;align-items:center;gap:9px;min-width:0;text-align:left}
+.th-groep-chevron{color:var(--gold-dim);font-size:.62rem;line-height:1;flex-shrink:0}
+.th-groep-naam{
+  font-family:var(--display);font-weight:400;font-size:1rem;color:var(--gold);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.th-groep-toggle:hover .th-groep-naam{color:var(--gold-bright)}
+.th-groep-toggle:hover .th-groep-chevron{color:var(--gold)}
+.th-groep-n{color:var(--bone-dim);font-size:.72rem;flex-shrink:0}
+.th-groep-knop{
+  color:var(--bone-dim);font-size:.95rem;line-height:1;padding:0 3px;opacity:.6;
+  transition:color .2s,opacity .2s;flex-shrink:0;
+}
+.th-groep-knop:hover{color:var(--gold);opacity:1}
+.th-groep-knop.weg:hover{color:var(--cochineal)}
+.th-groep-body{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
+.th-leeg{font-size:.8rem;color:var(--bone-dim);padding:2px 0}
+/* snel een punt bij dit project zetten */
+.th-snel{display:flex;gap:8px}
+.th-snel input{
+  flex:1;min-width:0;background:var(--earth);border:1px solid var(--earth-3);color:var(--bone);
+  border-radius:10px;padding:11px 13px;line-height:1.5;
+}
+.th-snel input:focus{border-color:var(--gold-dim);outline:none}
+.th-snel button{
+  border:1px solid var(--gold-dim);color:var(--gold);border-radius:10px;padding:0 15px;
+  font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;flex-shrink:0;
+  transition:color .2s,border-color .2s;
+}
+.th-snel button:hover{color:var(--gold-bright);border-color:var(--gold)}
+/* onderregel van een idee: wanneer, en bij welk project het hoort */
+.th-onder{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  flex-wrap:wrap;margin-top:8px;white-space:normal;
+}
+.th-onder .when{margin-top:0}
+.th-waar{
+  background:transparent;border:1px solid var(--earth-3);color:var(--bone-dim);
+  border-radius:8px;padding:4px 7px;font-family:inherit;font-size:.7rem;max-width:60%;
+}
+.th-waar:focus{border-color:var(--gold-dim);outline:none}
 
 
 /* ---------- hoge prioriteit ---------- */
@@ -940,13 +995,18 @@ button.fb-cat-name:hover{color:var(--gold-bright)}
       <p class="th-uitleg">Een idee, een vondst, iets om later mee verder te gaan.
       Moet er iets gedaan worden? Gebruik de snelknop, dan komt het bij Fix shit.</p>
       <textarea class="entry" id="thothText" placeholder="Schrijf het op..."></textarea>
-      <button class="btn-gold" id="thothSave" style="width:100%;margin-top:12px">Bewaren</button>
+      <span class="eyebrow">Bij welk project</span>
+      <select class="th-kies" id="thothProj" aria-label="Bij welk project"></select>
+      <button class="btn-gold" id="thothSave" style="width:100%;margin-top:18px">Bewaren</button>
     </div>
 
     <div id="thBlader" hidden>
       <div class="blader-bar">
         <span class="eyebrow">Bewaarde inspiratie</span>
-        <button id="inspRandom">Verras me</button>
+        <div class="blader-knoppen">
+          <button id="projNieuw">Nieuw project</button>
+          <button id="inspRandom">Verras me</button>
+        </div>
       </div>
       <div class="list" id="inspList"></div>
     </div>
@@ -1131,6 +1191,19 @@ button.fb-cat-name:hover{color:var(--gold-bright)}
       </div>
     </div>
   </div>
+
+<!-- een project in Thoth maken of hernoemen -->
+<div class="sheet" id="projSheet">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <span class="eyebrow" id="projSheetTitle">Nieuw project</span>
+      <button class="sheet-x" id="projX" aria-label="Sluiten">&times;</button>
+    </div>
+    <label class="eyebrow" for="projNaam">Naam</label>
+    <input id="projNaam" placeholder="Bijvoorbeeld: Dwergenspel">
+    <button class="btn-gold" id="projSave">Project maken</button>
+  </div>
+</div>
 
 <div id="slot">
   <div class="slot-inner">
@@ -1880,6 +1953,7 @@ function stop(){
   if(fbUnsub) fbUnsub();
   if(amhcUnsub) amhcUnsub();
   fbData=[]; amhcData=[]; items=[]; fixShown=[];
+  thOpen = new Set(["los"]);
   document.body.classList.remove("lit");
   $("#slot").classList.remove("open");
   $("#app").classList.remove("on");
@@ -1935,7 +2009,7 @@ function openPanel(id){
 }
 function closePanels(){
   $$(".panel").forEach(p=>p.classList.remove("open"));
-  closeSheet(); closeSnap(); closeEdit(); fbCloseEdit(); closeAmhcSheet(); sluitBevestig(false);
+  closeSheet(); closeSnap(); closeEdit(); fbCloseEdit(); closeAmhcSheet(); closeProjSheet(); sluitBevestig(false);
   document.body.classList.remove("zw-open");
   document.body.classList.remove("fb-open");
 }
@@ -1948,6 +2022,7 @@ document.addEventListener("keydown", e=>{
   else if($("#snapSheet").classList.contains("open")) closeSnap();
   else if($("#amhcSheet").classList.contains("open")) closeAmhcSheet();
   else if($("#zwSheet").classList.contains("open")) closeSheet();
+  else if($("#projSheet").classList.contains("open")) closeProjSheet();
   else closePanels();
 });
 
@@ -1968,15 +2043,37 @@ $$(".quad").forEach(q => q.addEventListener("click", () => {
    THOTH
    ============================================================ */
 /* Thoth is de ideeenbank: hier bewaar je alleen inspiratie.
-   Een to do leg je vast met de snelknop, die komt bij Fix shit. */
+   Een to do leg je vast met de snelknop, die komt bij Fix shit.
+   Ideeen kunnen onder een project hangen, bijvoorbeeld een dwergenspel.
+   Die projecten staan in dezelfde collectie thoth, met kind "project"
+   (velden name en createdAt). Een idee wijst er met projectId naar. */
+const projecten   = () => items.filter(i => i.kind === "project");
+const inspiraties = () => items.filter(i => i.kind === "inspiratie");
+/* hoort dit idee bij een project dat nog bestaat? zo nee, dan is het los */
+const projectVan  = i => projecten().some(p => p.id === i.projectId) ? i.projectId : null;
+
+let thOpen = new Set(["los"]);   // welke groepen uitgeklapt staan
+let projEdit = null;             // welk project we hernoemen (null is nieuw)
+
+/* de keuzelijst met projecten vullen, de gekozen waarde blijft staan */
+function vulProjectLijst(sel, waarde){
+  const keep = waarde !== undefined ? waarde : sel.value;
+  sel.innerHTML = `<option value="">Los idee</option>` +
+    projecten().map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("");
+  sel.value = [...sel.options].some(o => o.value === keep) ? keep : "";
+}
+
 $("#thothSave").addEventListener("click", async () => {
   const text = $("#thothText").value.trim();
   if(!text){ toast("Er staat nog niets in"); return; }
+  const projectId = $("#thothProj").value || null;
   try{
     await addDoc(collection(db,"users",uid,"thoth"),{
-      text, kind:"inspiratie", createdAt: Date.now()
+      text, kind:"inspiratie", projectId, createdAt: Date.now()
     });
     $("#thothText").value="";
+    thOpen.add(projectId || "los");   // klap de groep open zodat je het terugziet
+    renderInspiration();
     toast("Bewaard");
   }catch(e){ toast("Opslaan lukt niet: "+e.code); }
 });
@@ -1989,38 +2086,178 @@ $$("#thoth .th-tabs button").forEach(b => b.addEventListener("click", () => {
   $("#thBlader").hidden  = !blader;
 }));
 
-/* --- een willekeurig idee opzoeken --- */
+/* --- een willekeurig idee opzoeken, ook als het in een dichte groep zit --- */
 $("#inspRandom").addEventListener("click", () => {
-  const kaarten = $$("#inspList .item");
-  if(!kaarten.length){ toast("Er is nog niets bewaard"); return; }
-  const k = kaarten[Math.floor(Math.random()*kaarten.length)];
-  $$("#inspList .item").forEach(x => x.classList.remove("flash"));
+  const list = inspiraties();
+  if(!list.length){ toast("Er is nog niets bewaard"); return; }
+  const keus = list[Math.floor(Math.random()*list.length)];
+  thOpen.add(projectVan(keus) || "los");
+  renderInspiration();
+  const k = $(`#inspList .item[data-id="${keus.id}"]`);
+  if(!k) return;
   k.classList.add("flash");
   k.scrollIntoView({behavior:"smooth", block:"center"});
 });
 
 function renderInspiration(){
   const box = $("#inspList");
-  const list = items.filter(i=>i.kind==="inspiratie").slice().reverse();
+  const list = inspiraties();
+  const projs = projecten();
   $("#inspN").textContent = list.length;
-  if(!list.length){
+  vulProjectLijst($("#thothProj"));
+
+  if(!list.length && !projs.length){
     box.innerHTML = `<div class="empty"><span class="big">Nog leeg</span>
-      Het eerste idee dat langskomt hoort hier.</div>`;
+      Het eerste idee dat langskomt hoort hier. Maak een project voor iets
+      waar je vaker over nadenkt, en zet de punten daaronder.</div>`;
     return;
   }
-  box.innerHTML = list.map(i=>`
-    <div class="item" data-id="${i.id}">
-      <div class="txt">${escapeHtml(i.text)}<div class="when">${human(i.createdAt)}</div></div>
-      <button class="kill" data-del="${i.id}" aria-label="Verwijderen">&times;</button>
-    </div>`).join("");
-  box.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click", async ()=>{
+
+  const los = list.filter(i => !projectVan(i));
+  let html = thGroep("Los", null, los);
+  projs.forEach(p => { html += thGroep(p.name, p.id, list.filter(i => projectVan(i) === p.id)); });
+  box.innerHTML = html;
+  bindInspiration();
+}
+
+/* een groep: het kopje Los of een project, met de punten eronder */
+function thGroep(naam, projId, list){
+  const key = projId || "los";
+  const dicht = !thOpen.has(key);
+  let body = "";
+  if(!dicht){
+    // let op: in .txt staat pre-wrap aan, dus daar geen witruimte tussen de tags
+    const onder = i => `<div class="th-onder"><span class="when">${human(i.createdAt)}</span>` +
+      `<select class="th-waar" data-waar="${i.id}" aria-label="Bij welk project"></select></div>`;
+    const kaarten = list.slice().reverse().map(i => `
+      <div class="item" data-id="${i.id}">
+        <div class="txt">${escapeHtml(i.text)}${onder(i)}</div>
+        <button class="kill" data-del="${i.id}" aria-label="Verwijderen">&times;</button>
+      </div>`).join("") || `<div class="th-leeg">Nog geen punten hier.</div>`;
+    const snel = projId ? `
+      <div class="th-snel">
+        <input data-snel="${projId}" placeholder="Nog een punt erbij...">
+        <button data-snelok="${projId}">Erbij</button>
+      </div>` : "";
+    body = `<div class="th-groep-body">${kaarten}${snel}</div>`;
+  }
+  return `<div class="th-groep">
+      <div class="th-groep-head">
+        <button class="th-groep-toggle" data-thtoggle="${key}" aria-expanded="${!dicht}">
+          <span class="th-groep-chevron">${dicht ? "&#9656;" : "&#9662;"}</span>
+          <span class="th-groep-naam">${escapeHtml(naam)}</span>
+          <span class="th-groep-n">${list.length}</span>
+        </button>
+        ${projId ? `
+          <button class="th-groep-knop" data-pren="${projId}" aria-label="Naam aanpassen" title="Naam aanpassen">&#9998;</button>
+          <button class="th-groep-knop weg" data-pdel="${projId}" aria-label="Project verwijderen">&times;</button>` : ""}
+      </div>
+      ${body}
+    </div>`;
+}
+
+function bindInspiration(){
+  const box = $("#inspList");
+
+  box.querySelectorAll("[data-thtoggle]").forEach(b => b.addEventListener("click", () => {
+    const key = b.dataset.thtoggle;
+    if(thOpen.has(key)) thOpen.delete(key); else thOpen.add(key);
+    renderInspiration();
+  }));
+
+  // elk idee kan naar een ander project verhuizen
+  box.querySelectorAll("[data-waar]").forEach(sel => {
+    const i = items.find(x => x.id === sel.dataset.waar);
+    if(!i) return;
+    vulProjectLijst(sel, projectVan(i) || "");
+    sel.addEventListener("change", async () => {
+      const projectId = sel.value || null;
+      thOpen.add(projectId || "los");
+      try{ await updateDoc(doc(db,"users",uid,"thoth",sel.dataset.waar), { projectId }); }
+      catch(e){ toast("Verplaatsen lukt niet"); renderInspiration(); }
+    });
+  });
+
+  box.querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", async () => {
     const el = b.closest(".item"); el.classList.add("gone");
-    setTimeout(async ()=>{
+    setTimeout(async () => {
       try{ await deleteDoc(doc(db,"users",uid,"thoth",b.dataset.del)); }
       catch(e){ toast("Verwijderen lukt niet"); }
     },300);
   }));
+
+  // snel een punt bij dit project zetten
+  const bewaarSnel = async knop => {
+    const veld = box.querySelector(`[data-snel="${knop.dataset.snelok}"]`);
+    const text = veld.value.trim();
+    if(!text){ toast("Er staat nog niets in"); return; }
+    try{
+      await addDoc(collection(db,"users",uid,"thoth"),{
+        text, kind:"inspiratie", projectId: knop.dataset.snelok, createdAt: Date.now()
+      });
+      veld.value = "";
+      toast("Erbij");
+    }catch(e){ toast("Opslaan lukt niet"); }
+  };
+  box.querySelectorAll("[data-snelok]").forEach(b => b.addEventListener("click", () => bewaarSnel(b)));
+  box.querySelectorAll("[data-snel]").forEach(v => v.addEventListener("keydown", e => {
+    if(e.key !== "Enter") return;
+    e.preventDefault();
+    bewaarSnel(box.querySelector(`[data-snelok="${v.dataset.snel}"]`));
+  }));
+
+  box.querySelectorAll("[data-pren]").forEach(b =>
+    b.addEventListener("click", () => openProjSheet(b.dataset.pren)));
+
+  box.querySelectorAll("[data-pdel]").forEach(b => b.addEventListener("click", async () => {
+    const projId = b.dataset.pdel;
+    const erin = inspiraties().filter(i => projectVan(i) === projId);
+    const vraag = erin.length
+      ? `Weet je zeker dat dit project weg kan? De ${erin.length} punten erin worden weer los.`
+      : "Weet je zeker dat dit project weg kan?";
+    if(!await bevestig(vraag)) return;
+    try{
+      for(const i of erin) await updateDoc(doc(db,"users",uid,"thoth",i.id), { projectId: null });
+      await deleteDoc(doc(db,"users",uid,"thoth",projId));
+      toast(erin.length ? `Project weg, ${erin.length} punten zijn weer los` : "Project weg");
+    }catch(e){ toast("Verwijderen lukt niet"); }
+  }));
 }
+
+/* --- het blad om een project te maken of te hernoemen --- */
+function openProjSheet(projId){
+  projEdit = projId || null;
+  const p = projEdit ? projecten().find(x => x.id === projEdit) : null;
+  $("#projNaam").value = p ? p.name : "";
+  $("#projSheetTitle").textContent = p ? "Project hernoemen" : "Nieuw project";
+  $("#projSave").textContent = p ? "Opslaan" : "Project maken";
+  $("#projSheet").classList.add("open");
+  setTimeout(() => $("#projNaam").focus(), 90);
+}
+function closeProjSheet(){ $("#projSheet").classList.remove("open"); projEdit = null; }
+
+$("#projNieuw").addEventListener("click", () => openProjSheet(null));
+$("#projX").addEventListener("click", closeProjSheet);
+$("#projSheet").addEventListener("click", e => { if(e.target.id === "projSheet") closeProjSheet(); });
+$("#projNaam").addEventListener("keydown", e => { if(e.key === "Enter") $("#projSave").click(); });
+
+$("#projSave").addEventListener("click", async () => {
+  const naam = $("#projNaam").value.trim();
+  if(!naam){ toast("Geef het project een naam"); return; }
+  try{
+    if(projEdit){
+      await updateDoc(doc(db,"users",uid,"thoth",projEdit), { name: naam });
+      closeProjSheet(); toast("Hernoemd");
+    }else{
+      const ref = await addDoc(collection(db,"users",uid,"thoth"),{
+        kind:"project", name: naam, createdAt: Date.now()
+      });
+      thOpen.add(ref.id);          // meteen open, dan kun je er punten in zetten
+      renderInspiration();         // het luisteren was al klaar, dus even opnieuw tekenen
+      closeProjSheet(); toast("Project gemaakt");
+    }
+  }catch(e){ toast("Opslaan lukt niet"); }
+});
 
 /* ============================================================
    FEEDBACK
@@ -3061,7 +3298,18 @@ function alsTekst(d){
   const geh = d.thoth.filter(i=>i.kind==="geheugen");
   const ins = d.thoth.filter(i=>i.kind==="inspiratie");
   if(geh.length){ r.push("NIET VERGETEN"); geh.forEach(i=>r.push(`- ${i.prio?"[!] ":""}${i.text}${i.deadline?` (voor ${datumKort(i.deadline)}${i.tijd?` ${i.tijd}`:""})`:""}${i.herhaal?` [${herhaalTekst(i)}]`:""}`)); r.push(""); }
-  if(ins.length){ r.push("INSPIRATIE"); ins.forEach(i=>r.push(`- ${i.text}`)); r.push(""); }
+  if(ins.length){
+    r.push("INSPIRATIE");
+    const proj = d.thoth.filter(i=>i.kind==="project");
+    const regel = (naam, lijst) => {
+      if(!lijst.length) return;
+      r.push(`  ${naam}`);
+      lijst.forEach(i => r.push(`  - ${i.text}`));
+    };
+    regel("Los", ins.filter(i => !i.projectId || !proj.some(p => p.id === i.projectId)));
+    proj.forEach(p => regel(p.name, ins.filter(i => i.projectId === p.id)));
+    r.push("");
+  }
   for(const b of BOARDS){
     const rij = d[b.col] || [];
     if(!rij.length) continue;
