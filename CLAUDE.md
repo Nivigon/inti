@@ -22,7 +22,10 @@ Het plein heeft zes tegels rond de zon in het midden:
 - Zilverweide en Inti zijn de twee borden (paneel `#zilverweide` en `#intiboard`),
   opgebouwd door de code in `#boards`.
 - Thoth (`#thoth`) is de ideeenbank, alleen inspiratie opschrijven en teruglezen.
-  To do's leg je vast met de snelknop (`#snapBtn`), die komen bij Fix shit.
+  Ideeen kunnen los blijven of onder een project hangen (bijvoorbeeld een spel).
+  Bij Bewaard staat per groep een kopje met de punten eronder, in- en uitklapbaar,
+  met een regel om er meteen een punt bij te zetten. To do's leg je vast met de
+  snelknop (`#snapBtn`), die komen bij Fix shit.
 - AI (`#ai`, "Project AI") toont elke dag een les.
 - Fix shit (`#fix`) toont de drie oudste geheugen-items.
 - AMHC (`#amhc`) is de werklijst: to do's met een persoon en tijdsdruk, te bekijken
@@ -31,20 +34,24 @@ Het plein heeft zes tegels rond de zon in het midden:
 
 Verdere schermen: `#kluis` (reservekopie), `#slot` (herinnering om te back-uppen),
 en de sheets `#zwSheet` (toevoegen op een bord), `#snapSheet` (snel een to do
-opschrijven, met optionele deadline), `#editSheet` (een Fix shit-taak aanpassen)
-en `#amhcSheet` (een AMHC-taak toevoegen of aanpassen).
+opschrijven, met optionele deadline), `#editSheet` (een Fix shit-taak aanpassen),
+`#amhcSheet` (een AMHC-taak toevoegen of aanpassen) en `#projSheet` (een project
+in Thoth maken of hernoemen).
 
 ## Firestore
 
 Alles hangt onder `users/{uid}`:
 
-- Collectie `thoth`: Thoth-items. Velden `text`, `kind` ("inspiratie" of "geheugen"),
-  `prio`, `createdAt`, `snoozeUntil`, `opzij` (hoe vaak een geheugen-item bij Fix shit
-  opzij is gezet), `deadline` (optionele datum "JJJJ-MM-DD" van een geheugen-item),
-  `tijd` (optioneel tijdstip "UU:MM" bij de deadline; "te laat" wordt tijd-bewust)
-  en `herhaal` (null of "dag"/"week"/"maand" voor een terugkerende to do; de deadline
-  schuift bij Gedaan door naar de volgende keer). Inspiratie komt binnen via Thoth,
-  geheugen-items (de to do's) via de snelknop.
+- Collectie `thoth`: Thoth-items. Velden `text`, `kind` ("inspiratie", "geheugen"
+  of "project"), `prio`, `createdAt`, `snoozeUntil`, `opzij` (hoe vaak een
+  geheugen-item bij Fix shit opzij is gezet), `deadline` (optionele datum
+  "JJJJ-MM-DD" van een geheugen-item), `tijd` (optioneel tijdstip "UU:MM" bij de
+  deadline; "te laat" wordt tijd-bewust) en `herhaal` (null of "dag"/"week"/"maand"
+  voor een terugkerende to do; de deadline schuift bij Gedaan door naar de volgende
+  keer). Inspiratie komt binnen via Thoth, geheugen-items (de to do's) via de
+  snelknop. Een doc met kind "project" is een kopje in Thoth (velden `name` en
+  `createdAt`); een inspiratie-item wijst er met `projectId` naar, of is null en
+  staat dan onder Los. Gaat een project weg, dan worden de punten erin weer los.
 - Collectie `zilverweide` en collectie `intiboard`: de twee borden. Docs met
   `kind` "cat" (velden `name`, `createdAt`) of "todo" (velden `text`, `term` "kort"
   of "lang", `catId`, `createdAt`).
