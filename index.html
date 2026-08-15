@@ -153,6 +153,12 @@ body.lit .quad:hover{border-color:var(--gold-dim);transform:translateY(-2px)}
 .snap:hover{transform:scale(1.1);box-shadow:0 0 30px rgba(212,162,76,.55)}
 .snap:active{transform:scale(.94)}
 .snap svg{width:17px;height:17px;display:block}
+/* de snelknop van Thoth gaat over inspiratie, dus turkoois zoals de ideeen zelf */
+.snap-idee{
+  background:linear-gradient(180deg,var(--turquoise),#2b6a64);color:#eefaf8;
+  box-shadow:0 0 18px rgba(61,143,136,.34);
+}
+.snap-idee:hover{box-shadow:0 0 30px rgba(61,143,136,.6)}
 .quad h2{
   font-family:var(--display);font-weight:400;
   font-size:clamp(1.05rem,2.2vw,1.6rem);letter-spacing:.03em;color:var(--bone);
@@ -484,6 +490,14 @@ button.fb-cat-name:hover{color:var(--gold-bright)}
   border-radius:8px;padding:4px 7px;font-family:inherit;font-size:.7rem;max-width:60%;
 }
 .th-waar:focus{border-color:var(--gold-dim);outline:none}
+/* in het snelblad kun je ook meteen een nieuw project beginnen */
+#thothSnapNieuw{
+  display:block;width:100%;margin-top:12px;padding:11px;border-radius:10px;
+  border:1px solid var(--earth-3);color:var(--bone-dim);
+  font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;
+  transition:color .2s,border-color .2s;
+}
+#thothSnapNieuw:hover{color:var(--gold);border-color:var(--gold-dim)}
 
 
 /* ---------- hoge prioriteit ---------- */
@@ -904,11 +918,18 @@ button.fb-cat-name:hover{color:var(--gold-bright)}
         <h2>Zilverweide</h2>
         <p>Korte en lange termijn, per categorie.</p>
       </button>
-      <button class="quad" data-panel="thoth">
-        <span class="eyebrow tag">Ideeën</span>
-        <h2>Thoth</h2>
-        <p>Inspiratie bewaren en teruglezen.</p>
-      </button>
+      <div class="tile-wrap">
+        <button class="quad" data-panel="thoth">
+          <span class="eyebrow tag">Ideeën</span>
+          <h2>Thoth</h2>
+          <p>Inspiratie bewaren en teruglezen.</p>
+        </button>
+        <button class="snap snap-idee" id="thothSnapBtn" aria-label="Snel een idee opschrijven" title="Snel een idee opschrijven">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2.2l2.3 6.6 6.6 2.3-6.6 2.3L12 20l-2.3-6.6L3.1 11.1l6.6-2.3z"/>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <div class="colmid">
@@ -1191,6 +1212,21 @@ button.fb-cat-name:hover{color:var(--gold-bright)}
       </div>
     </div>
   </div>
+
+<!-- snel een idee, via de knop op de Thoth-tegel -->
+<div class="sheet" id="thothSheet">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <span class="eyebrow">Snel een idee</span>
+      <button class="sheet-x" id="thothSnapX" aria-label="Sluiten">&times;</button>
+    </div>
+    <textarea id="thothSnapText" placeholder="Wat kwam er langs?"></textarea>
+    <label class="eyebrow" for="thothSnapProj">Bij welk project</label>
+    <select id="thothSnapProj"></select>
+    <button id="thothSnapNieuw">Nieuw project maken</button>
+    <button class="btn-gold" id="thothSnapSave">Bewaren</button>
+  </div>
+</div>
 
 <!-- een project in Thoth maken of hernoemen -->
 <div class="sheet" id="projSheet">
@@ -2009,7 +2045,8 @@ function openPanel(id){
 }
 function closePanels(){
   $$(".panel").forEach(p=>p.classList.remove("open"));
-  closeSheet(); closeSnap(); closeEdit(); fbCloseEdit(); closeAmhcSheet(); closeProjSheet(); sluitBevestig(false);
+  closeSheet(); closeSnap(); closeEdit(); fbCloseEdit(); closeAmhcSheet();
+  closeProjSheet(); closeThothSheet(); sluitBevestig(false);
   document.body.classList.remove("zw-open");
   document.body.classList.remove("fb-open");
 }
@@ -2023,6 +2060,7 @@ document.addEventListener("keydown", e=>{
   else if($("#amhcSheet").classList.contains("open")) closeAmhcSheet();
   else if($("#zwSheet").classList.contains("open")) closeSheet();
   else if($("#projSheet").classList.contains("open")) closeProjSheet();
+  else if($("#thothSheet").classList.contains("open")) closeThothSheet();
   else closePanels();
 });
 
@@ -2054,6 +2092,7 @@ const projectVan  = i => projecten().some(p => p.id === i.projectId) ? i.project
 
 let thOpen = new Set(["los"]);   // welke groepen uitgeklapt staan
 let projEdit = null;             // welk project we hernoemen (null is nieuw)
+let projTerug = false;           // komen we uit het snelblad, dan gaan we daar weer heen
 
 /* de keuzelijst met projecten vullen, de gekozen waarde blijft staan */
 function vulProjectLijst(sel, waarde){
@@ -2105,6 +2144,7 @@ function renderInspiration(){
   const projs = projecten();
   $("#inspN").textContent = list.length;
   vulProjectLijst($("#thothProj"));
+  vulProjectLijst($("#thothSnapProj"));
 
   if(!list.length && !projs.length){
     box.innerHTML = `<div class="empty"><span class="big">Nog leeg</span>
@@ -2224,9 +2264,49 @@ function bindInspiration(){
   }));
 }
 
+/* ============================================================
+   SNEL EEN IDEE  ·  de knop op de Thoth-tegel
+   Hetzelfde als opschrijven in Thoth, maar zonder het paneel
+   te openen. Je kiest er meteen een project bij, en je kunt er
+   ter plekke een nieuw project voor beginnen.
+   ============================================================ */
+function openThothSheet(){
+  $("#thothSnapText").value = "";
+  vulProjectLijst($("#thothSnapProj"), "");
+  $("#thothSheet").classList.add("open");
+  setTimeout(() => $("#thothSnapText").focus(), 90);
+}
+function closeThothSheet(){ $("#thothSheet").classList.remove("open"); }
+
+async function bewaarSnelIdee(){
+  const text = $("#thothSnapText").value.trim();
+  if(!text){ toast("Er staat nog niets in"); return; }
+  const projectId = $("#thothSnapProj").value || null;
+  closeThothSheet();
+  try{
+    await addDoc(collection(db,"users",uid,"thoth"),{
+      text, kind:"inspiratie", projectId, createdAt: Date.now()
+    });
+    thOpen.add(projectId || "los");
+    renderInspiration();
+    const p = projecten().find(x => x.id === projectId);
+    toast(p ? `Bewaard bij ${p.name}` : "Bewaard in Thoth");
+  }catch(e){ toast("Opslaan lukt niet"); }
+}
+
+$("#thothSnapBtn").addEventListener("click", openThothSheet);
+$("#thothSnapX").addEventListener("click", closeThothSheet);
+$("#thothSheet").addEventListener("click", e => { if(e.target.id === "thothSheet") closeThothSheet(); });
+$("#thothSnapSave").addEventListener("click", bewaarSnelIdee);
+$("#thothSnapText").addEventListener("keydown", e => {
+  if(e.key === "Enter" && (e.metaKey || e.ctrlKey)) bewaarSnelIdee();
+});
+$("#thothSnapNieuw").addEventListener("click", () => openProjSheet(null, true));
+
 /* --- het blad om een project te maken of te hernoemen --- */
-function openProjSheet(projId){
+function openProjSheet(projId, vanuitSnel){
   projEdit = projId || null;
+  projTerug = !!vanuitSnel;
   const p = projEdit ? projecten().find(x => x.id === projEdit) : null;
   $("#projNaam").value = p ? p.name : "";
   $("#projSheetTitle").textContent = p ? "Project hernoemen" : "Nieuw project";
@@ -2234,7 +2314,7 @@ function openProjSheet(projId){
   $("#projSheet").classList.add("open");
   setTimeout(() => $("#projNaam").focus(), 90);
 }
-function closeProjSheet(){ $("#projSheet").classList.remove("open"); projEdit = null; }
+function closeProjSheet(){ $("#projSheet").classList.remove("open"); projEdit = null; projTerug = false; }
 
 $("#projNieuw").addEventListener("click", () => openProjSheet(null));
 $("#projX").addEventListener("click", closeProjSheet);
@@ -2249,12 +2329,16 @@ $("#projSave").addEventListener("click", async () => {
       await updateDoc(doc(db,"users",uid,"thoth",projEdit), { name: naam });
       closeProjSheet(); toast("Hernoemd");
     }else{
+      const terug = projTerug;
       const ref = await addDoc(collection(db,"users",uid,"thoth"),{
         kind:"project", name: naam, createdAt: Date.now()
       });
       thOpen.add(ref.id);          // meteen open, dan kun je er punten in zetten
       renderInspiration();         // het luisteren was al klaar, dus even opnieuw tekenen
-      closeProjSheet(); toast("Project gemaakt");
+      closeProjSheet();
+      // kwamen we uit het snelblad, dan staat het nieuwe project daar meteen klaar
+      if(terug) vulProjectLijst($("#thothSnapProj"), ref.id);
+      toast("Project gemaakt");
     }
   }catch(e){ toast("Opslaan lukt niet"); }
 });
