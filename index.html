@@ -338,6 +338,26 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 .act-later{color:var(--bone-dim)}
 .act-later:hover{border-color:var(--bone-dim)}
 
+/* de lijstjes Komt later en Net gedaan, onder Fix shit */
+#fixWacht,#fixGedaan{margin-top:26px;padding-top:20px;border-top:1px solid var(--earth-3)}
+#fixWacht:empty,#fixGedaan:empty{display:none}
+.fix-rij{
+  display:flex;align-items:center;gap:10px;
+  background:var(--earth-2);border:1px solid var(--earth-3);
+  border-radius:12px;padding:11px 13px;
+}
+.fix-rij .txt{
+  flex:1;min-width:0;font-size:.86rem;color:var(--bone-dim);line-height:1.5;
+  white-space:pre-wrap;word-break:break-word;
+}
+.fix-rij .when{display:block;font-size:.68rem;opacity:.75;margin-top:4px}
+.fix-rij .when.nu{color:var(--gold);opacity:1}
+.fix-knop{
+  border:1px solid var(--gold-dim);color:var(--gold);border-radius:10px;padding:8px 12px;
+  font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;flex-shrink:0;
+}
+.fix-knop:hover{color:var(--gold-bright);border-color:var(--gold)}
+
 .counter{
   display:flex;align-items:baseline;gap:12px;margin-bottom:26px;
   padding-bottom:20px;border-bottom:1px solid var(--earth-3);
@@ -789,6 +809,13 @@ button.fb-cat-name:hover{color:var(--gold-bright)}
   border:1px solid var(--gold-dim);
 }
 .toast.on{opacity:1;transform:translate(-50%,0)}
+/* een toast met een knopje erin, die mag je wel aanraken */
+.toast.met-knop{display:flex;align-items:center;gap:14px;pointer-events:auto;max-width:min(92vw,420px)}
+.toast-undo{
+  border:1px solid var(--gold-dim);color:var(--gold);border-radius:14px;padding:6px 12px;
+  font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;flex-shrink:0;
+}
+.toast-undo:hover{color:var(--gold-bright);border-color:var(--gold)}
 
 /* ---------- offline-bolletje in de kop ---------- */
 .topleft{display:flex;align-items:center;gap:9px}
@@ -1043,6 +1070,8 @@ button.fb-cat-name:hover{color:var(--gold-bright)}
       <button class="refresh" id="fixRefresh">Vul aan</button>
     </div>
     <div id="fixList"></div>
+    <div id="fixWacht"></div>
+    <div id="fixGedaan"></div>
   </div>
 </div>
 
@@ -1868,8 +1897,18 @@ const intiDag = d => { const x = new Date(d.getTime()); x.setHours(x.getHours() 
 const today = () => intiDag(new Date());
 const tomorrow = () => { const d=new Date(); d.setDate(d.getDate()+1); return intiDag(d); };
 function toast(msg){
-  const t=$("#toast"); t.textContent=msg; t.classList.add("on");
+  const t=$("#toast"); t.textContent=msg; t.classList.remove("met-knop"); t.classList.add("on");
   clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("on"),2200);
+}
+/* dezelfde toast, maar met een knopje om het net gedane terug te draaien.
+   Blijft wat langer staan, zodat een misklik zich laat herstellen. */
+function toastTerug(msg, terug){
+  const t=$("#toast");
+  t.innerHTML = `<span>${escapeHtml(msg)}</span><button type="button" class="toast-undo">Toch niet</button>`;
+  t.classList.add("on","met-knop");
+  const weg = () => { clearTimeout(t._t); t.classList.remove("on"); setTimeout(()=>t.classList.remove("met-knop"),300); };
+  t.querySelector(".toast-undo").addEventListener("click", () => { weg(); terug(); });
+  clearTimeout(t._t); t._t = setTimeout(weg, 7000);
 }
 function human(ms){
   if(!ms) return "";
@@ -1946,6 +1985,7 @@ async function start(){
     renderCounts();
     renderInspiration();
     toonCijfers();
+    ruimGedaanOp();
   }, err => toast("Verbinding hapert: "+err.code));
 
   // luister live mee met elk bord
@@ -2671,8 +2711,14 @@ function berekenDeadline(prefix, keuze, tijd){
   if(tijd && new Date(deadline + "T" + tijd + ":00") < new Date()) deadline = volgendeDatum(deadline, keuze);
   return deadline;
 }
+// zo lang blijft iets wat je afvinkt bewaard, daarna gaat het echt weg
+const BEWAAR_GEDAAN = 30;
 function geheugenTaken(){
-  return items.filter(i => i.kind==="geheugen");
+  return items.filter(i => i.kind==="geheugen" && !i.gedaan);
+}
+// alles wat je hebt afgevinkt, het laatst afgevinkte bovenaan
+function gedaanTaken(){
+  return items.filter(i => i.kind==="geheugen" && i.gedaan).sort((a,b)=> b.gedaan - a.gedaan);
 }
 /* rangorde voor Fix shit: 0 te laat of vandaag, 1 hoge prio, 2 komende deadline, 3 de rest */
 function rang(i){
@@ -2691,25 +2737,40 @@ function sorteerTaken(a,b){
     return verg(a.deadline, b.deadline) || verg(a.tijd||"", b.tijd||"") || (a.createdAt - b.createdAt);
   return a.createdAt - b.createdAt;
 }
+/* iets wat structureel terugkomt, elke dag, week of maand, wacht netjes op zijn
+   dag: het staat niet tussen de drie en telt niet mee, maar is wel te zien bij
+   Komt terug. Een losse to do met een datum blijft gewoon op je lijst staan. */
+function wacht(i){
+  return !!(i.herhaal && i.deadline && i.deadline > today());
+}
+function wachtTaken(){
+  return geheugenTaken().filter(wacht)
+    .sort((a,b)=> verg(a.deadline,b.deadline) || verg(a.tijd||"", b.tijd||"") || (a.createdAt-b.createdAt));
+}
+function nuTaken(){
+  return geheugenTaken().filter(i => !wacht(i));
+}
 function actieveTaken(){
   const t = today();
   // een deadline van vandaag of eerder telt altijd mee, ook al is het ding opzij gezet
-  return geheugenTaken()
+  return nuTaken()
     .filter(i => !i.snoozeUntil || i.snoozeUntil <= t || (i.deadline && i.deadline <= t))
     .sort(sorteerTaken);
 }
 function opzijTaken(){
   const t = today();
-  return geheugenTaken()
+  return nuTaken()
     .filter(i => i.snoozeUntil && i.snoozeUntil > t && !(i.deadline && i.deadline <= t))
     .sort(sorteerTaken);
 }
 function renderCounts(){
-  const n = geheugenTaken().length;   // alles op je lijst, ook de opzij-gezette
+  const n = nuTaken().length;   // wat er nu ligt, ook de opzij-gezette
   $("#fixCount").textContent = n;
   const badge = $("#fixBadge");
   badge.textContent = n;
   badge.classList.toggle("on", n>0);
+  renderWacht();
+  renderGedaan();
 }
 
 let laatstOpzij = null;   // id dat je zojuist opzij zette, even overslaan bij aanvullen
@@ -2769,10 +2830,15 @@ function deadlineTag(it){
 
 function renderFix(){
   const box = $("#fixList");
+  // wat nu op een volgende keer wacht hoort hier niet meer te staan
+  fixShown = fixShown.filter(id => { const i = items.find(x=>x.id===id); return i && !wacht(i); });
+  vulAan();   // en er komt meteen weer iets voor in de plaats
   const list = fixShown.map(id => items.find(i=>i.id===id)).filter(Boolean);
   if(!list.length){
     box.innerHTML = `<div class="empty"><span class="big">Niets meer open</span>
       Alles wat je met de snelknop opschrijft, komt hier terug.</div>`;
+    renderWacht();
+    renderGedaan();
     return;
   }
   box.innerHTML = list.map(i=>`
@@ -2794,27 +2860,36 @@ function renderFix(){
 
   box.querySelectorAll("[data-edit]").forEach(b=>b.addEventListener("click",()=>openEdit(b.dataset.edit)));
   box.querySelectorAll("[data-done]").forEach(b=>b.addEventListener("click",()=>{
-    const it = items.find(x=>x.id===b.dataset.done);
+    const id = b.dataset.done;
+    const it = items.find(x=>x.id===id);
     if(it && it.herhaal && it.deadline){
       // een terugkerend ding gaat niet weg, maar schuift door naar de volgende keer
       const next = volgendeHerhaling(it.deadline, it.herhaal);
+      const vorige = { deadline: it.deadline, snoozeUntil: it.snoozeUntil ?? null, opzij: it.opzij||0 };
       finish(b, async id => {
         await updateDoc(doc(db,"users",uid,"thoth",id),
           { deadline: next, snoozeUntil: null, opzij: 0 });
-      }, `Gedaan, komt terug op ${datumKort(next)}`);
+      }, `Gedaan, komt terug op ${datumKort(next)}`, () => herstel(id, vorige));
     } else {
-      finish(b, async id => { await deleteDoc(doc(db,"users",uid,"thoth",id)); }, "Gedaan");
+      // afvinken gooit niets weg: het gaat opzij naar Net gedaan en kan terug
+      finish(b, async id => {
+        await updateDoc(doc(db,"users",uid,"thoth",id), { gedaan: Date.now(), snoozeUntil: null });
+      }, "Gedaan", () => herstel(id, { gedaan: null }));
     }
   }));
   box.querySelectorAll("[data-later]").forEach(b=>b.addEventListener("click",()=>{
+    const id = b.dataset.later;
+    const it = items.find(x=>x.id===id);
+    const vorige = { snoozeUntil: it?.snoozeUntil ?? null, opzij: it?.opzij||0 };
     finish(b, async id => {
-      const it = items.find(x=>x.id===id);
       await updateDoc(doc(db,"users",uid,"thoth",id),
-        { snoozeUntil: tomorrow(), opzij: (it?.opzij||0)+1 });
-    }, "Even opzij gezet");
+        { snoozeUntil: tomorrow(), opzij: vorige.opzij+1 });
+    }, "Even opzij gezet", () => herstel(id, vorige));
   }));
+  renderWacht();
+  renderGedaan();
 }
-function finish(btn, action, msg){
+function finish(btn, action, msg, terug){
   const id = btn.dataset.done || btn.dataset.later;
   const isOpzij = !!btn.dataset.later;
   const card = btn.closest(".task");
@@ -2822,11 +2897,94 @@ function finish(btn, action, msg){
   fixShown = fixShown.filter(x=>x!==id);
   laatstOpzij = isOpzij ? id : null;
   setTimeout(async ()=>{
-    try{ await action(id); toast(msg); }
+    try{ await action(id); if(terug) toastTerug(msg, terug); else toast(msg); }
     catch(e){ toast("Opslaan lukt niet"); }
     vulAan(isOpzij ? null : id);   // meteen weer aanvullen tot drie
     renderFix();
   },320);
+}
+
+/* een misklik terugdraaien: de velden weer zetten zoals ze net waren,
+   en het kaartje meteen bovenaan Fix shit terugzetten */
+async function herstel(id, vorige){
+  const lokaal = items.find(i => i.id === id);
+  if(!lokaal){ toast("Dit ding is er niet meer"); return; }
+  try{
+    await updateDoc(doc(db,"users",uid,"thoth",id), vorige);
+    Object.assign(lokaal, vorige);
+    laatstOpzij = null;
+    fixShown = [id, ...fixShown.filter(x => x !== id)];
+    renderCounts();
+    renderFix();
+    toast("Staat weer op je lijst");
+  }catch(e){ toast("Terugzetten lukt niet"); }
+}
+
+/* een kopje met een lijstje eronder, in en uit te klappen */
+function fixGroep(naam, aantal, open, body){
+  return `<div class="th-groep">
+      <div class="th-groep-head">
+        <button class="th-groep-toggle" data-groep aria-expanded="${open}">
+          <span class="th-groep-chevron">${open ? "&#9662;" : "&#9656;"}</span>
+          <span class="th-groep-naam">${naam}</span>
+          <span class="th-groep-n">${aantal}</span>
+        </button>
+      </div>
+      ${open ? `<div class="th-groep-body">${body}</div>` : ""}
+    </div>`;
+}
+
+/* Komt terug: de terugkerende dingen die nog niet aan de beurt zijn. Geen ruis
+   tussen de drie, maar wel terug te lezen en meteen te verzetten. */
+let wachtOpen = false;
+function renderWacht(){
+  const box = $("#fixWacht");
+  if(!box) return;
+  const list = wachtTaken();
+  if(!list.length){ box.innerHTML = ""; return; }
+  const body = list.map(i=>`
+      <div class="fix-rij">
+        <div class="txt">${escapeHtml(i.text)}<span class="when">&#8635; ${herhaalTekst(i)}, weer op ${datumKort(i.deadline)}</span></div>
+        <button class="fix-knop" data-wedit="${i.id}">Aanpassen</button>
+      </div>`).join("")
+    + `<div class="th-leeg">Deze komen vanzelf op je lijst zodra hun dag er weer is.</div>`;
+  box.innerHTML = fixGroep("Komt terug", list.length, wachtOpen, body);
+  box.querySelector("[data-groep]").addEventListener("click", ()=>{ wachtOpen = !wachtOpen; renderWacht(); });
+  box.querySelectorAll("[data-wedit]").forEach(b=>b.addEventListener("click", ()=>openEdit(b.dataset.wedit)));
+}
+
+/* Net gedaan: wat je hebt afgevinkt blijft hier staan, in te klappen.
+   Zo zie je meteen of je iets te vroeg hebt weggetikt en zet je het terug. */
+let gedaanOpen = false;
+function renderGedaan(){
+  const box = $("#fixGedaan");
+  if(!box) return;
+  const list = gedaanTaken();
+  if(!list.length){ box.innerHTML = ""; return; }
+  const body = list.map(i=>`
+      <div class="fix-rij">
+        <div class="txt">${escapeHtml(i.text)}<span class="when">${human(i.gedaan)} afgevinkt</span></div>
+        <button class="fix-knop" data-terug="${i.id}">Terug</button>
+      </div>`).join("")
+    + `<div class="th-leeg">Afgevinkte dingen blijven hier ${BEWAAR_GEDAAN} dagen staan, daarna gaan ze vanzelf weg.</div>`;
+  box.innerHTML = fixGroep("Net gedaan", list.length, gedaanOpen, body);
+  box.querySelector("[data-groep]").addEventListener("click", ()=>{
+    gedaanOpen = !gedaanOpen; renderGedaan();
+  });
+  box.querySelectorAll("[data-terug]").forEach(b=>b.addEventListener("click", ()=>{
+    herstel(b.dataset.terug, { gedaan: null });
+  }));
+}
+
+/* een keer per sessie: alles wat lang genoeg afgevinkt staat gaat echt weg */
+let opgeruimd = false;
+async function ruimGedaanOp(){
+  if(opgeruimd || !uid) return;
+  opgeruimd = true;
+  const grens = Date.now() - BEWAAR_GEDAAN*86400000;
+  for(const i of items.filter(i => i.kind==="geheugen" && i.gedaan && i.gedaan < grens)){
+    try{ await deleteDoc(doc(db,"users",uid,"thoth",i.id)); }catch(e){ /* volgende keer weer */ }
+  }
 }
 
 /* --- een taak aanpassen via het potloodje: tekst, deadline en prioriteit --- */
@@ -3379,7 +3537,7 @@ async function alles(){
 
 function alsTekst(d){
   const r = [`INTI, bewaard op ${new Date(d.datum).toLocaleString("nl-NL")}`,""];
-  const geh = d.thoth.filter(i=>i.kind==="geheugen");
+  const geh = d.thoth.filter(i=>i.kind==="geheugen" && !i.gedaan);
   const ins = d.thoth.filter(i=>i.kind==="inspiratie");
   if(geh.length){ r.push("NIET VERGETEN"); geh.forEach(i=>r.push(`- ${i.prio?"[!] ":""}${i.text}${i.deadline?` (voor ${datumKort(i.deadline)}${i.tijd?` ${i.tijd}`:""})`:""}${i.herhaal?` [${herhaalTekst(i)}]`:""}`)); r.push(""); }
   if(ins.length){
@@ -3553,7 +3711,7 @@ async function kopieTekst(){
 }
 
 function toonCijfers(){
-  const geh  = items.filter(i=>i.kind==="geheugen").length;
+  const geh  = items.filter(i=>i.kind==="geheugen" && !i.gedaan).length;
   const ins  = items.filter(i=>i.kind==="inspiratie").length;
   const bord = BOARDS.map(b => todosVan(b.id).length).reduce((a,c)=>a+c,0);
   const html = `
