@@ -338,24 +338,25 @@ textarea.entry:focus{border-color:var(--gold-dim);outline:none}
 .act-later{color:var(--bone-dim)}
 .act-later:hover{border-color:var(--bone-dim)}
 
-/* het lijstje Net gedaan, onder Fix shit */
-#fixGedaan{margin-top:26px;padding-top:20px;border-top:1px solid var(--earth-3)}
-#fixGedaan:empty{display:none}
-.gedaan-item{
+/* de lijstjes Komt later en Net gedaan, onder Fix shit */
+#fixWacht,#fixGedaan{margin-top:26px;padding-top:20px;border-top:1px solid var(--earth-3)}
+#fixWacht:empty,#fixGedaan:empty{display:none}
+.fix-rij{
   display:flex;align-items:center;gap:10px;
   background:var(--earth-2);border:1px solid var(--earth-3);
   border-radius:12px;padding:11px 13px;
 }
-.gedaan-item .txt{
+.fix-rij .txt{
   flex:1;min-width:0;font-size:.86rem;color:var(--bone-dim);line-height:1.5;
   white-space:pre-wrap;word-break:break-word;
 }
-.gedaan-item .when{display:block;font-size:.68rem;opacity:.75;margin-top:4px}
-.gedaan-terug{
+.fix-rij .when{display:block;font-size:.68rem;opacity:.75;margin-top:4px}
+.fix-rij .when.nu{color:var(--gold);opacity:1}
+.fix-knop{
   border:1px solid var(--gold-dim);color:var(--gold);border-radius:10px;padding:8px 12px;
   font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;flex-shrink:0;
 }
-.gedaan-terug:hover{color:var(--gold-bright);border-color:var(--gold)}
+.fix-knop:hover{color:var(--gold-bright);border-color:var(--gold)}
 
 .counter{
   display:flex;align-items:baseline;gap:12px;margin-bottom:26px;
@@ -1069,6 +1070,7 @@ button.fb-cat-name:hover{color:var(--gold-bright)}
       <button class="refresh" id="fixRefresh">Vul aan</button>
     </div>
     <div id="fixList"></div>
+    <div id="fixWacht"></div>
     <div id="fixGedaan"></div>
   </div>
 </div>
@@ -2735,25 +2737,38 @@ function sorteerTaken(a,b){
     return verg(a.deadline, b.deadline) || verg(a.tijd||"", b.tijd||"") || (a.createdAt - b.createdAt);
   return a.createdAt - b.createdAt;
 }
+/* een to do met een datum verderop wacht netjes op zijn dag: hij staat niet
+   tussen de drie en telt niet mee, maar is wel te zien bij Komt later */
+function wacht(i){
+  return !!(i.deadline && i.deadline > today());
+}
+function wachtTaken(){
+  return geheugenTaken().filter(wacht)
+    .sort((a,b)=> verg(a.deadline,b.deadline) || verg(a.tijd||"", b.tijd||"") || (a.createdAt-b.createdAt));
+}
+function nuTaken(){
+  return geheugenTaken().filter(i => !wacht(i));
+}
 function actieveTaken(){
   const t = today();
   // een deadline van vandaag of eerder telt altijd mee, ook al is het ding opzij gezet
-  return geheugenTaken()
+  return nuTaken()
     .filter(i => !i.snoozeUntil || i.snoozeUntil <= t || (i.deadline && i.deadline <= t))
     .sort(sorteerTaken);
 }
 function opzijTaken(){
   const t = today();
-  return geheugenTaken()
+  return nuTaken()
     .filter(i => i.snoozeUntil && i.snoozeUntil > t && !(i.deadline && i.deadline <= t))
     .sort(sorteerTaken);
 }
 function renderCounts(){
-  const n = geheugenTaken().length;   // alles op je lijst, ook de opzij-gezette
+  const n = nuTaken().length;   // wat er nu ligt, ook de opzij-gezette
   $("#fixCount").textContent = n;
   const badge = $("#fixBadge");
   badge.textContent = n;
   badge.classList.toggle("on", n>0);
+  renderWacht();
   renderGedaan();
 }
 
@@ -2814,10 +2829,15 @@ function deadlineTag(it){
 
 function renderFix(){
   const box = $("#fixList");
+  // wat je zojuist een datum verderop gaf hoort hier niet meer te staan
+  fixShown = fixShown.filter(id => { const i = items.find(x=>x.id===id); return i && !wacht(i); });
+  vulAan();   // en er komt meteen weer iets voor in de plaats
   const list = fixShown.map(id => items.find(i=>i.id===id)).filter(Boolean);
   if(!list.length){
     box.innerHTML = `<div class="empty"><span class="big">Niets meer open</span>
       Alles wat je met de snelknop opschrijft, komt hier terug.</div>`;
+    renderWacht();
+    renderGedaan();
     return;
   }
   box.innerHTML = list.map(i=>`
@@ -2865,6 +2885,7 @@ function renderFix(){
         { snoozeUntil: tomorrow(), opzij: vorige.opzij+1 });
     }, "Even opzij gezet", () => herstel(id, vorige));
   }));
+  renderWacht();
   renderGedaan();
 }
 function finish(btn, action, msg, terug){
@@ -2898,6 +2919,39 @@ async function herstel(id, vorige){
   }catch(e){ toast("Terugzetten lukt niet"); }
 }
 
+/* een kopje met een lijstje eronder, in en uit te klappen */
+function fixGroep(naam, aantal, open, body){
+  return `<div class="th-groep">
+      <div class="th-groep-head">
+        <button class="th-groep-toggle" data-groep aria-expanded="${open}">
+          <span class="th-groep-chevron">${open ? "&#9662;" : "&#9656;"}</span>
+          <span class="th-groep-naam">${naam}</span>
+          <span class="th-groep-n">${aantal}</span>
+        </button>
+      </div>
+      ${open ? `<div class="th-groep-body">${body}</div>` : ""}
+    </div>`;
+}
+
+/* Komt later: alles met een datum die nog moet komen. Geen ruis tussen de drie,
+   maar wel terug te lezen, en met het potloodje meteen te verzetten. */
+let wachtOpen = false;
+function renderWacht(){
+  const box = $("#fixWacht");
+  if(!box) return;
+  const list = wachtTaken();
+  if(!list.length){ box.innerHTML = ""; return; }
+  const body = list.map(i=>`
+      <div class="fix-rij">
+        <div class="txt">${escapeHtml(i.text)}<span class="when">Staat klaar voor ${datumKort(i.deadline)}${i.tijd ? " "+i.tijd : ""}</span></div>
+        <button class="fix-knop" data-wedit="${i.id}">Aanpassen</button>
+      </div>`).join("")
+    + `<div class="th-leeg">Deze komen vanzelf op je lijst zodra hun dag er is.</div>`;
+  box.innerHTML = fixGroep("Komt later", list.length, wachtOpen, body);
+  box.querySelector("[data-groep]").addEventListener("click", ()=>{ wachtOpen = !wachtOpen; renderWacht(); });
+  box.querySelectorAll("[data-wedit]").forEach(b=>b.addEventListener("click", ()=>openEdit(b.dataset.wedit)));
+}
+
 /* Net gedaan: wat je hebt afgevinkt blijft hier staan, in te klappen.
    Zo zie je meteen of je iets te vroeg hebt weggetikt en zet je het terug. */
 let gedaanOpen = false;
@@ -2906,25 +2960,14 @@ function renderGedaan(){
   if(!box) return;
   const list = gedaanTaken();
   if(!list.length){ box.innerHTML = ""; return; }
-  const body = !gedaanOpen ? "" : `<div class="th-groep-body">
-      ${list.map(i=>`
-        <div class="gedaan-item">
-          <div class="txt">${escapeHtml(i.text)}<span class="when">${human(i.gedaan)} afgevinkt</span></div>
-          <button class="gedaan-terug" data-terug="${i.id}">Terug</button>
-        </div>`).join("")}
-      <div class="th-leeg">Afgevinkte dingen blijven hier ${BEWAAR_GEDAAN} dagen staan, daarna gaan ze vanzelf weg.</div>
-    </div>`;
-  box.innerHTML = `<div class="th-groep">
-      <div class="th-groep-head">
-        <button class="th-groep-toggle" data-gtoggle aria-expanded="${gedaanOpen}">
-          <span class="th-groep-chevron">${gedaanOpen ? "&#9662;" : "&#9656;"}</span>
-          <span class="th-groep-naam">Net gedaan</span>
-          <span class="th-groep-n">${list.length}</span>
-        </button>
-      </div>
-      ${body}
-    </div>`;
-  box.querySelector("[data-gtoggle]").addEventListener("click", ()=>{
+  const body = list.map(i=>`
+      <div class="fix-rij">
+        <div class="txt">${escapeHtml(i.text)}<span class="when">${human(i.gedaan)} afgevinkt</span></div>
+        <button class="fix-knop" data-terug="${i.id}">Terug</button>
+      </div>`).join("")
+    + `<div class="th-leeg">Afgevinkte dingen blijven hier ${BEWAAR_GEDAAN} dagen staan, daarna gaan ze vanzelf weg.</div>`;
+  box.innerHTML = fixGroep("Net gedaan", list.length, gedaanOpen, body);
+  box.querySelector("[data-groep]").addEventListener("click", ()=>{
     gedaanOpen = !gedaanOpen; renderGedaan();
   });
   box.querySelectorAll("[data-terug]").forEach(b=>b.addEventListener("click", ()=>{
