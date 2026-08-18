@@ -29,7 +29,11 @@ Het plein heeft zes tegels rond de zon in het midden:
   bewaren, met de projectkeuze erbij. To do's leg je vast met de snelknop
   (`#snapBtn`, op de tegel Fix shit), die komen bij Fix shit.
 - AI (`#ai`, "Project AI") toont elke dag een les.
-- Fix shit (`#fix`) toont de drie oudste geheugen-items.
+- Fix shit (`#fix`) toont de drie oudste geheugen-items. Gedaan gooit niets weg:
+  het item krijgt `gedaan` en zakt naar het lijstje Net gedaan onderaan het paneel
+  (`#fixGedaan`, in- en uitklapbaar), waar het met Terug weer op de lijst komt. De
+  toast na Gedaan of Even opzij heeft een knopje Toch niet om een misklik meteen
+  terug te draaien. Na `BEWAAR_GEDAAN` dagen wordt een afgevinkt item echt gewist.
 - AMHC (`#amhc`) is de werklijst: to do's met een persoon en tijdsdruk, te bekijken
   op urgentie, per persoon of gebundeld per onderwerp (op trefwoorden, met de
   woordenlogica van de feedback). De tegel heeft een eigen snelknop (`#amhcSnapBtn`).
@@ -49,7 +53,8 @@ Alles hangt onder `users/{uid}`:
   of "project"), `prio`, `createdAt`, `snoozeUntil`, `opzij` (hoe vaak een
   geheugen-item bij Fix shit opzij is gezet), `deadline` (optionele datum
   "JJJJ-MM-DD" van een geheugen-item), `tijd` (optioneel tijdstip "UU:MM" bij de
-  deadline; "te laat" wordt tijd-bewust) en `herhaal` (null of "dag"/"week"/"maand"
+  deadline; "te laat" wordt tijd-bewust), `gedaan` (null of het tijdstip waarop je
+  het afvinkte; zo'n item telt niet meer mee en staat bij Net gedaan) en `herhaal` (null of "dag"/"week"/"maand"
   voor een terugkerende to do; de deadline schuift bij Gedaan door naar de volgende
   keer). Inspiratie komt binnen via Thoth, geheugen-items (de to do's) via de
   snelknop. Een doc met kind "project" is een kopje in Thoth (velden `name` en
