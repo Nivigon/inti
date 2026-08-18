@@ -2737,10 +2737,11 @@ function sorteerTaken(a,b){
     return verg(a.deadline, b.deadline) || verg(a.tijd||"", b.tijd||"") || (a.createdAt - b.createdAt);
   return a.createdAt - b.createdAt;
 }
-/* een to do met een datum verderop wacht netjes op zijn dag: hij staat niet
-   tussen de drie en telt niet mee, maar is wel te zien bij Komt later */
+/* iets wat structureel terugkomt, elke dag, week of maand, wacht netjes op zijn
+   dag: het staat niet tussen de drie en telt niet mee, maar is wel te zien bij
+   Komt terug. Een losse to do met een datum blijft gewoon op je lijst staan. */
 function wacht(i){
-  return !!(i.deadline && i.deadline > today());
+  return !!(i.herhaal && i.deadline && i.deadline > today());
 }
 function wachtTaken(){
   return geheugenTaken().filter(wacht)
@@ -2829,7 +2830,7 @@ function deadlineTag(it){
 
 function renderFix(){
   const box = $("#fixList");
-  // wat je zojuist een datum verderop gaf hoort hier niet meer te staan
+  // wat nu op een volgende keer wacht hoort hier niet meer te staan
   fixShown = fixShown.filter(id => { const i = items.find(x=>x.id===id); return i && !wacht(i); });
   vulAan();   // en er komt meteen weer iets voor in de plaats
   const list = fixShown.map(id => items.find(i=>i.id===id)).filter(Boolean);
@@ -2933,8 +2934,8 @@ function fixGroep(naam, aantal, open, body){
     </div>`;
 }
 
-/* Komt later: alles met een datum die nog moet komen. Geen ruis tussen de drie,
-   maar wel terug te lezen, en met het potloodje meteen te verzetten. */
+/* Komt terug: de terugkerende dingen die nog niet aan de beurt zijn. Geen ruis
+   tussen de drie, maar wel terug te lezen en meteen te verzetten. */
 let wachtOpen = false;
 function renderWacht(){
   const box = $("#fixWacht");
@@ -2943,11 +2944,11 @@ function renderWacht(){
   if(!list.length){ box.innerHTML = ""; return; }
   const body = list.map(i=>`
       <div class="fix-rij">
-        <div class="txt">${escapeHtml(i.text)}<span class="when">Staat klaar voor ${datumKort(i.deadline)}${i.tijd ? " "+i.tijd : ""}</span></div>
+        <div class="txt">${escapeHtml(i.text)}<span class="when">&#8635; ${herhaalTekst(i)}, weer op ${datumKort(i.deadline)}</span></div>
         <button class="fix-knop" data-wedit="${i.id}">Aanpassen</button>
       </div>`).join("")
-    + `<div class="th-leeg">Deze komen vanzelf op je lijst zodra hun dag er is.</div>`;
-  box.innerHTML = fixGroep("Komt later", list.length, wachtOpen, body);
+    + `<div class="th-leeg">Deze komen vanzelf op je lijst zodra hun dag er weer is.</div>`;
+  box.innerHTML = fixGroep("Komt terug", list.length, wachtOpen, body);
   box.querySelector("[data-groep]").addEventListener("click", ()=>{ wachtOpen = !wachtOpen; renderWacht(); });
   box.querySelectorAll("[data-wedit]").forEach(b=>b.addEventListener("click", ()=>openEdit(b.dataset.wedit)));
 }

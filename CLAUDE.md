@@ -29,9 +29,10 @@ Het plein heeft zes tegels rond de zon in het midden:
   bewaren, met de projectkeuze erbij. To do's leg je vast met de snelknop
   (`#snapBtn`, op de tegel Fix shit), die komen bij Fix shit.
 - AI (`#ai`, "Project AI") toont elke dag een les.
-- Fix shit (`#fix`) toont de drie oudste geheugen-items. Een to do met een deadline
-  die nog moet komen blijft eruit: die telt niet mee en staat in het lijstje Komt
-  later (`#fixWacht`, in- en uitklapbaar), tot zijn dag er is. Gedaan gooit niets weg:
+- Fix shit (`#fix`) toont de drie oudste geheugen-items. Iets wat structureel terugkomt
+  (`herhaal` gevuld) en pas later weer aan de beurt is blijft eruit: het telt niet
+  mee en staat in het lijstje Komt terug (`#fixWacht`, in- en uitklapbaar), tot zijn
+  dag er weer is. Losse to do's met een datum blijven gewoon op de lijst staan. Gedaan gooit niets weg:
   het item krijgt `gedaan` en zakt naar het lijstje Net gedaan onderaan het paneel
   (`#fixGedaan`, in- en uitklapbaar), waar het met Terug weer op de lijst komt. De
   toast na Gedaan of Even opzij heeft een knopje Toch niet om een misklik meteen
