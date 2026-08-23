@@ -940,11 +940,18 @@ button.fb-cat-name:hover{color:var(--gold-bright)}
   <div class="plaza">
 
     <div class="colside">
-      <button class="quad" data-panel="zilverweide">
-        <span class="eyebrow tag">Onderneming</span>
-        <h2>Zilverweide</h2>
-        <p>Korte en lange termijn, per categorie.</p>
-      </button>
+      <div class="tile-wrap">
+        <button class="quad" data-panel="zilverweide">
+          <span class="eyebrow tag">Onderneming</span>
+          <h2>Zilverweide</h2>
+          <p>Korte en lange termijn, per categorie.</p>
+        </button>
+        <button class="snap" id="zwSnapBtn" aria-label="Snel iets op Zilverweide zetten" title="Snel iets op Zilverweide zetten">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7z"/>
+          </svg>
+        </button>
+      </div>
       <div class="tile-wrap">
         <button class="quad" data-panel="thoth">
           <span class="eyebrow tag">Ideeën</span>
@@ -3248,6 +3255,9 @@ function openSheet(view){
   if(view === "cat")  setTimeout(() => $("#zwCatName").focus(), 90);
 }
 function closeSheet(){ $("#zwSheet").classList.remove("open"); }
+
+/* --- de snelknop op de tegel: meteen een to do op Zilverweide zetten --- */
+$("#zwSnapBtn").addEventListener("click", () => { bActief = "zilverweide"; openSheet("todo"); });
 
 $("#zwSheetX").addEventListener("click", closeSheet);
 $("#zwSheet").addEventListener("click", e => { if(e.target.id === "zwSheet") closeSheet(); });
