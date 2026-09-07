@@ -3,7 +3,7 @@
    Hoog VERSIE op bij elke wijziging aan index.html, dan komt de
    nieuwe versie binnen en verschijnt onderin het vernieuw-balkje.
    ============================================================ */
-const VERSIE = "v1";
+const VERSIE = "v2";
 const CACHE  = "inti-" + VERSIE;
 
 // wat we meteen bewaren zodat de app ook zonder netwerk opent
