@@ -110,12 +110,14 @@ input,textarea{font-family:inherit;font-size:16px}
 .topbar button{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim)}
 .topbar button:hover{color:var(--gold)}
 
-/* het plein: zes tegels in drie kolommen, de zon in het midden */
+/* het plein: zeven tegels in drie kolommen, de zon in het midden.
+   De zijkolommen tellen niet altijd evenveel tegels, dus de rijen
+   verdelen zichzelf over de hoogte. */
 .plaza{
   flex:1;display:grid;grid-template-columns:1fr auto 1fr;gap:12px;
   align-items:stretch;min-height:min(74dvh,640px);
 }
-.colside{display:grid;grid-template-rows:1fr 1fr;gap:12px;min-width:0}
+.colside{display:grid;grid-auto-rows:1fr;gap:12px;min-width:0}
 .colmid{
   display:flex;flex-direction:column;gap:12px;align-items:center;
   width:clamp(200px,25vw,300px);min-width:0;
@@ -842,6 +844,9 @@ button.fb-cat-name:hover{color:var(--gold-bright)}
   .sunslot{grid-column:1 / -1;order:-1;padding:2px 0 22px}
   .sunslot::before{display:none}
   .quad{min-height:118px}
+  /* zeven tegels in twee kolommen laat onderaan een gat; de laatste
+     tegel vult die rij dan zelf op */
+  .plaza .colside:last-child .tile-wrap:last-child{grid-column:1 / -1}
 }
 
 /* ---------- telefoon, staand ---------- */
@@ -867,7 +872,7 @@ button.fb-cat-name:hover{color:var(--gold-bright)}
 @media (max-height:520px) and (orientation:landscape){
   :root{--sun:clamp(92px,26vh,130px)}
   .plaza{grid-template-columns:1fr 1fr 1fr;min-height:0;gap:9px}
-  .colside{display:grid;grid-template-rows:1fr 1fr;gap:9px}
+  .colside{display:grid;grid-auto-rows:1fr;gap:9px}
   .colmid{display:flex;width:auto}
   .sunslot{grid-column:auto;order:0;padding:2px 0}
   .sunslot::before{display:none}
@@ -961,6 +966,18 @@ button.fb-cat-name:hover{color:var(--gold-bright)}
         <button class="snap snap-idee" id="thothSnapBtn" aria-label="Snel een idee opschrijven" title="Snel een idee opschrijven">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 2.2l2.3 6.6 6.6 2.3-6.6 2.3L12 20l-2.3-6.6L3.1 11.1l6.6-2.3z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="tile-wrap">
+        <button class="quad" data-panel="amir">
+          <span class="eyebrow tag">Project</span>
+          <h2>Amir</h2>
+          <p>Korte en lange termijn, per categorie.</p>
+        </button>
+        <button class="snap" id="amirSnapBtn" aria-label="Snel iets voor Amir opschrijven" title="Snel iets voor Amir opschrijven">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7z"/>
           </svg>
         </button>
       </div>
@@ -3047,13 +3064,14 @@ $("#editSave").addEventListener("click", async () => {
 });
 
 /* ============================================================
-   BORDEN  ·  Zilverweide en Inti werken precies hetzelfde.
-   Wil je er een derde bij? Zet hem in de lijst hieronder en
-   geef de zesde tegel op het plein zijn data-panel mee.
+   BORDEN  ·  Zilverweide, Inti en Amir werken precies hetzelfde.
+   Wil je er nog een bij? Zet hem in de lijst hieronder en geef een
+   tegel op het plein zijn data-panel mee.
    ============================================================ */
 const BOARDS = [
   { id:"zilverweide", titel:"Zilverweide", col:"zilverweide" },
-  { id:"intiboard",   titel:"Inti",        col:"intiboard"   }
+  { id:"intiboard",   titel:"Inti",        col:"intiboard"   },
+  { id:"amir",        titel:"Amir",        col:"amir"        }
 ];
 const bs = {};                 // per bord de gegevens en de open categorieen
 let bActief = BOARDS[0].id;    // welk bord staat er open
@@ -3256,8 +3274,9 @@ function openSheet(view){
 }
 function closeSheet(){ $("#zwSheet").classList.remove("open"); }
 
-/* --- de snelknop op de tegel: meteen een to do op Zilverweide zetten --- */
+/* --- de snelknoppen op de tegels: meteen een to do op dat bord zetten --- */
 $("#zwSnapBtn").addEventListener("click", () => { bActief = "zilverweide"; openSheet("todo"); });
+$("#amirSnapBtn").addEventListener("click", () => { bActief = "amir"; openSheet("todo"); });
 
 $("#zwSheetX").addEventListener("click", closeSheet);
 $("#zwSheet").addEventListener("click", e => { if(e.target.id === "zwSheet") closeSheet(); });
