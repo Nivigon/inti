@@ -16,11 +16,13 @@ Van boven naar beneden:
 3. Het script, dat begint met het blok `CONFIG` en de lijsten, en daarna de logica.
 
 ### Panelen en tegels
-Het plein heeft zes tegels rond de zon in het midden:
+Het plein heeft zeven tegels rond de zon in het midden:
 
 - Zon (`#sunBtn`) opent de legende van vandaag, paneel `#legend`.
-- Zilverweide en Inti zijn de twee borden (paneel `#zilverweide` en `#intiboard`),
-  opgebouwd door de code in `#boards`.
+- Zilverweide, Inti en Amir zijn de drie borden (paneel `#zilverweide`, `#intiboard`
+  en `#amir`), opgebouwd door de code in `#boards`. Zilverweide en Amir hebben een
+  eigen snelknop op de tegel (`#zwSnapBtn` en `#amirSnapBtn`) om er meteen een to do
+  op te zetten.
 - Thoth (`#thoth`) is de ideeenbank, alleen inspiratie opschrijven en teruglezen.
   Ideeen kunnen los blijven of onder een project hangen (bijvoorbeeld een spel).
   Bij Bewaard staat per groep een kopje met de punten eronder, in- en uitklapbaar,
@@ -63,7 +65,8 @@ Alles hangt onder `users/{uid}`:
   snelknop. Een doc met kind "project" is een kopje in Thoth (velden `name` en
   `createdAt`); een inspiratie-item wijst er met `projectId` naar, of is null en
   staat dan onder Los. Gaat een project weg, dan worden de punten erin weer los.
-- Collectie `zilverweide` en collectie `intiboard`: de twee borden. Docs met
+- Collectie `zilverweide`, collectie `intiboard` en collectie `amir`: de drie
+  borden. Docs met
   `kind` "cat" (velden `name`, `createdAt`) of "todo" (velden `text`, `term` "kort"
   of "lang", `catId`, `createdAt`).
 - Collectie `amhc`: de werklijst. Velden `text`, `wie` (naam of null), `urg`
@@ -77,7 +80,7 @@ Alles hangt onder `users/{uid}`:
 
 - `LESSONS`: de tien AI-lessen die het paneel Project AI toont. Teller past zich aan.
 - `LEGENDS`: de zonverhalen die de zon per dag laat zien, één verder per keer.
-- `BOARDS`: config-array van de twee borden, elk met `id`, `titel` en `col`
+- `BOARDS`: config-array van de drie borden, elk met `id`, `titel` en `col`
   (de Firestore-collectie). De borden worden hieruit opgebouwd.
 
 ## Werkwijze
