@@ -75,6 +75,8 @@ Alles hangt onder `users/{uid}`:
 - Doc `meta/dag`: `lastSun`, `legendIndex`. Onthoudt of de zon vandaag al aan was.
 - Doc `meta/ai`: `status`, `reden`, `herhaald`, `wijzer`. Voortgang van de lessen.
 - Doc `meta/kluis`: `laatste`, `uitstel`. Wanneer er voor het laatst geback-upt is.
+- Doc `meta/klaar`: per sleutel uit `KLAARZET` het tijdstip waarop dat zetje gedaan is.
+  Staat de sleutel er, dan slaat het opstarten hem over.
 
 ## De lijsten
 
@@ -82,6 +84,11 @@ Alles hangt onder `users/{uid}`:
 - `LEGENDS`: de zonverhalen die de zon per dag laat zien, één verder per keer.
 - `BOARDS`: config-array van de drie borden, elk met `id`, `titel` en `col`
   (de Firestore-collectie). De borden worden hieruit opgebouwd.
+- `KLAARZET`: eenmalige zetjes, elk met een `sleutel`, een `project` en de `punten`
+  die erin horen. Bij het opstarten maakt `zetKlaar()` het project in Thoth aan (of
+  hangt de punten aan het project dat al zo heet) en zet de sleutel in `meta/klaar`,
+  zodat het daarna nooit meer gebeurt. Zo komt er iets in Thoth te staan zonder dat
+  het met de hand ingetikt hoeft te worden.
 
 ## Werkwijze
 - Alles zit in index.html. Wijzig alleen wat nodig is, nooit het hele bestand herschrijven.
