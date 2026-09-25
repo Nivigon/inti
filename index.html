@@ -2046,7 +2046,60 @@ async function start(){
 
   loadAI();
   laadKluis();
+  zetKlaar();
 }
+
+/* ============================================================
+   EENMALIG KLAARZETTEN
+   Soms hoort er iets in Thoth te staan zonder dat je het zelf
+   intikt. Elk zetje hieronder draait precies een keer: in
+   meta/klaar staat per sleutel wanneer het gedaan is, daarna
+   slaat hij hem over. Bestaat het project al onder dezelfde
+   naam, dan hangen de punten daaraan in plaats van aan een
+   tweede project.
+   ============================================================ */
+const KLAARZET = [
+  { sleutel: "cadeausRosa", project: "Cadeaus Rosa", punten: ["Staafmixer"] }
+];
+
+async function zetKlaar(){
+  try{
+    const ref  = doc(db,"users",uid,"meta","klaar");
+    const snap = await getDoc(ref);
+    const al   = snap.exists() ? snap.data() : {};
+    if(KLAARZET.every(z => al[z.sleutel])) return;
+
+    // niet uit items lezen: de luisteraar kan nog onderweg zijn
+    const alles = (await getDocs(collection(db,"users",uid,"thoth")))
+      .docs.map(d => ({id:d.id, ...d.data()}));
+    let iets = null;
+
+    for(const z of KLAARZET){
+      if(al[z.sleutel]) continue;
+      let p = alles.find(i => i.kind === "project" && i.name === z.project);
+      if(!p){
+        const nieuw = await addDoc(collection(db,"users",uid,"thoth"),{
+          kind:"project", name: z.project, createdAt: Date.now()
+        });
+        p = {id: nieuw.id, name: z.project};
+        iets = z.project;
+      }
+      const erin = alles
+        .filter(i => i.kind === "inspiratie" && i.projectId === p.id)
+        .map(i => (i.text || "").trim().toLowerCase());
+      for(const t of z.punten){
+        if(erin.includes(t.toLowerCase())) continue;   // staat er al
+        await addDoc(collection(db,"users",uid,"thoth"),{
+          text: t, kind:"inspiratie", projectId: p.id, createdAt: Date.now()
+        });
+        iets = z.project;
+      }
+      await setDoc(ref, {[z.sleutel]: Date.now()}, {merge:true});
+    }
+    if(iets) toast(`${iets} staat in Thoth`);
+  }catch(e){ /* offline, dan proberen we het de volgende keer gewoon opnieuw */ }
+}
+
 function stop(){
   if(unsub) unsub();
   BOARDS.forEach(b => { if(bs[b.id].unsub) bs[b.id].unsub(); bs[b.id].data = []; });
@@ -3540,7 +3593,7 @@ function renderArchief(){
 /* ============================================================
    KLUIS  ·  alles eruit halen en weer terugzetten
    ============================================================ */
-const METAS = ["dag","ai"];
+const METAS = ["dag","ai","klaar"];
 
 async function alles(){
   const uit = { app:"Inti", versie:1, datum:new Date().toISOString(), thoth:[], meta:{} };
